@@ -1,0 +1,302 @@
+.showcase {
+    padding: 32px;
+    background-color: #0a0a12;
+    gap: 24px;
+    overflow-y: auto;
+}
+
+.page-header {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #2a2a3e;
+}
+
+.page-header h1 {
+    font-size: 32px;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: #666688;
+    font-size: 16px;
+}
+
+/* Cards */
+.card {
+    background-color: #14141e;
+    border: 1px solid #2a2a3e;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.card h2 {
+    color: #00d4ff;
+    font-size: 18px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #2a2a3e;
+}
+
+.card h3 {
+    color: #aaaacc;
+    font-size: 14px;
+    margin-bottom: 12px;
+    margin-top: 16px;
+}
+
+.card-content {
+    gap: 12px;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+}
+
+/* Text */
+h1 { color: #ffffff; font-size: 28px; }
+h2 { color: #ddddee; font-size: 22px; }
+h3 { color: #aaaacc; font-size: 16px; }
+
+p {
+    color: #9999bb;
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+strong { color: #ffffff; }
+em { color: #aaccff; }
+
+.muted {
+    color: #666688;
+    font-size: 14px;
+}
+
+/* Links */
+a {
+    color: #00d4ff;
+    font-size: 15px;
+}
+
+a:hover {
+    color: #66e0ff;
+}
+
+/* Lists */
+.list-box {
+    flex-grow: 1;
+    padding: 16px;
+    background-color: #1a1a28;
+    border-radius: 8px;
+}
+
+ul, ol {
+    margin-left: 8px;
+    gap: 6px;
+}
+
+li {
+    color: #9999bb;
+    font-size: 14px;
+}
+
+/* Forms */
+form {
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group.row {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+}
+
+label {
+    color: #8888aa;
+    font-size: 13px;
+}
+
+input, textarea, select {
+    background-color: #1a1a28;
+    border: 1px solid #3a3a5e;
+    border-radius: 6px;
+    padding: 10px;
+    color: #ddddee;
+    font-size: 14px;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #00d4ff;
+}
+
+textarea {
+    min-height: 80px;
+}
+
+.form-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+/* Progress */
+.progress-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.progress-item label {
+    min-width: 80px;
+}
+
+progress {
+    flex-grow: 1;
+    height: 12px;
+}
+
+/* SVG */
+.svg-row {
+    justify-content: center;
+    gap: 32px;
+}
+
+.svg-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon-large {
+    width: 48px;
+    height: 48px;
+    color: #00d4ff;
+}
+
+.svg-item span {
+    color: #666688;
+    font-size: 12px;
+}
+
+/* Buttons */
+.button-grid {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+button {
+    padding: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background-color: #00d4ff;
+    border: none;
+    color: #0a0a12;
+}
+
+.btn-primary:hover {
+    background-color: #00a8cc;
+}
+
+.btn-secondary {
+    background-color: #3a3a5a;
+    border: 1px solid #5a5a7a;
+    color: #ccccdd;
+}
+
+.btn-secondary:hover {
+    background-color: #4a4a6a;
+}
+
+.btn-success {
+    background-color: #22aa66;
+    border: none;
+    color: #ffffff;
+}
+
+.btn-success:hover {
+    background-color: #1a8850;
+}
+
+.btn-warning {
+    background-color: #ddaa22;
+    border: none;
+    color: #1a1a12;
+}
+
+.btn-warning:hover {
+    background-color: #bb8811;
+}
+
+.btn-danger {
+    background-color: #cc3344;
+    border: none;
+    color: #ffffff;
+}
+
+.btn-danger:hover {
+    background-color: #aa2233;
+}
+
+.btn-ghost {
+    background-color: transparent;
+    border: 1px solid #4a4a6e;
+    color: #8888aa;
+}
+
+.btn-ghost:hover {
+    background-color: #2a2a3e;
+    border-color: #6a6a8e;
+}
+
+/* Footer */
+.page-footer {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #2a2a3e;
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.footer-text {
+    color: #666688;
+    font-size: 14px;
+}
+
+.footer-dot {
+    width: 4px;
+    height: 4px;
+    background-color: #00d4ff;
+    border-radius: 2px;
+}
+
+.footer-version {
+    color: #444466;
+    font-size: 12px;
+}

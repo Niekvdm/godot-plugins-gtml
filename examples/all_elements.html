@@ -1,0 +1,168 @@
+<section class="showcase">
+    <header class="page-header">
+        <h1>GML Element Showcase</h1>
+        <p class="subtitle">All supported HTML elements and CSS features</p>
+    </header>
+
+    <article class="card">
+        <h2>Text Elements</h2>
+        <div class="card-content">
+            <h3>Headings</h3>
+            <h1>Heading 1</h1>
+            <h2>Heading 2</h2>
+            <h3>Heading 3</h3>
+
+            <h3>Text Styles</h3>
+            <p>Regular paragraph text with <strong>bold</strong> and <em>italic</em> formatting.</p>
+            <span class="muted">Span element for inline text</span>
+        </div>
+    </article>
+
+    <article class="card">
+        <h2>Links</h2>
+        <div class="card-content row">
+            <a href="https://godotengine.org">External Link</a>
+            <a @click="on_internal">Internal @click</a>
+        </div>
+    </article>
+
+    <article class="card">
+        <h2>Lists</h2>
+        <div class="card-content row">
+            <div class="list-box">
+                <h3>Unordered</h3>
+                <ul>
+                    <li>First item</li>
+                    <li>Second item</li>
+                    <li>Third item</li>
+                </ul>
+            </div>
+            <div class="list-box">
+                <h3>Ordered</h3>
+                <ol>
+                    <li>Step one</li>
+                    <li>Step two</li>
+                    <li>Step three</li>
+                </ol>
+            </div>
+        </div>
+    </article>
+
+    <article class="card">
+        <h2>Form Elements</h2>
+        <form class="card-content">
+            <div class="form-group">
+                <label>Text Input</label>
+                <input type="text" id="username" placeholder="Enter text...">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter password...">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" placeholder="email@example.com">
+            </div>
+            <div class="form-group">
+                <label>Number</label>
+                <input type="number" id="age" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>Dropdown</label>
+                <select id="country">
+                    <option value="us">United States</option>
+                    <option value="uk">United Kingdom</option>
+                    <option value="ca" selected>Canada</option>
+                </select>
+            </div>
+            <div class="form-group row">
+                <input type="checkbox" id="agree" checked>
+                <label>I agree to the terms</label>
+            </div>
+            <div class="form-group">
+                <label>Range Slider</label>
+                <input type="range" id="volume" min="0" max="100" value="50">
+            </div>
+            <div class="form-group">
+                <label>Textarea</label>
+                <textarea id="bio" rows="3" placeholder="Enter multi-line text..."></textarea>
+            </div>
+            <div class="form-actions">
+                <button class="btn-primary" @click="on_submit">Submit</button>
+                <button class="btn-secondary" @click="on_reset">Reset</button>
+            </div>
+        </form>
+    </article>
+
+    <article class="card">
+        <h2>Progress Bars</h2>
+        <div class="card-content">
+            <div class="progress-item">
+                <label>Download</label>
+                <progress value="75" max="100"></progress>
+            </div>
+            <div class="progress-item">
+                <label>Upload</label>
+                <progress value="30" max="100"></progress>
+            </div>
+        </div>
+    </article>
+
+    <article class="card">
+        <h2>SVG Graphics</h2>
+        <div class="card-content row svg-row">
+            <div class="svg-item">
+                <svg viewBox="0 0 24 24" class="icon-large">
+                    <circle cx="12" cy="12" r="10" fill="none" stroke-width="2" />
+                    <line x1="12" y1="6" x2="12" y2="12" stroke-width="2" />
+                    <line x1="12" y1="12" x2="16" y2="14" stroke-width="2" />
+                </svg>
+                <span>Clock</span>
+            </div>
+            <div class="svg-item">
+                <svg viewBox="0 0 24 24" class="icon-large">
+                    <polygon points="12,2 15,9 22,9 17,14 19,22 12,17 5,22 7,14 2,9 9,9" fill="none" stroke-width="1.5" />
+                </svg>
+                <span>Star</span>
+            </div>
+            <div class="svg-item">
+                <svg viewBox="0 0 24 24" class="icon-large">
+                    <rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke-width="2" />
+                    <line x1="9" y1="9" x2="15" y2="15" stroke-width="2" />
+                    <line x1="15" y1="9" x2="9" y2="15" stroke-width="2" />
+                </svg>
+                <span>Close</span>
+            </div>
+            <div class="svg-item">
+                <svg viewBox="0 0 24 24" class="icon-large">
+                    <circle cx="12" cy="12" r="10" fill="none" stroke-width="2" />
+                    <line x1="12" y1="8" x2="12" y2="12" stroke-width="2" />
+                    <circle cx="12" cy="16" r="1" fill="#00d4ff" />
+                </svg>
+                <span>Info</span>
+            </div>
+        </div>
+    </article>
+
+    <article class="card">
+        <h2>Buttons & Styles</h2>
+        <div class="card-content">
+            <div class="button-grid">
+                <button class="btn-primary">Primary</button>
+                <button class="btn-secondary">Secondary</button>
+                <button class="btn-success">Success</button>
+                <button class="btn-warning">Warning</button>
+                <button class="btn-danger">Danger</button>
+                <button class="btn-ghost">Ghost</button>
+            </div>
+        </div>
+    </article>
+
+    <footer class="page-footer">
+        <div class="footer-content">
+            <span class="footer-text">GML - Godot Markup Language</span>
+            <div class="footer-dot"></div>
+            <span class="footer-version">v1.0</span>
+        </div>
+    </footer>
+</section>

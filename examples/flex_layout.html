@@ -1,0 +1,69 @@
+<div class="panel">
+    <h2>Flex Layout Demo</h2>
+    <p class="description">Demonstrating flexbox row and column layouts</p>
+
+    <div class="section">
+        <h3>Row Layout (justify-content)</h3>
+        <div class="demo-box">
+            <div class="row justify-start">
+                <div class="item">1</div>
+                <div class="item">2</div>
+                <div class="item">3</div>
+            </div>
+            <span class="label">flex-start</span>
+        </div>
+        <div class="demo-box">
+            <div class="row justify-center">
+                <div class="item">1</div>
+                <div class="item">2</div>
+                <div class="item">3</div>
+            </div>
+            <span class="label">center</span>
+        </div>
+        <div class="demo-box">
+            <div class="row justify-end">
+                <div class="item">1</div>
+                <div class="item">2</div>
+                <div class="item">3</div>
+            </div>
+            <span class="label">flex-end</span>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Row Layout (align-items)</h3>
+        <div class="demo-box">
+            <div class="row align-start tall">
+                <div class="item">1</div>
+                <div class="item large">2</div>
+                <div class="item">3</div>
+            </div>
+            <span class="label">flex-start</span>
+        </div>
+        <div class="demo-box">
+            <div class="row align-center tall">
+                <div class="item">1</div>
+                <div class="item large">2</div>
+                <div class="item">3</div>
+            </div>
+            <span class="label">center</span>
+        </div>
+        <div class="demo-box">
+            <div class="row align-end tall">
+                <div class="item">1</div>
+                <div class="item large">2</div>
+                <div class="item">3</div>
+            </div>
+            <span class="label">flex-end</span>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Interactive Buttons</h3>
+        <div class="button-row">
+            <button class="btn-primary" @click="on_primary">Primary</button>
+            <button class="btn-secondary" @click="on_secondary">Secondary</button>
+            <button class="btn-danger" @click="on_danger">Danger</button>
+        </div>
+    </div>
+</div>
