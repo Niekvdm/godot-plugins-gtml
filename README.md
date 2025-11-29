@@ -1,3 +1,5 @@
+![GML Header](header.png)
+
 # GML - Godot Markup Language
 
 A Godot 4.x addon that allows you to build UI from HTML files with external CSS styling. Create game menus, HUDs, and UI panels using familiar web technologies.
@@ -280,6 +282,42 @@ box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
 box-shadow: 0 2px 4px 2px #000000;
 ```
 
+### Form Element Styling
+
+Form elements (`input`, `textarea`, `select`) support background and border styling:
+
+| Property | Support | Description |
+|----------|---------|-------------|
+| `background-color` | ✅ Full | Input background color |
+| `border` | ✅ Full | Border shorthand |
+| `border-radius` | ✅ Full | Corner radius |
+| `border-color` | ✅ Full | Border color |
+| `border-width` | ✅ Full | Border width |
+| `color` | ✅ Full | Text/font color |
+| `font-size` | ✅ Full | Text size |
+| `font-family` | ✅ Full | Custom font |
+| `padding` | ✅ Full | Internal spacing |
+| `:focus` | ✅ Pseudo | Focus state styling |
+
+**Example:**
+```css
+input, textarea, select {
+    background-color: #1a1a28;
+    border: 1px solid #3a3a5e;
+    border-radius: 6px;
+    padding: 10px;
+    color: #ddddee;
+    font-size: 14px;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #00d4ff;
+    background-color: #1e1e2e;
+}
+```
+
+**Slider styling:** Range inputs (`<input type="range">`) use `background-color` for the track and `color` for the filled area.
+
 ### Overflow & Visibility
 
 | Property | Values | Description |
@@ -298,12 +336,16 @@ box-shadow: 0 2px 4px 2px #000000;
 - **ID selector:** `#idname`
 - **Comma-separated:** `h1, h2, h3 { ... }`
 
-### Pseudo-classes (Buttons Only)
+### Pseudo-classes
 
+**Buttons:**
 - `:hover` - Mouse hover state
 - `:active` - Pressed state
 - `:focus` - Focused state
 - `:disabled` - Disabled state
+
+**Form Elements (input, textarea, select):**
+- `:focus` - Focused state (when input has keyboard focus)
 
 ```css
 button {
@@ -771,7 +813,7 @@ if gml_view != null:
 - CSS units limited to `px`, `%`, and `em` (letter-spacing only)
 - No CSS animations or transitions
 - No CSS variables (`--custom-property`)
-- Pseudo-classes only work on buttons
+- Pseudo-classes: `:hover`, `:active`, `:disabled` work on buttons; `:focus` works on buttons and form elements
 
 ### SVG
 - Bezier curves (C, S, Q, T) are simplified to straight line endpoints

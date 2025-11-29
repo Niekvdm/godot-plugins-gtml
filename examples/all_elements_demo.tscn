@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://gml_all_elements_demo"]
+[gd_scene load_steps=2 format=3 uid="uid://dbh2g5nt3toy3"]
 
-[ext_resource type="Script" path="res://addons/gml/src/GmlView.gd" id="1_gmlview"]
+[ext_resource type="Script" uid="uid://c7ncronfk6se8" path="res://addons/gml/src/GmlView.gd" id="1_gmlview"]
 
-[node name="AllElementsDemo" type="Control"]
+[node name="AllElementsDemo" type="Control" unique_id=1804167926]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,7 +10,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=1603220384]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -19,7 +19,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.04, 0.04, 0.07, 1)
 
-[node name="GmlView" type="Control" parent="."]
+[node name="GmlView" type="Control" parent="." unique_id=1418820698]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
