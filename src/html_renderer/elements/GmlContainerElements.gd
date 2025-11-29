@@ -46,6 +46,11 @@ static func build_div_inner(node, ctx: Dictionary) -> Control:
 	for child in node.children:
 		var child_control = ctx.build_node.call(child)
 		if child_control != null:
+			# Apply inherited text styles to text nodes (Label controls)
+			if child.is_text_node and child_control is Label:
+				GmlStyles.apply_text_color(child_control, style, defaults)
+				GmlStyles.apply_text_styles(child_control, style, defaults)
+
 			if not align_items.is_empty():
 				var child_style = ctx.get_style.call(child) if not child.is_text_node else {}
 				GmlStyles.apply_cross_axis_alignment(child_control, align_items, is_row, child_style)
