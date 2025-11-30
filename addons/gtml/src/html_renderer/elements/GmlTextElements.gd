@@ -27,6 +27,11 @@ static func build_paragraph_inner(node, ctx: Dictionary) -> Control:
 	GmlStyles.apply_text_color(label, style, defaults)
 	GmlStyles.apply_text_styles(label, style, defaults)
 
+	# Apply text-decoration if present
+	if style.has("text-decoration"):
+		var color: Color = style.get("color", defaults.get("default_font_color", Color.WHITE))
+		return GmlStyles.apply_text_decoration(label, style["text-decoration"], color)
+
 	return label
 
 
@@ -44,7 +49,13 @@ static func build_span(node, ctx: Dictionary) -> Dictionary:
 	GmlStyles.apply_text_color(label, style, defaults)
 	GmlStyles.apply_text_styles(label, style, defaults)
 
-	return {"control": label, "inner": label}
+	# Apply text-decoration if present
+	var result_control: Control = label
+	if style.has("text-decoration"):
+		var color: Color = style.get("color", defaults.get("default_font_color", Color.WHITE))
+		result_control = GmlStyles.apply_text_decoration(label, style["text-decoration"], color)
+
+	return {"control": result_control, "inner": label}
 
 
 ## Build a heading element.
@@ -80,6 +91,11 @@ static func build_heading_inner(node, level: int, ctx: Dictionary) -> Control:
 
 	GmlStyles.apply_text_color(label, style, defaults)
 	GmlStyles.apply_text_styles(label, style, defaults)
+
+	# Apply text-decoration if present
+	if style.has("text-decoration"):
+		var color: Color = style.get("color", defaults.get("default_font_color", Color.WHITE))
+		return GmlStyles.apply_text_decoration(label, style["text-decoration"], color)
 
 	return label
 
@@ -123,6 +139,11 @@ static func build_label_inner(node, ctx: Dictionary) -> Control:
 							target.grab_focus()
 			)
 
+	# Apply text-decoration if present
+	if style.has("text-decoration"):
+		var color: Color = style.get("color", defaults.get("default_font_color", Color.WHITE))
+		return GmlStyles.apply_text_decoration(label, style["text-decoration"], color)
+
 	return label
 
 
@@ -138,11 +159,16 @@ static func build_bold(node, ctx: Dictionary) -> Control:
 	label.text = node.get_text_content()
 
 	GmlStyles.apply_text_color(label, style, defaults)
+	GmlStyles.apply_text_styles(label, style, defaults)
 
 	# Apply bold styling using outline
 	label.add_theme_constant_override("outline_size", 1)
 	var color: Color = style.get("color", defaults.get("default_font_color", Color.WHITE))
 	label.add_theme_color_override("font_outline_color", color)
+
+	# Apply text-decoration if present
+	if style.has("text-decoration"):
+		return GmlStyles.apply_text_decoration(label, style["text-decoration"], color)
 
 	return label
 
@@ -159,8 +185,14 @@ static func build_italic(node, ctx: Dictionary) -> Control:
 	label.text = node.get_text_content()
 
 	GmlStyles.apply_text_color(label, style, defaults)
+	GmlStyles.apply_text_styles(label, style, defaults)
 
 	# Store italic flag for custom font handling
 	label.set_meta("font_style", "italic")
+
+	# Apply text-decoration if present
+	if style.has("text-decoration"):
+		var color: Color = style.get("color", defaults.get("default_font_color", Color.WHITE))
+		return GmlStyles.apply_text_decoration(label, style["text-decoration"], color)
 
 	return label

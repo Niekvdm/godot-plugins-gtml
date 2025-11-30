@@ -16,7 +16,7 @@ static func apply_text_color(label: Label, style: Dictionary, defaults: Dictiona
 	label.add_theme_color_override("font_color", color)
 
 
-## Apply text styles (alignment, weight, font-family, letter-spacing) to a label.
+## Apply text styles (alignment, weight, font-family, letter-spacing, decoration, etc.) to a label.
 static func apply_text_styles(label: Label, style: Dictionary, defaults: Dictionary) -> void:
 	# Text alignment
 	if style.has("text-align"):
@@ -79,6 +79,216 @@ static func apply_text_styles(label: Label, style: Dictionary, defaults: Diction
 							spaced_text += space_char
 				label.text = spaced_text
 		label.set_meta("letter_spacing", spacing)
+
+	# Text transform (uppercase, lowercase, capitalize)
+	if style.has("text-transform"):
+		apply_text_transform(label, style["text-transform"])
+
+	# White-space (nowrap, pre, etc.)
+	if style.has("white-space"):
+		apply_white_space(label, style["white-space"])
+
+	# Text overflow (ellipsis, clip)
+	if style.has("text-overflow"):
+		apply_text_overflow(label, style["text-overflow"])
+
+	# Line height
+	if style.has("line-height"):
+		var line_height: int = style["line-height"]
+		label.add_theme_constant_override("line_spacing", line_height)
+
+	# Word spacing - simulate using Unicode spaces between words
+	if style.has("word-spacing"):
+		apply_word_spacing(label, style["word-spacing"])
+
+	# Text indent - store for container to handle via padding
+	if style.has("text-indent"):
+		label.set_meta("text_indent", style["text-indent"])
+
+
+## Apply text-transform to a label (uppercase, lowercase, capitalize).
+static func apply_text_transform(label: Label, transform: String) -> void:
+	var text := label.text
+	if text.is_empty():
+		return
+
+	match transform:
+		"uppercase":
+			label.text = text.to_upper()
+		"lowercase":
+			label.text = text.to_lower()
+		"capitalize":
+			label.text = _capitalize_words(text)
+		"none", _:
+			pass  # Keep original text
+
+	label.set_meta("text_transform", transform)
+
+
+## Capitalize first letter of each word.
+static func _capitalize_words(text: String) -> String:
+	var words := text.split(" ")
+	var result := PackedStringArray()
+	for word in words:
+		if word.length() > 0:
+			result.append(word[0].to_upper() + word.substr(1))
+		else:
+			result.append(word)
+	return " ".join(result)
+
+
+## Apply white-space property to a label.
+static func apply_white_space(label: Label, value: String) -> void:
+	match value:
+		"nowrap":
+			label.autowrap_mode = TextServer.AUTOWRAP_OFF
+		"pre":
+			# Preserve whitespace and line breaks, no wrapping
+			label.autowrap_mode = TextServer.AUTOWRAP_OFF
+			label.set_meta("white_space_pre", true)
+		"pre-wrap":
+			# Preserve whitespace and line breaks, allow wrapping
+			label.autowrap_mode = TextServer.AUTOWRAP_WORD
+			label.set_meta("white_space_pre", true)
+		"pre-line":
+			# Collapse whitespace but preserve line breaks
+			label.autowrap_mode = TextServer.AUTOWRAP_WORD
+		"normal", _:
+			label.autowrap_mode = TextServer.AUTOWRAP_WORD
+
+	label.set_meta("white_space", value)
+
+
+## Apply text-overflow property to a label.
+static func apply_text_overflow(label: Label, value: String) -> void:
+	match value:
+		"ellipsis":
+			label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		"clip":
+			label.text_overrun_behavior = TextServer.OVERRUN_TRIM_CHAR
+		_:
+			label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
+
+	label.set_meta("text_overflow", value)
+
+
+## Apply word-spacing to a label by inserting extra spaces between words.
+static func apply_word_spacing(label: Label, spacing: int) -> void:
+	if spacing <= 0:
+		return
+
+	var text := label.text
+	if text.is_empty():
+		return
+
+	# Determine space character based on spacing size
+	var space_char := ""
+	if spacing >= 8:
+		space_char = "  "  # Double space
+	elif spacing >= 4:
+		space_char = " "  # Regular space
+	elif spacing >= 2:
+		space_char = "\u2002"  # En space
+	else:
+		space_char = "\u2009"  # Thin space
+
+	# Calculate how many extra space chars to add
+	var num_extra := maxi(1, spacing / 4)
+
+	var words := text.split(" ")
+	var extra_spacing := ""
+	for _i in range(num_extra):
+		extra_spacing += space_char
+
+	label.text = (extra_spacing + " ").join(words)
+	label.set_meta("word_spacing", spacing)
+
+
+## Apply text-decoration to a label using custom draw.
+## Returns a Control that wraps the label with decoration drawing.
+static func apply_text_decoration(label: Label, decoration: Dictionary, color: Color) -> Control:
+	var has_decoration := decoration.get("underline", false) or decoration.get("line_through", false) or decoration.get("overline", false)
+
+	if not has_decoration or decoration.get("none", false):
+		label.set_meta("text_decoration", decoration)
+		return label
+
+	# Create a container that draws decorations
+	var container := TextDecorationContainer.new()
+	container.setup(label, decoration, color)
+	return container
+
+
+## Custom container that draws text decorations (underline, strikethrough, overline).
+class TextDecorationContainer extends Control:
+	var _label: Label
+	var _decoration: Dictionary
+	var _color: Color
+
+	func setup(label: Label, decoration: Dictionary, color: Color) -> void:
+		_label = label
+		_decoration = decoration
+		_color = color
+
+		# Add the label as child
+		add_child(label)
+
+		# Match label sizing
+		custom_minimum_size = label.custom_minimum_size
+		size_flags_horizontal = label.size_flags_horizontal
+		size_flags_vertical = label.size_flags_vertical
+
+		# Connect to label resize to update decorations
+		label.resized.connect(_on_label_resized)
+		label.item_rect_changed.connect(queue_redraw)
+
+	func _on_label_resized() -> void:
+		custom_minimum_size = _label.get_combined_minimum_size()
+		queue_redraw()
+
+	func _notification(what: int) -> void:
+		if what == NOTIFICATION_SORT_CHILDREN:
+			if _label:
+				_label.position = Vector2.ZERO
+				_label.size = size
+
+	func _draw() -> void:
+		if not _label:
+			return
+
+		var font := _label.get_theme_font("font")
+		var font_size := _label.get_theme_font_size("font_size")
+		var line_height := font.get_height(font_size)
+		var ascent := font.get_ascent(font_size)
+
+		# Get text width for decoration lines
+		var text_width := font.get_string_size(_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		text_width = minf(text_width, size.x)
+
+		# Calculate x offset based on alignment
+		var x_offset := 0.0
+		match _label.horizontal_alignment:
+			HORIZONTAL_ALIGNMENT_CENTER:
+				x_offset = (size.x - text_width) / 2.0
+			HORIZONTAL_ALIGNMENT_RIGHT:
+				x_offset = size.x - text_width
+
+		var line_thickness := maxf(1.0, font_size / 12.0)
+
+		# Draw underline
+		if _decoration.get("underline", false):
+			var y := ascent + line_thickness * 2
+			draw_line(Vector2(x_offset, y), Vector2(x_offset + text_width, y), _color, line_thickness)
+
+		# Draw line-through (strikethrough)
+		if _decoration.get("line_through", false):
+			var y := ascent * 0.6
+			draw_line(Vector2(x_offset, y), Vector2(x_offset + text_width, y), _color, line_thickness)
+
+		# Draw overline
+		if _decoration.get("overline", false):
+			var y := line_thickness
+			draw_line(Vector2(x_offset, y), Vector2(x_offset + text_width, y), _color, line_thickness)
 
 
 ## Apply border properties to a StyleBoxFlat.

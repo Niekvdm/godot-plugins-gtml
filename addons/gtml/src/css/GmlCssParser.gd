@@ -15,7 +15,8 @@ extends RefCounted
 ##   font-family, font-weight, letter-spacing, text-align, opacity, min-width, max-width, min-height, max-height,
 ##   flex-grow, flex-shrink, border-top-left-radius, border-top-right-radius,
 ##   border-bottom-left-radius, border-bottom-right-radius, overflow, visibility,
-##   background, background-image (linear-gradient, radial-gradient)
+##   background, background-image (linear-gradient, radial-gradient),
+##   text-decoration, line-height, text-transform, text-indent, word-spacing, white-space, text-overflow
 
 var _pos: int = 0
 var _css: String = ""
@@ -24,7 +25,8 @@ var _length: int = 0
 # Property categories for dispatch
 const PASSTHROUGH_PROPS = [
 	"display", "flex-direction", "align-items", "justify-content",
-	"text-align", "overflow", "overflow-x", "overflow-y", "visibility"
+	"text-align", "overflow", "overflow-x", "overflow-y", "visibility",
+	"text-transform", "white-space", "text-overflow"
 ]
 
 const SIZE_PROPS = [
@@ -33,7 +35,8 @@ const SIZE_PROPS = [
 	"padding-top", "padding-right", "padding-bottom", "padding-left",
 	"margin-top", "margin-right", "margin-bottom", "margin-left",
 	"border-top-left-radius", "border-top-right-radius",
-	"border-bottom-left-radius", "border-bottom-right-radius"
+	"border-bottom-left-radius", "border-bottom-right-radius",
+	"text-indent", "word-spacing", "line-height"
 ]
 
 const DIMENSION_PROPS = [
@@ -288,6 +291,10 @@ func _convert_property_value(prop_name: String, value: String):
 
 	if prop_name == "letter-spacing":
 		return GmlFontValues.parse_letter_spacing(value)
+
+	# Text decoration (can have multiple values like "underline line-through")
+	if prop_name == "text-decoration":
+		return GmlFontValues.parse_text_decoration(value)
 
 	# Background properties
 	if prop_name == "background" or prop_name == "background-image":

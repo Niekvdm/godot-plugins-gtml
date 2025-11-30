@@ -79,3 +79,37 @@ static func parse_letter_spacing(value: String) -> float:
 
 	# Assume pixels if no unit
 	return value.to_float()
+
+
+## Parse text-decoration value (e.g., "underline", "line-through", "underline line-through").
+## Returns a Dictionary with boolean flags for each decoration type.
+## Example: {"underline": true, "line_through": false, "overline": false}
+static func parse_text_decoration(value: String) -> Dictionary:
+	value = value.strip_edges().to_lower()
+
+	var result := {
+		"underline": false,
+		"line_through": false,
+		"overline": false,
+		"none": false
+	}
+
+	if value == "none":
+		result["none"] = true
+		return result
+
+	# Split by whitespace to handle multiple decorations
+	var parts := value.split(" ", false)
+	for part in parts:
+		part = part.strip_edges()
+		match part:
+			"underline":
+				result["underline"] = true
+			"line-through", "linethrough", "strikethrough":
+				result["line_through"] = true
+			"overline":
+				result["overline"] = true
+			"none":
+				result["none"] = true
+
+	return result
