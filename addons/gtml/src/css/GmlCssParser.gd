@@ -5,7 +5,7 @@ extends RefCounted
 ## Parses a subset of CSS into an array of rules.
 ##
 ## Supported selectors: tag, .class, #id
-## Supported properties: display, flex-direction, gap, margin, padding, background-color, color, font-size, width, height,
+## Supported properties: display, flex-direction, gap, row-gap, column-gap, margin, padding, background-color, color, font-size, width, height,
 ##   align-items, justify-content, border, border-width, border-color, border-radius,
 ##   border-top, border-right, border-bottom, border-left,
 ##   border-top-width, border-right-width, border-bottom-width, border-left-width,
@@ -13,7 +13,8 @@ extends RefCounted
 ##   padding-top, padding-right, padding-bottom, padding-left,
 ##   margin-top, margin-right, margin-bottom, margin-left,
 ##   font-family, font-weight, letter-spacing, text-align, opacity, min-width, max-width, min-height, max-height,
-##   flex-grow, flex-shrink, border-top-left-radius, border-top-right-radius,
+##   flex-grow, flex-shrink, flex-basis, flex-wrap, align-self, order,
+##   border-top-left-radius, border-top-right-radius,
 ##   border-bottom-left-radius, border-bottom-right-radius, overflow, visibility,
 ##   background, background-image (linear-gradient, radial-gradient),
 ##   text-decoration, line-height, text-transform, text-indent, word-spacing, white-space, text-overflow
@@ -26,11 +27,12 @@ var _length: int = 0
 const PASSTHROUGH_PROPS = [
 	"display", "flex-direction", "align-items", "justify-content",
 	"text-align", "overflow", "overflow-x", "overflow-y", "visibility",
-	"text-transform", "white-space", "text-overflow"
+	"text-transform", "white-space", "text-overflow",
+	"flex-wrap", "align-self"
 ]
 
 const SIZE_PROPS = [
-	"gap", "margin", "padding", "font-size", "border-width", "border-radius",
+	"gap", "row-gap", "column-gap", "margin", "padding", "font-size", "border-width", "border-radius",
 	"border-top-width", "border-right-width", "border-bottom-width", "border-left-width",
 	"padding-top", "padding-right", "padding-bottom", "padding-left",
 	"margin-top", "margin-right", "margin-bottom", "margin-left",
@@ -40,7 +42,8 @@ const SIZE_PROPS = [
 ]
 
 const DIMENSION_PROPS = [
-	"width", "height", "min-width", "max-width", "min-height", "max-height"
+	"width", "height", "min-width", "max-width", "min-height", "max-height",
+	"flex-basis"
 ]
 
 const COLOR_PROPS = [
@@ -53,7 +56,7 @@ const BORDER_PROPS = [
 ]
 
 const FLOAT_PROPS = [
-	"opacity", "flex-grow", "flex-shrink"
+	"opacity", "flex-grow", "flex-shrink", "order"
 ]
 
 

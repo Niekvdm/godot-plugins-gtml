@@ -348,6 +348,35 @@ func _apply_dimensions(control: Control, node) -> void:
 				control.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		# shrink > 0 is default behavior (allow container to shrink children)
 
+	# Apply flex-basis (initial size on main axis before flex-grow/shrink)
+	if style.has("flex-basis"):
+		var basis = style["flex-basis"]
+		var parent = control.get_parent()
+		var is_row = parent.get_meta("is_row_layout", false) if parent else false
+
+		if basis is Dictionary:
+			var unit = basis.get("unit", "")
+			var value = basis.get("value", 0)
+			if unit == "px":
+				if is_row:
+					control.custom_minimum_size.x = value
+				else:
+					control.custom_minimum_size.y = value
+			elif unit == "%":
+				# Percentage-based flex-basis - store for later calculation
+				if is_row:
+					control.set_meta("flex_basis_percent_x", value / 100.0)
+				else:
+					control.set_meta("flex_basis_percent_y", value / 100.0)
+		elif basis is String and basis != "auto":
+			# Handle numeric string without unit (assume px)
+			if basis.is_valid_float():
+				var px_value = basis.to_float()
+				if is_row:
+					control.custom_minimum_size.x = px_value
+				else:
+					control.custom_minimum_size.y = px_value
+
 	# For 100% dimensions, use size flags
 	if width_percent >= 1.0 and height_percent >= 1.0:
 		control.size_flags_horizontal = Control.SIZE_EXPAND_FILL
