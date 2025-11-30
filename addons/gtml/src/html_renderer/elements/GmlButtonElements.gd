@@ -283,6 +283,37 @@ static func _apply_button_styles(button: Button, style: Dictionary, defaults: Di
 			disabled_outline_color.a *= 0.5
 			button.add_theme_color_override("font_disabled_outline_color", disabled_outline_color)
 
+	# Text transform (uppercase, lowercase, capitalize)
+	if style.has("text-transform") and not button.text.is_empty():
+		var transform: String = style["text-transform"]
+		match transform:
+			"uppercase":
+				button.text = button.text.to_upper()
+			"lowercase":
+				button.text = button.text.to_lower()
+			"capitalize":
+				button.text = _capitalize_words(button.text)
+
+	# Word spacing
+	if style.has("word-spacing"):
+		var spacing: int = style["word-spacing"]
+		if spacing > 0 and not button.text.is_empty():
+			var space_char := ""
+			if spacing >= 8:
+				space_char = "  "
+			elif spacing >= 4:
+				space_char = " "
+			elif spacing >= 2:
+				space_char = "\u2002"
+			else:
+				space_char = "\u2009"
+			var num_extra := maxi(1, spacing / 4)
+			var words := button.text.split(" ")
+			var extra_spacing := ""
+			for _i in range(num_extra):
+				extra_spacing += space_char
+			button.text = (extra_spacing + " ").join(words)
+
 	# Letter spacing
 	if style.has("letter-spacing"):
 		var spacing: float = style["letter-spacing"]
@@ -306,6 +337,18 @@ static func _apply_button_styles(button: Button, style: Dictionary, defaults: Di
 					for _j in range(num_spaces):
 						spaced_text += space_char
 			button.text = spaced_text
+
+
+## Capitalize first letter of each word.
+static func _capitalize_words(text: String) -> String:
+	var words := text.split(" ")
+	var result := PackedStringArray()
+	for word in words:
+		if word.length() > 0:
+			result.append(word[0].to_upper() + word.substr(1))
+		else:
+			result.append(word)
+	return " ".join(result)
 
 
 ## Wrap button with margin only.

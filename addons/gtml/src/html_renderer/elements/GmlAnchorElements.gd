@@ -50,15 +50,39 @@ static func _build_simple_anchor(node, ctx: Dictionary, style: Dictionary, defau
 	var link_color: Color = style.get("color", Color(0.4, 0.6, 1.0, 1.0))
 	var font_size: int = style.get("font-size", defaults.get("p_font_size", 16))
 
-	# Apply text decoration
-	var text_decoration: String = style.get("text-decoration", "underline")
-	match text_decoration:
-		"underline":
-			link.underline = LinkButton.UNDERLINE_MODE_ALWAYS
-		"none":
+	# Apply text-transform
+	if style.has("text-transform") and not link.text.is_empty():
+		var transform: String = style["text-transform"]
+		match transform:
+			"uppercase":
+				link.text = link.text.to_upper()
+			"lowercase":
+				link.text = link.text.to_lower()
+			"capitalize":
+				link.text = _capitalize_words(link.text)
+
+	# Apply text decoration (can be a Dictionary from parser or string)
+	var text_decoration = style.get("text-decoration", null)
+	if text_decoration is Dictionary:
+		# New parser format: {"underline": true, "line_through": false, ...}
+		if text_decoration.get("none", false):
 			link.underline = LinkButton.UNDERLINE_MODE_NEVER
-		_:
+		elif text_decoration.get("underline", false):
+			link.underline = LinkButton.UNDERLINE_MODE_ALWAYS
+		else:
 			link.underline = LinkButton.UNDERLINE_MODE_ON_HOVER
+	elif text_decoration is String:
+		# Legacy string format
+		match text_decoration:
+			"underline":
+				link.underline = LinkButton.UNDERLINE_MODE_ALWAYS
+			"none":
+				link.underline = LinkButton.UNDERLINE_MODE_NEVER
+			_:
+				link.underline = LinkButton.UNDERLINE_MODE_ON_HOVER
+	else:
+		# Default: underline on hover
+		link.underline = LinkButton.UNDERLINE_MODE_ALWAYS
 
 	# Apply font size
 	link.add_theme_font_size_override("font_size", font_size)
@@ -163,3 +187,15 @@ static func _build_complex_anchor(node, ctx: Dictionary, style: Dictionary, defa
 						container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
 	return container
+
+
+## Capitalize first letter of each word.
+static func _capitalize_words(text: String) -> String:
+	var words := text.split(" ")
+	var result := PackedStringArray()
+	for word in words:
+		if word.length() > 0:
+			result.append(word[0].to_upper() + word.substr(1))
+		else:
+			result.append(word)
+	return " ".join(result)
