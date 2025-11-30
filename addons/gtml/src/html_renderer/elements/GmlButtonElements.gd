@@ -437,7 +437,7 @@ class ButtonDecorationContainer extends Control:
 		var text_x := content_margin_left + (content_width - text_size.x) / 2.0
 		var text_y := content_margin_top + (content_height - text_size.y) / 2.0
 
-		var line_thickness := maxf(1.0, font_size / 12.0)
+		var line_thickness := maxf(2.0, font_size / 8.0)
 
 		# Draw underline
 		if _decoration.get("underline", false):
