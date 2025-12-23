@@ -1,3 +1,35 @@
+
+<div align="right">
+  <details>
+    <summary >🌐 Language</summary>
+    <div>
+      <div align="center">
+        <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=en">English</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=zh-CN">简体中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=zh-TW">繁體中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=ja">日本語</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=ko">한국어</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=hi">हिन्दी</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=th">ไทย</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=fr">Français</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=de">Deutsch</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=es">Español</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=it">Italiano</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=ru">Русский</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=pt">Português</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=nl">Nederlands</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=pl">Polski</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=ar">العربية</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=fa">فارسی</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=tr">Türkçe</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=vi">Tiếng Việt</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=id">Bahasa Indonesia</a>
+        | <a href="https://openaitx.github.io/view.html?user=Niekvdm&project=godot-plugins-gtml&lang=as">অসমীয়া</
+      </div>
+    </div>
+  </details>
+</div>
+
 # GTML - Godot Markup Language
 
 A Godot 4.x addon that lets you build UI using HTML and CSS. Create game menus, HUDs, and panels with familiar web technologies.
