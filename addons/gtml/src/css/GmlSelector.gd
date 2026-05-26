@@ -114,7 +114,9 @@ static func parse(s: String) -> Selector:
 			continue
 
 		if ch == "[":
-			var close := s.find("]", i)
+			# Find the matching ] while ignoring closing brackets inside quoted
+			# attribute values, e.g. [data-x="a]b"].
+			var close := _find_attr_close(s, i + 1)
 			if close < 0:
 				push_warning("GmlSelector: unterminated attribute selector in '%s'" % s)
 				break
@@ -163,6 +165,33 @@ static func _parse_attr(inner: String) -> Dictionary:
 			or (value.begins_with("'") and value.ends_with("'"))):
 		value = value.substr(1, value.length() - 2)
 	return {"name": name, "op": "=", "value": value}
+
+
+## Find the closing ``]`` of an attribute selector starting at ``from``,
+## skipping over content inside double- or single-quoted strings.
+## Returns -1 if no terminating bracket is found.
+static func _find_attr_close(s: String, from: int) -> int:
+	var i := from
+	var n := s.length()
+	var in_quote := ""
+	while i < n:
+		var ch := s[i]
+		if in_quote != "":
+			if ch == "\\" and i + 1 < n:
+				i += 2
+				continue
+			if ch == in_quote:
+				in_quote = ""
+			i += 1
+			continue
+		if ch == "\"" or ch == "'":
+			in_quote = ch
+			i += 1
+			continue
+		if ch == "]":
+			return i
+		i += 1
+	return -1
 
 
 static func _is_ident_char(ch: String) -> bool:

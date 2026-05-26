@@ -81,8 +81,10 @@ func _compute_style(node, ancestor_chain: Array, rules: Array) -> Dictionary:
 			"disabled":
 				_merge_properties(disabled_style, props)
 			_:
-				push_warning("GmlStyleResolver: unknown pseudo-class ':%s' applied to base style" % m["pseudo"])
-				_merge_properties(style, props)
+				# Drop unknown pseudo rules — merging them into the base style
+				# would let a typo like :hovr silently overwrite the un-hovered
+				# appearance. Warn the developer so the typo is visible.
+				push_warning("GmlStyleResolver: unknown pseudo-class ':%s' — rule dropped" % m["pseudo"])
 
 	if not hover_style.is_empty():
 		style["_hover"] = hover_style

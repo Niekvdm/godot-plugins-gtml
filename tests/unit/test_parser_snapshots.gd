@@ -37,10 +37,12 @@ func _assert_snapshot(name: String, value: Variant) -> void:
 		"diff":
 			var exp_s: String = result.get("expected", "")
 			var act_s: String = result.get("actual", "")
-			fail_test("snapshot diff: %s\n--- expected (first 4000) ---\n%s\n--- actual (first 4000) ---\n%s" % [
+			var actual_path: String = result.get("actual_path", "(not written)")
+			fail_test("snapshot diff: %s\nfull actual written to %s\n--- expected (first 2000) ---\n%s\n--- actual (first 2000) ---\n%s" % [
 				name,
-				exp_s.substr(0, 4000),
-				act_s.substr(0, 4000),
+				actual_path,
+				exp_s.substr(0, 2000),
+				act_s.substr(0, 2000),
 			])
 		_:
 			fail_test("snapshot helper error: %s" % result.get("msg", "?"))

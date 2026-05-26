@@ -382,39 +382,60 @@ static func _decode_entities(s: String) -> String:
 			i += 1
 			continue
 
-		# Find terminating semicolon within a reasonable window
+		# Find terminating semicolon within a reasonable window. The window
+		# must cover the longest plausible entity: numeric refs like
+		# &#x10FFFF; (10 chars) and possibly overflowing user input we still
+		# want to recognize-and-replace (vs. passing through as literal "&").
 		var semi := s.find(";", i + 1)
-		if semi < 0 or semi - i > 10:
+		if semi < 0 or semi - i > 16:
 			out += ch
 			i += 1
 			continue
 
 		var entity := s.substr(i + 1, semi - i - 1)
-		var decoded := _decode_entity_body(entity)
-		if decoded.is_empty():
-			# Unknown entity - keep the raw &...; so user content is preserved
-			out += s.substr(i, semi - i + 1)
+		# Numeric entities: always consumed. Valid -> decoded codepoint,
+		# invalid (overflow / surrogate / non-numeric) -> U+FFFD replacement.
+		# Named entities: decoded if known, otherwise preserved verbatim so
+		# user-authored "&unknown;" content survives intact.
+		if entity.begins_with("#"):
+			out += _decode_numeric_entity(entity)
 		else:
-			out += decoded
+			var named := _decode_named_entity(entity)
+			if named.is_empty():
+				out += s.substr(i, semi - i + 1)
+			else:
+				out += named
 		i = semi + 1
 	return out
 
 
-static func _decode_entity_body(entity: String) -> String:
+## Decode a numeric character reference ("#65", "#x2603"). Returns U+FFFD
+## (the Unicode replacement character) for any unparseable, overflowing, or
+## surrogate codepoint per the HTML spec — never an empty string and never
+## the raw entity, so invalid numeric refs can't masquerade as user text.
+const REPLACEMENT_CHAR := "�"
+
+static func _decode_numeric_entity(entity: String) -> String:
+	var num_part := entity.substr(1)
+	var code: int = 0
+	if num_part.begins_with("x") or num_part.begins_with("X"):
+		code = num_part.substr(1).hex_to_int()
+	elif num_part.is_valid_int():
+		code = num_part.to_int()
+	else:
+		return REPLACEMENT_CHAR
+	if code <= 0 or code > 0x10FFFF:
+		return REPLACEMENT_CHAR
+	if code >= 0xD800 and code <= 0xDFFF:
+		return REPLACEMENT_CHAR
+	return String.chr(code)
+
+
+## Decode a named entity. Returns "" if unknown — caller is responsible for
+## preserving the raw "&name;" verbatim in that case.
+static func _decode_named_entity(entity: String) -> String:
 	if entity.is_empty():
 		return ""
-	if entity.begins_with("#"):
-		var num_part := entity.substr(1)
-		var code: int = 0
-		if num_part.begins_with("x") or num_part.begins_with("X"):
-			code = num_part.substr(1).hex_to_int()
-		elif num_part.is_valid_int():
-			code = num_part.to_int()
-		else:
-			return ""
-		if code <= 0:
-			return ""
-		return String.chr(code)
 	if NAMED_ENTITIES.has(entity):
 		return NAMED_ENTITIES[entity]
 	return ""

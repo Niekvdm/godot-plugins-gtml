@@ -10,6 +10,7 @@ extends RefCounted
 ## against the committed file.
 
 const SNAPSHOT_DIR := "res://tests/snapshots/"
+const ACTUAL_DIR := "res://tests/snapshots/.actual/"
 
 
 static func serialize_dom(node) -> Variant:
@@ -103,4 +104,16 @@ static func match_snapshot(name: String, value: Variant) -> Dictionary:
 	var actual: String = json_text.strip_edges()
 	if expected == actual:
 		return {"status": "match"}
-	return {"status": "diff", "expected": expected, "actual": actual}
+
+	# Write the full actual output to tests/snapshots/.actual/<name>.json so
+	# the developer can diff it against the committed snapshot with their
+	# own tools instead of relying on the truncated console preview. The
+	# .actual/ directory is gitignored.
+	var actual_path := ACTUAL_DIR + name + ".json"
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(ACTUAL_DIR))
+	var af := FileAccess.open(actual_path, FileAccess.WRITE)
+	if af != null:
+		af.store_string(actual + "\n")
+		af.close()
+
+	return {"status": "diff", "expected": expected, "actual": actual, "actual_path": actual_path}

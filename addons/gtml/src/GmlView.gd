@@ -275,8 +275,9 @@ func _clear_children() -> void:
 	_elements_by_id.clear()
 	_wrappers_by_id.clear()
 	_radio_groups.clear()
-	# Snapshot the child list before mutating: removing children from the live
-	# array Godot returns can skip elements when the iterator's index shifts.
+	# Iterate a local copy of the child list. Godot 4 already returns a fresh
+	# Array from get_children(), but assigning to a named local makes the
+	# remove-while-iterating intent explicit at the call site.
 	var children := get_children()
 	for child in children:
 		remove_child(child)
