@@ -75,6 +75,11 @@ signal selection_changed(select_id: String, value: String)
 ## Contains a dictionary of all input values keyed by id/name.
 signal form_submitted(form_data: Dictionary)
 
+## Emitted when an input with an @keydown handler receives a key press.
+## ``handler`` is the value of the @keydown attribute; ``event`` is the
+## raw InputEventKey so listeners can inspect keycode / modifiers.
+signal key_pressed(handler: String, event: InputEvent)
+
 #endregion
 
 
@@ -402,5 +407,52 @@ func get_radio_group(group_name: String) -> ButtonGroup:
 	if not _radio_groups.has(group_name):
 		_radio_groups[group_name] = ButtonGroup.new()
 	return _radio_groups[group_name]
+
+
+## Collect all registered input values into a single dictionary, keyed by the
+## input's id (or by the radio group's name for radios). Returned types:
+##   - LineEdit / TextEdit -> String
+##   - CheckBox (no group) -> bool (button_pressed)
+##   - CheckBox in a group (radio) -> the selected radio's value attribute,
+##     keyed by the group name; unselected radios are absent
+##   - HSlider -> float
+##   - OptionButton (select) -> the selected item text
+##
+## Used by submit-button handlers to populate the form_submitted signal,
+## but also callable directly by consumers that want the current snapshot.
+func get_form_data() -> Dictionary:
+	var out: Dictionary = {}
+	var seen_groups: Dictionary = {}
+
+	for id in _elements_by_id.keys():
+		var control = _elements_by_id[id]
+		if not is_instance_valid(control):
+			continue
+		if control is LineEdit:
+			out[id] = (control as LineEdit).text
+		elif control is TextEdit:
+			out[id] = (control as TextEdit).text
+		elif control is HSlider:
+			out[id] = (control as HSlider).value
+		elif control is OptionButton:
+			var ob: OptionButton = control
+			out[id] = ob.get_item_text(ob.selected) if ob.selected >= 0 else ""
+		elif control is CheckBox:
+			var cb: CheckBox = control
+			if cb.button_group != null:
+				# Radio — keyed by group name, only the selected one. Track
+				# the group so we don't overwrite once we've found the winner.
+				continue
+			out[id] = cb.button_pressed
+
+	# Radios: find the pressed one per group, key by group name.
+	for group_name in _radio_groups.keys():
+		var bg: ButtonGroup = _radio_groups[group_name]
+		var pressed = bg.get_pressed_button()
+		if pressed != null:
+			out[group_name] = pressed.get_meta("value", "on")
+
+	return out
+
 
 #endregion
