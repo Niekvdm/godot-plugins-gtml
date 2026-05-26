@@ -49,20 +49,20 @@
         </header>
 
         <div class="field">
-          <label class="field-label">Workspace name</label>
-          <input class="field-input" type="text" value="Acme Industries">
+          <label class="field-label" for="workspace-name">Workspace name</label>
+          <input id="workspace-name" class="field-input" type="text" value="Acme Industries">
           <span class="field-hint">Shown in the topbar, billing receipts, and the API.</span>
         </div>
 
         <div class="field">
-          <label class="field-label">Slug</label>
-          <input class="field-input" type="text" value="acme-industries">
+          <label class="field-label" for="workspace-slug">Slug</label>
+          <input id="workspace-slug" class="field-input" type="text" value="acme-industries">
           <span class="field-hint">Used in URLs. Lowercase, no spaces, hyphens allowed.</span>
         </div>
 
         <div class="field">
-          <label class="field-label">Region</label>
-          <input class="field-input" type="text" value="eu-west-1">
+          <label class="field-label" for="workspace-region">Region</label>
+          <input id="workspace-region" class="field-input" type="text" value="eu-west-1">
           <span class="field-hint">Data residency cannot be changed after creation.</span>
         </div>
       </section>
@@ -76,25 +76,25 @@
         </header>
 
         <div class="check-row">
-          <input class="check-box" type="checkbox" checked>
+          <input id="notify-email" class="check-box" type="checkbox" checked>
           <div class="check-text">
-            <span class="check-label">Email notifications</span>
+            <label class="check-label" for="notify-email">Email notifications</label>
             <span class="check-help">Receive a digest of mentions, comments, and alerts twice daily.</span>
           </div>
         </div>
 
         <div class="check-row">
-          <input class="check-box" type="checkbox">
+          <input id="notify-slack" class="check-box" type="checkbox">
           <div class="check-text">
-            <span class="check-label">Slack notifications</span>
+            <label class="check-label" for="notify-slack">Slack notifications</label>
             <span class="check-help">Mirror your inbox into the configured Slack channel.</span>
           </div>
         </div>
 
         <div class="check-row">
-          <input class="check-box" type="checkbox" checked>
+          <input id="notify-weekly" class="check-box" type="checkbox" checked>
           <div class="check-text">
-            <span class="check-label">Weekly summary</span>
+            <label class="check-label" for="notify-weekly">Weekly summary</label>
             <span class="check-help">A Monday-morning recap of the previous week's activity.</span>
           </div>
         </div>
@@ -109,25 +109,25 @@
         </header>
 
         <div class="radio-row">
-          <input class="radio-dot" type="radio" name="archive">
+          <input id="archive-keep" class="radio-dot" type="radio" name="archive">
           <div class="radio-text">
-            <span class="radio-label">Keep everything indefinitely</span>
+            <label class="radio-label" for="archive-keep">Keep everything indefinitely</label>
             <span class="radio-help">Best for compliance-heavy workspaces.</span>
           </div>
         </div>
 
         <div class="radio-row">
-          <input class="radio-dot" type="radio" name="archive" checked>
+          <input id="archive-auto" class="radio-dot" type="radio" name="archive" checked>
           <div class="radio-text">
-            <span class="radio-label">Auto-archive after 30 days of inactivity</span>
+            <label class="radio-label" for="archive-auto">Auto-archive after 30 days of inactivity</label>
             <span class="radio-help">Recommended for most teams.</span>
           </div>
         </div>
 
         <div class="radio-row">
-          <input class="radio-dot" type="radio" name="archive">
+          <input id="archive-manual" class="radio-dot" type="radio" name="archive">
           <div class="radio-text">
-            <span class="radio-label">Manual archive only</span>
+            <label class="radio-label" for="archive-manual">Manual archive only</label>
             <span class="radio-help">Nothing is hidden without an explicit action.</span>
           </div>
         </div>

@@ -123,6 +123,26 @@ static func build_heading_inner(node, level: int, ctx: Dictionary) -> Control:
 
 
 ## Build a label element.
+## Handle a label-for click against the resolved target Control. Matches
+## the standard HTML semantics:
+##   - radio (BaseButton with button_group): set pressed=true unconditionally
+##     so clicking the label of an already-selected radio does not deselect
+##     it (which would also leave the whole group unselected)
+##   - checkbox / toggle BaseButton (no group): invert button_pressed
+##   - LineEdit / TextEdit / other Control: grab_focus
+static func _activate_for_target(target) -> void:
+	if target is BaseButton:
+		var btn: BaseButton = target
+		if btn.button_group != null:
+			btn.button_pressed = true
+		else:
+			btn.button_pressed = not btn.button_pressed
+		btn.grab_focus()
+		return
+	if target is Control:
+		(target as Control).grab_focus()
+
+
 static func build_label(node, ctx: Dictionary) -> Dictionary:
 	var inner = build_label_inner(node, ctx)
 	var style = ctx.get_style.call(node)
@@ -144,21 +164,29 @@ static func build_label_inner(node, ctx: Dictionary) -> Control:
 	GmlStyles.apply_text_color(label, style, defaults)
 	GmlStyles.apply_text_styles(label, style, defaults)
 
-	# Store the "for" attribute and enable click-to-focus behavior
+	# Wire `for="x"` attribute: clicking the label activates the input
+	# referenced by id. CheckBoxes toggle, radio inputs select (never deselect
+	# their group), and text inputs grab focus. Lookup is deferred to click
+	# time so the input may appear after the label in source order.
 	var for_id = node.get_attr("for", "")
 	if not for_id.is_empty():
 		label.set_meta("for", for_id)
-		# Make label clickable and focus the associated input
 		label.mouse_filter = Control.MOUSE_FILTER_STOP
+		label.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		if gml_view != null:
 			var view_ref = weakref(gml_view)
 			label.gui_input.connect(func(event: InputEvent):
-				if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-					var view = view_ref.get_ref()
-					if view != null:
-						var target = view.get_element_by_id(for_id)
-						if target != null and target is Control:
-							target.grab_focus()
+				if not (event is InputEventMouseButton):
+					return
+				if not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+					return
+				var view = view_ref.get_ref()
+				if view == null:
+					return
+				var target = view.get_element_by_id(for_id)
+				if target == null:
+					return
+				_activate_for_target(target)
 			)
 
 	var result: Control = label
