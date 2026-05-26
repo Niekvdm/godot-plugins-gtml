@@ -528,7 +528,7 @@ static func parse_box_alignment(value: String) -> int:
 		"flex-end", "end":
 			return BoxContainer.ALIGNMENT_END
 		"space-between", "space-around", "space-evenly":
-			# These are handled by GmlContainerElements._apply_space_distribution()
+			# These are handled by GmlContainerBuilder._apply_space_distribution()
 			# Return BEGIN as a fallback (will be overridden by spacers)
 			return BoxContainer.ALIGNMENT_BEGIN
 		_:

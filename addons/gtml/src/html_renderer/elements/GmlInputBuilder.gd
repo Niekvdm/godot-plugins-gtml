@@ -1,4 +1,4 @@
-class_name GmlInputElements
+class_name GmlInputBuilder
 extends RefCounted
 
 ## Static utility class for building input elements (input, textarea, select).

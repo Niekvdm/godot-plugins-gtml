@@ -1,4 +1,4 @@
-class_name GmlButtonElements
+class_name GmlButtonBuilder
 extends RefCounted
 
 ## Static utility class for building button elements.

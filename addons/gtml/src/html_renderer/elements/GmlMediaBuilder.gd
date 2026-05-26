@@ -1,4 +1,4 @@
-class_name GmlMediaElements
+class_name GmlMediaBuilder
 extends RefCounted
 
 ## Static utility class for building media elements (img, svg, progress, br, hr).
@@ -55,9 +55,9 @@ static func _build_image_inner(node, ctx: Dictionary) -> Control:
 			if texture != null:
 				texture_rect.texture = texture
 			else:
-				push_warning("GmlMediaElements: Failed to load texture: %s" % src)
+				push_warning("GmlMediaBuilder: Failed to load texture: %s" % src)
 		else:
-			push_warning("GmlMediaElements: Image not found: %s" % src)
+			push_warning("GmlMediaBuilder: Image not found: %s" % src)
 
 	# For images with explicit dimensions, set size flags for centering
 	# SIZE_SHRINK_CENTER tells the parent container to center this control

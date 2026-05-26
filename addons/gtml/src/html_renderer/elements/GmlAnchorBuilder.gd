@@ -1,4 +1,4 @@
-class_name GmlAnchorElements
+class_name GmlAnchorBuilder
 extends RefCounted
 
 ## Static utility class for building anchor/link elements.

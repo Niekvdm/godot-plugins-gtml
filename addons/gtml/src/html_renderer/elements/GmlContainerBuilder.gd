@@ -1,4 +1,4 @@
-class_name GmlContainerElements
+class_name GmlContainerBuilder
 extends RefCounted
 
 ## Static utility class for building container elements (div, section, form, etc.).

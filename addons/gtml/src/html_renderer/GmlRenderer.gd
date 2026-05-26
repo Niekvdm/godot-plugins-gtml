@@ -73,54 +73,54 @@ func _build_node(node) -> Control:
 func _dispatch(node, ctx: Dictionary) -> Dictionary:
 	match node.tag:
 		"div", "section", "header", "footer", "nav", "main", "article", "aside", "form", "_root":
-			return GmlContainerElements.build_div(node, ctx)
+			return GmlContainerBuilder.build_div(node, ctx)
 		"p":
-			return GmlTextElements.build_paragraph(node, ctx)
+			return GmlTextBuilder.build_paragraph(node, ctx)
 		"span":
-			return GmlTextElements.build_span(node, ctx)
+			return GmlTextBuilder.build_span(node, ctx)
 		"h1", "h2", "h3", "h4", "h5", "h6":
 			var level: int = int(node.tag.substr(1))
-			return GmlTextElements.build_heading(node, level, ctx)
+			return GmlTextBuilder.build_heading(node, level, ctx)
 		"label":
-			return GmlTextElements.build_label(node, ctx)
+			return GmlTextBuilder.build_label(node, ctx)
 		"strong", "b":
-			var ctl = GmlTextElements.build_bold(node, ctx)
+			var ctl = GmlTextBuilder.build_bold(node, ctx)
 			return {"control": ctl, "inner": ctl}
 		"em", "i":
-			var ctl2 = GmlTextElements.build_italic(node, ctx)
+			var ctl2 = GmlTextBuilder.build_italic(node, ctx)
 			return {"control": ctl2, "inner": ctl2}
 		"button":
-			return GmlButtonElements.build_button(node, ctx)
+			return GmlButtonBuilder.build_button(node, ctx)
 		"input":
-			return GmlInputElements.build_input(node, ctx)
+			return GmlInputBuilder.build_input(node, ctx)
 		"textarea":
-			return GmlInputElements.build_textarea(node, ctx)
+			return GmlInputBuilder.build_textarea(node, ctx)
 		"select":
-			return GmlInputElements.build_select(node, ctx)
+			return GmlInputBuilder.build_select(node, ctx)
 		"option":
 			return {"control": null, "inner": null}  # handled by parent <select>
 		"img":
-			return GmlMediaElements.build_image(node, ctx)
+			return GmlMediaBuilder.build_image(node, ctx)
 		"br":
-			var br_ctl = GmlMediaElements.build_line_break()
+			var br_ctl = GmlMediaBuilder.build_line_break()
 			return {"control": br_ctl, "inner": br_ctl}
 		"hr":
-			return GmlMediaElements.build_horizontal_rule(node, ctx)
+			return GmlMediaBuilder.build_horizontal_rule(node, ctx)
 		"progress":
-			return GmlMediaElements.build_progress(node, ctx)
+			return GmlMediaBuilder.build_progress(node, ctx)
 		"svg":
-			return GmlMediaElements.build_svg(node, ctx)
+			return GmlMediaBuilder.build_svg(node, ctx)
 		"ul":
-			return GmlListElements.build_list(node, false, ctx)
+			return GmlListBuilder.build_list(node, false, ctx)
 		"ol":
-			return GmlListElements.build_list(node, true, ctx)
+			return GmlListBuilder.build_list(node, true, ctx)
 		"li":
-			return GmlListElements.build_list_item(node, ctx)
+			return GmlListBuilder.build_list_item(node, ctx)
 		"a":
-			return GmlAnchorElements.build_anchor(node, ctx)
+			return GmlAnchorBuilder.build_anchor(node, ctx)
 		_:
 			push_warning("GmlRenderer: unknown tag '%s', treating as div" % node.tag)
-			return GmlContainerElements.build_div(node, ctx)
+			return GmlContainerBuilder.build_div(node, ctx)
 
 
 func _build_text_node(node) -> Control:

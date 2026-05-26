@@ -1,4 +1,4 @@
-class_name GmlTextElements
+class_name GmlTextBuilder
 extends RefCounted
 
 ## Static utility class for building text elements (p, span, h1-h6, label).

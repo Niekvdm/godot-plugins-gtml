@@ -1,4 +1,4 @@
-class_name GmlListElements
+class_name GmlListBuilder
 extends RefCounted
 
 ## Static utility class for building list elements (ul, ol, li).
