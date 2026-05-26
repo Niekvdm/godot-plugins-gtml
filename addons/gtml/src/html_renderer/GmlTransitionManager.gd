@@ -26,12 +26,19 @@ func transition_style(control: Control, from_style: Dictionary, to_style: Dictio
 		if property.is_empty():
 			continue
 
-		# Check if the target style has this property
-		if not to_style.has(property):
+		# Check if the target style has this property. The "transform" composite
+		# is special: if the target style omits it, the implicit value is the
+		# identity transform, so the animation should still fire to revert
+		# scale/rotation/position back to neutral.
+		var to_value
+		if to_style.has(property):
+			to_value = to_style[property]
+		elif property == "transform":
+			to_value = {"translate": Vector2.ZERO, "scale": Vector2.ONE, "rotate": 0.0}
+		else:
 			continue
 
 		var from_value = _get_current_value(control, property, from_style)
-		var to_value = to_style[property]
 
 		# Skip if values are the same
 		if _values_equal(from_value, to_value):
@@ -88,6 +95,8 @@ func _animate_property(control: Control, property: String, from_value, to_value,
 			_animate_width(control, from_value, to_value, tween, duration)
 		"height":
 			_animate_height(control, from_value, to_value, tween, duration)
+		"transform":
+			_animate_transform(control, from_value, to_value, tween, duration)
 		_:
 			# Unknown property - try generic approach
 			_animate_generic(control, property, from_value, to_value, tween, duration)
@@ -176,6 +185,48 @@ func _animate_height(control: Control, from_value, to_value, tween: Tween, durat
 	tween.tween_property(control, "custom_minimum_size:y", float(to_height), duration)
 
 	_track_value_during_tween(control, "height", from_height, to_height, tween, duration)
+
+
+## Animate the transform composite — scale (Vector2), rotation (float),
+## and translate offset (Vector2) interpolate in parallel through the same
+## tween. Missing values on either side default to the identity transform
+## (scale = 1, rotation = 0, translate = ZERO) so going from a transformed
+## :hover back to a transform-less base reverts cleanly.
+func _animate_transform(control: Control, from_value, to_value, tween: Tween, duration: float) -> void:
+	var from_t := _normalize_transform(from_value)
+	var to_t := _normalize_transform(to_value)
+
+	# Seed the control with the from state so the first frame is correct
+	# even when the caller's previous state didn't match the visual state.
+	control.scale = from_t["scale"]
+	control.rotation = from_t["rotate"]
+
+	tween.set_parallel(true)
+	tween.tween_property(control, "scale", to_t["scale"], duration)
+	tween.tween_property(control, "rotation", to_t["rotate"], duration)
+
+	# Translate animates the position relative to the layout-driven base.
+	# GmlDimensions stamps _transform_base_position on first build; we fall
+	# back to the control's current position when that meta is absent.
+	var base_pos: Vector2 = control.get_meta("_transform_base_position", control.position)
+	var to_pos: Vector2 = base_pos + to_t["translate"]
+	var from_pos: Vector2 = base_pos + from_t["translate"]
+	control.position = from_pos
+	tween.tween_property(control, "position", to_pos, duration)
+
+
+## Normalize a transform value to the canonical {translate, scale, rotate}
+## Dictionary. Accepts a Dictionary (the GmlTransformValues output), an
+## untyped Variant (treated as identity), or null.
+static func _normalize_transform(v) -> Dictionary:
+	if not (v is Dictionary):
+		return {"translate": Vector2.ZERO, "scale": Vector2.ONE, "rotate": 0.0}
+	var d: Dictionary = v
+	return {
+		"translate": d.get("translate", Vector2.ZERO),
+		"scale": d.get("scale", Vector2.ONE),
+		"rotate": d.get("rotate", 0.0),
+	}
 
 
 ## Generic animation for unsupported properties - applies immediately.
@@ -318,6 +369,12 @@ func _apply_property_value(control: Control, property: String, value) -> void:
 			control.custom_minimum_size.x = _to_int(value, 0)
 		"height":
 			control.custom_minimum_size.y = _to_int(value, 0)
+		"transform":
+			var t := _normalize_transform(value)
+			control.scale = t["scale"]
+			control.rotation = t["rotate"]
+			var base_pos: Vector2 = control.get_meta("_transform_base_position", control.position)
+			control.position = base_pos + t["translate"]
 
 
 ## Cancel an existing tween for a property.
