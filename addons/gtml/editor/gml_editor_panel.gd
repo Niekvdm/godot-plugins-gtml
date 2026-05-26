@@ -11,6 +11,9 @@ const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
 const GmlSearchEngineScript = preload("res://addons/gtml/src/editor/GmlSearchEngine.gd")
 const GmlJumpResolverScript = preload("res://addons/gtml/src/editor/GmlJumpResolver.gd")
 const GmlEditorContextScript = preload("res://addons/gtml/src/editor/GmlEditorContext.gd")
+const GmlColorTokensScript = preload("res://addons/gtml/src/editor/GmlColorTokens.gd")
+
+const COLOR_GUTTER_IDX := 0
 
 #region Node References
 
@@ -80,6 +83,11 @@ var _current_match_index: int = -1
 # Jump history (Ctrl+Click / F12 push, Alt+Left pops)
 var _jump_history: Array = []  # [{source: "html"|"css", line, col}, ...]
 
+# Color tokens (gutter swatches + ColorPicker popup)
+var _color_swatch_cache: Dictionary = {}   # color.to_html() -> Texture2D
+var _color_tokens_by_buffer: Dictionary = {"html": [], "css": []}
+var _color_rescan_timer: SceneTreeTimer = null
+
 #endregion
 
 
@@ -129,6 +137,18 @@ func _ready() -> void:
 	_css_highlighter = CssSyntaxHighlighter.new()
 	html_code_edit.syntax_highlighter = _html_highlighter
 	css_code_edit.syntax_highlighter = _css_highlighter
+
+	# Color swatch gutter (Task 5) — add to both CodeEdits, clickable.
+	for ce in [html_code_edit, css_code_edit]:
+		ce.add_gutter(COLOR_GUTTER_IDX)
+		ce.set_gutter_name(COLOR_GUTTER_IDX, "color")
+		ce.set_gutter_width(COLOR_GUTTER_IDX, 16)
+		ce.set_gutter_clickable(COLOR_GUTTER_IDX, true)
+		ce.gutter_clicked.connect(_on_gutter_clicked.bind(ce))
+
+	# Debounced rescan on edits so the gutter stays in sync.
+	html_code_edit.text_changed.connect(_schedule_color_rescan.bind("html"))
+	css_code_edit.text_changed.connect(_schedule_color_rescan.bind("css"))
 
 	# Show initial state (no selection)
 	_show_no_selection()
@@ -381,6 +401,10 @@ func _load_files() -> void:
 
 	_html_dirty = false
 	_css_dirty = false
+
+	# Initial color-token scan now that the buffers are populated.
+	_rescan_colors("html")
+	_rescan_colors("css")
 
 
 func _update_ui() -> void:
@@ -937,5 +961,95 @@ func _pop_jump_history() -> void:
 		return
 	var prev: Dictionary = _jump_history.pop_back()
 	_go_to(prev["source"], int(prev["line"]), int(prev["col"]))
+
+#endregion
+
+
+#region Color tokens (gutter swatches + ColorPicker popup)
+
+func _schedule_color_rescan(kind: String) -> void:
+	# 200ms debounce so a fast paste doesn't rescan on every keystroke.
+	# Disconnect the previous pending callback (if any) so it's superseded
+	# rather than firing as well as the new one.
+	if _color_rescan_timer != null and _color_rescan_timer.timeout.get_connections().size() > 0:
+		for c in _color_rescan_timer.timeout.get_connections():
+			_color_rescan_timer.timeout.disconnect(c["callable"])
+	_color_rescan_timer = get_tree().create_timer(0.2)
+	_color_rescan_timer.timeout.connect(_rescan_colors.bind(kind), CONNECT_ONE_SHOT)
+
+
+func _rescan_colors(kind: String) -> void:
+	var code_edit: CodeEdit = html_code_edit if kind == "html" else css_code_edit
+	if code_edit == null:
+		return
+	var tokens: Array = GmlColorTokensScript.scan(code_edit.text)
+	_color_tokens_by_buffer[kind] = tokens
+	# Clear all gutter icons first so removed colors stop showing a swatch.
+	for line in range(code_edit.get_line_count()):
+		code_edit.set_line_gutter_icon(line, COLOR_GUTTER_IDX, null)
+		code_edit.set_line_gutter_metadata(line, COLOR_GUTTER_IDX, null)
+	# Set icons + metadata for each token. If multiple colors share a line,
+	# the metadata holds the LAST scanned token on that line (good enough
+	# for click→picker; the popup can still edit any of them sequentially).
+	for t in tokens:
+		var line: int = t["line"]
+		if line < 0 or line >= code_edit.get_line_count():
+			continue
+		code_edit.set_line_gutter_icon(line, COLOR_GUTTER_IDX, _swatch_for(t["color"]))
+		code_edit.set_line_gutter_metadata(line, COLOR_GUTTER_IDX, t)
+
+
+func _swatch_for(color: Color) -> Texture2D:
+	var key := color.to_html()
+	if _color_swatch_cache.has(key):
+		return _color_swatch_cache[key]
+	var img := Image.create(12, 12, false, Image.FORMAT_RGBA8)
+	img.fill(color)
+	var tex := ImageTexture.create_from_image(img)
+	_color_swatch_cache[key] = tex
+	return tex
+
+
+func _on_gutter_clicked(line: int, gutter: int, code_edit: CodeEdit) -> void:
+	if gutter != COLOR_GUTTER_IDX:
+		return
+	var token = code_edit.get_line_gutter_metadata(line, COLOR_GUTTER_IDX)
+	if token == null or typeof(token) != TYPE_DICTIONARY:
+		return
+	_open_color_picker(token, code_edit)
+
+
+func _open_color_picker(token: Dictionary, code_edit: CodeEdit) -> void:
+	var popup := PopupPanel.new()
+	var picker := ColorPicker.new()
+	picker.color = token["color"]
+	popup.add_child(picker)
+	add_child(popup)
+
+	picker.color_changed.connect(func(new_color: Color) -> void:
+		_write_back_color(code_edit, token, new_color)
+	)
+
+	popup.popup_hide.connect(popup.queue_free)
+	popup.popup_centered()
+
+
+func _write_back_color(code_edit: CodeEdit, token: Dictionary, new_color: Color) -> void:
+	var new_literal := GmlColorTokensScript.format(new_color, token["kind"])
+	var line: int = token["line"]
+	var col: int = token["col"]
+	var length: int = token["length"]
+	if line < 0 or line >= code_edit.get_line_count():
+		return
+	var old_line_text := code_edit.get_line(line)
+	if col < 0 or col + length > old_line_text.length():
+		return
+	var new_line_text := old_line_text.substr(0, col) + new_literal + old_line_text.substr(col + length)
+	code_edit.set_line(line, new_line_text)
+	# Update the token's length in-place so subsequent color_changed events
+	# from the same picker still target the right span (e.g. #fff -> #ffffff).
+	token["length"] = new_literal.length()
+	token["color"] = new_color
+	# A debounced rescan will run via text_changed and refresh metadata.
 
 #endregion
