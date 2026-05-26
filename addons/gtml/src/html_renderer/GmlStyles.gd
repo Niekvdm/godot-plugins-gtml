@@ -30,55 +30,19 @@ static func apply_text_styles(label: Label, style: Dictionary, defaults: Diction
 			"justify":
 				label.horizontal_alignment = HORIZONTAL_ALIGNMENT_FILL
 
-	# Font family - look up in fonts dictionary
-	if style.has("font-family"):
-		var font_name: String = style["font-family"]
-		var fonts_dict: Dictionary = defaults.get("fonts", {})
-		if fonts_dict.has(font_name):
-			var font = fonts_dict[font_name]
-			if font is Font:
-				label.add_theme_font_override("font", font)
+	# Font family + font weight.
+	# Weight is resolved after family so we can prefer a bold variant from the
+	# fonts dict (e.g. "Roboto-Bold") over the outline-simulation fallback.
+	var family: String = style.get("font-family", "")
+	var weight: int = style.get("font-weight", 400)
+	if not family.is_empty() or style.has("font-weight"):
+		_apply_font_family_and_weight(label, family, weight, defaults)
 
-	# Font weight - simulate bold using outline
-	if style.has("font-weight"):
-		var weight: int = style["font-weight"]
-		label.set_meta("font_weight", weight)
-		if weight >= 600:
-			var outline_size: int
-			if weight >= 900:
-				outline_size = 3
-			elif weight >= 800:
-				outline_size = 2
-			else:
-				outline_size = 1
-			label.add_theme_constant_override("outline_size", outline_size)
-			label.add_theme_color_override("font_outline_color", label.get_theme_color("font_color"))
-
-	# Letter spacing - simulate using Unicode space characters
+	# Letter spacing: NO text mutation. Stored as metadata for renderers /
+	# consumers that want to read it back. Visual application is deferred to
+	# v0.3 \u2014 proper character spacing requires a RichTextLabel migration.
 	if style.has("letter-spacing"):
-		var spacing: float = style["letter-spacing"]
-		if spacing > 0.0:
-			var original_text: String = label.text
-			if not original_text.is_empty():
-				var spaced_text := ""
-				var space_char := ""
-				if spacing >= 4.0:
-					space_char = " "
-				elif spacing >= 2.0:
-					space_char = "\u2002"  # En space
-				elif spacing >= 1.0:
-					space_char = "\u2009"  # Thin space
-				else:
-					space_char = "\u200A"  # Hair space
-
-				for i in range(original_text.length()):
-					spaced_text += original_text[i]
-					if i < original_text.length() - 1:
-						var num_spaces := maxi(1, int(spacing / 2.0))
-						for _j in range(num_spaces):
-							spaced_text += space_char
-				label.text = spaced_text
-		label.set_meta("letter_spacing", spacing)
+		label.set_meta("letter_spacing", style["letter-spacing"])
 
 	# Text transform (uppercase, lowercase, capitalize)
 	if style.has("text-transform"):
@@ -97,28 +61,13 @@ static func apply_text_styles(label: Label, style: Dictionary, defaults: Diction
 		var line_height: int = style["line-height"]
 		label.add_theme_constant_override("line_spacing", line_height)
 
-	# Word spacing - simulate using Unicode spaces between words
+	# Word spacing and text-indent: stored as metadata only (see letter-spacing).
+	# Both used to splice Unicode spaces into label.text, which silently
+	# corrupted .text round-trips. Visual application is deferred to v0.3.
 	if style.has("word-spacing"):
-		apply_word_spacing(label, style["word-spacing"])
-
-	# Text indent - prepend spacing to simulate first-line indent
+		label.set_meta("word_spacing", style["word-spacing"])
 	if style.has("text-indent"):
-		var indent: int = style["text-indent"]
-		if indent > 0 and not label.text.is_empty():
-			# Calculate approximate number of spaces based on indent and font size
-			var font_size: int = 16
-			if label.has_theme_font_size_override("font_size"):
-				font_size = label.get_theme_font_size("font_size")
-			elif style.has("font-size"):
-				font_size = style["font-size"]
-
-			# Use em space (U+2003) which is approximately 1em wide
-			var num_spaces := maxi(1, indent / (font_size / 2))
-			var indent_str := ""
-			for _i in range(num_spaces):
-				indent_str += "\u2003"  # Em space
-			label.text = indent_str + label.text
-		label.set_meta("text_indent", indent)
+		label.set_meta("text_indent", style["text-indent"])
 
 
 ## Apply text-transform to a label (uppercase, lowercase, capitalize).
@@ -138,6 +87,51 @@ static func apply_text_transform(label: Label, transform: String) -> void:
 			pass  # Keep original text
 
 	label.set_meta("text_transform", transform)
+
+
+## Resolve font-family + font-weight against the user-supplied fonts dict.
+##
+## Lookup order for a request like {family: "Roboto", weight: 700}:
+##   1. Roboto-Bold       (kebab convention)
+##   2. RobotoBold        (concat convention)
+##   3. Roboto Bold       (space convention)
+##   4. Roboto-700        (weight-suffix convention)
+##   5. Roboto            (regular fallback)
+##
+## When a bold weight (>=600) is requested but no bold variant is found, we
+## fall back to the legacy outline-simulation hack so something visually
+## differentiates the text. weight is stored as metadata regardless.
+static func _apply_font_family_and_weight(label: Label, family: String, weight: int, defaults: Dictionary) -> void:
+	label.set_meta("font_weight", weight)
+	var fonts_dict: Dictionary = defaults.get("fonts", {})
+	var is_bold := weight >= 600
+
+	var chosen_font: Font = null
+	var chosen_was_bold := false
+
+	if not family.is_empty():
+		if is_bold:
+			for key in [family + "-Bold", family + "Bold", family + " Bold", "%s-%d" % [family, weight]]:
+				if fonts_dict.has(key) and fonts_dict[key] is Font:
+					chosen_font = fonts_dict[key]
+					chosen_was_bold = true
+					break
+		if chosen_font == null and fonts_dict.has(family) and fonts_dict[family] is Font:
+			chosen_font = fonts_dict[family]
+
+	if chosen_font != null:
+		label.add_theme_font_override("font", chosen_font)
+
+	# Outline-simulation fallback: only when a bold weight was requested
+	# AND no real bold variant was available.
+	if is_bold and not chosen_was_bold:
+		var outline_size: int = 1
+		if weight >= 900:
+			outline_size = 3
+		elif weight >= 800:
+			outline_size = 2
+		label.add_theme_constant_override("outline_size", outline_size)
+		label.add_theme_color_override("font_outline_color", label.get_theme_color("font_color"))
 
 
 ## Capitalize first letter of each word.
@@ -185,38 +179,6 @@ static func apply_text_overflow(label: Label, value: String) -> void:
 			label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 
 	label.set_meta("text_overflow", value)
-
-
-## Apply word-spacing to a label by inserting extra spaces between words.
-static func apply_word_spacing(label: Label, spacing: int) -> void:
-	if spacing <= 0:
-		return
-
-	var text := label.text
-	if text.is_empty():
-		return
-
-	# Determine space character based on spacing size
-	var space_char := ""
-	if spacing >= 8:
-		space_char = "  "  # Double space
-	elif spacing >= 4:
-		space_char = " "  # Regular space
-	elif spacing >= 2:
-		space_char = "\u2002"  # En space
-	else:
-		space_char = "\u2009"  # Thin space
-
-	# Calculate how many extra space chars to add
-	var num_extra := maxi(1, spacing / 4)
-
-	var words := text.split(" ")
-	var extra_spacing := ""
-	for _i in range(num_extra):
-		extra_spacing += space_char
-
-	label.text = (extra_spacing + " ").join(words)
-	label.set_meta("word_spacing", spacing)
 
 
 ## Apply text-decoration to a label using custom draw.

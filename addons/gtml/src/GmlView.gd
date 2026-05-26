@@ -275,7 +275,10 @@ func _clear_children() -> void:
 	_elements_by_id.clear()
 	_wrappers_by_id.clear()
 	_radio_groups.clear()
-	for child in get_children():
+	# Snapshot the child list before mutating: removing children from the live
+	# array Godot returns can skip elements when the iterator's index shifts.
+	var children := get_children()
+	for child in children:
 		remove_child(child)
 		child.queue_free()
 

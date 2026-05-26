@@ -50,7 +50,7 @@ func _has_main_screen() -> bool:
 
 
 func _get_plugin_name() -> String:
-	return "GML"
+	return "GTML"
 
 
 func _get_plugin_icon() -> Texture2D:
