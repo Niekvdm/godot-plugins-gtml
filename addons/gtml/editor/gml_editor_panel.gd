@@ -100,7 +100,7 @@ func _ready() -> void:
 	next_button.pressed.connect(_on_search_next)
 	close_search_button.pressed.connect(_close_search)
 	match_case_check.toggled.connect(_on_match_case_toggled)
-	regex_check.toggled.connect(func(_p): _perform_search())
+	regex_check.toggled.connect(_on_regex_toggled)
 
 	# Connect replace bar signals
 	replace_button.pressed.connect(_on_replace_pressed)
@@ -720,6 +720,10 @@ func _on_match_case_toggled(_pressed: bool) -> void:
 	_perform_search()
 
 
+func _on_regex_toggled(_pressed: bool) -> void:
+	_perform_search()
+
+
 func _on_search_next() -> void:
 	if _search_matches.is_empty():
 		return
@@ -779,18 +783,6 @@ func _perform_search() -> void:
 				break
 
 	_highlight_matches()
-
-
-func _pos_to_line_col(text: String, pos: int) -> Dictionary:
-	var line = 0
-	var col = 0
-	for i in range(pos):
-		if text[i] == "\n":
-			line += 1
-			col = 0
-		else:
-			col += 1
-	return {"line": line, "column": col}
 
 
 func _highlight_matches() -> void:

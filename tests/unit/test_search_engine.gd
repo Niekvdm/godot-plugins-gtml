@@ -71,3 +71,25 @@ func test_invalid_regex_returns_zero_matches_no_crash() -> void:
 	# handled so the test passes (the whole point is graceful degradation).
 	for err in get_errors():
 		err.handled = true
+
+
+func test_replace_all_with_empty_replacement_deletes_matches() -> void:
+	# Common "delete all matches" use case.
+	var result = GmlSearchEngine.replace_all("hello world hello ", "hello ", "", true, false)
+	assert_eq(result["new_text"], "world ")
+	assert_eq(result["count"], 2)
+
+
+func test_find_all_regex_with_anchors() -> void:
+	# ^ and $ anchors should bind to line boundaries with multiline mode.
+	var text := "foo\nbar\nfoo"
+	# (?m) enables multiline so ^ / $ match line boundaries
+	var matches = GmlSearchEngine.find_all(text, "(?m)^foo$", true, true)
+	assert_eq(matches.size(), 2, "multiline ^foo$ should match lines 0 and 2, got %d" % matches.size())
+
+
+func test_find_all_regex_caret_anchor_without_multiline() -> void:
+	# Without (?m), ^ only matches the very start of the string.
+	var text := "foo\nfoo\nfoo"
+	var matches = GmlSearchEngine.find_all(text, "^foo", true, true)
+	assert_eq(matches.size(), 1, "single ^foo should match only the first occurrence, got %d" % matches.size())

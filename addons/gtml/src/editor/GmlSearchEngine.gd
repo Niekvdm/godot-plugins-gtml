@@ -54,24 +54,9 @@ static func _replace_literal(text: String, query: String, replacement: String, c
 	if case_sensitive:
 		var count := text.count(query)
 		return {"new_text": text.replace(query, replacement), "count": count}
-	# Case-insensitive literal: walk and rebuild.
-	var hay := text.to_lower()
-	var needle := query.to_lower()
-	var out := ""
-	var pos := 0
-	var count := 0
-	while pos < hay.length():
-		var idx := hay.find(needle, pos)
-		if idx < 0:
-			out += text.substr(pos)
-			break
-		out += text.substr(pos, idx - pos) + replacement
-		pos = idx + query.length()
-		count += 1
-	# If no matches but original text not yet consumed, just keep it.
-	if count == 0:
-		out = text
-	return {"new_text": out, "count": count}
+	# Case-insensitive: Godot builtins do the work.
+	var ci_count := text.countn(query)
+	return {"new_text": text.replacen(query, replacement), "count": ci_count}
 
 
 # ─── Regex ────────────────────────────────────────────────────────
@@ -101,6 +86,9 @@ static func _replace_regex(text: String, query: String, replacement: String, cas
 	var re := _compile_regex(query, case_sensitive)
 	if re == null:
 		return {"new_text": text, "count": 0}
+	# Two passes: search_all to count matches, sub to build the result.
+	# RegEx.sub returns the new string but no count; the doubled scan is
+	# the simplest correct way to provide both.
 	var count := re.search_all(text).size()
 	var new_text := re.sub(text, replacement, true)
 	return {"new_text": new_text, "count": count}
