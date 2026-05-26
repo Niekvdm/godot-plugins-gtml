@@ -43,6 +43,15 @@ func test_scan_finds_rgba_function() -> void:
 func test_scan_multiple_per_line() -> void:
 	var tokens = GmlColorTokens.scan("gradient: #ff0000, #00ff00, #0000ff;")
 	assert_eq(tokens.size(), 3)
+	assert_lt(tokens[0]["col"], tokens[1]["col"])
+	assert_lt(tokens[1]["col"], tokens[2]["col"])
+
+
+func test_scan_rgb_without_spaces() -> void:
+	# Common in minified CSS: no whitespace between args.
+	var tokens = GmlColorTokens.scan("color: rgb(255,64,200);")
+	assert_eq(tokens.size(), 1)
+	assert_eq(tokens[0]["kind"], "rgb")
 
 
 func test_scan_ignores_malformed_hex() -> void:
@@ -57,5 +66,5 @@ func test_format_round_trip_hex() -> void:
 
 func test_format_round_trip_rgba_alpha_below_one() -> void:
 	var out := GmlColorTokens.format(Color(1.0, 0.0, 0.0, 0.5), "rgba")
-	# Allow any reasonable rgba(...) format; just check it leads with rgba(
-	assert_string_starts_with(out, "rgba(")
+	# Lock the exact format string so future refactors can't drift.
+	assert_eq(out, "rgba(255, 0, 0, 0.50)")

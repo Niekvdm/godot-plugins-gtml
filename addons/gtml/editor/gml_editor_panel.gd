@@ -86,7 +86,8 @@ var _jump_history: Array = []  # [{source: "html"|"css", line, col}, ...]
 # Color tokens (gutter swatches + ColorPicker popup)
 var _color_swatch_cache: Dictionary = {}   # color.to_html() -> Texture2D
 var _color_tokens_by_buffer: Dictionary = {"html": [], "css": []}
-var _color_rescan_timer: SceneTreeTimer = null
+var _color_rescan_timers: Dictionary = {}  # kind -> SceneTreeTimer | null
+var _color_picker_open_count: int = 0
 
 #endregion
 
@@ -968,14 +969,23 @@ func _pop_jump_history() -> void:
 #region Color tokens (gutter swatches + ColorPicker popup)
 
 func _schedule_color_rescan(kind: String) -> void:
+	# While a ColorPicker is open the buffer is being mutated by color_changed
+	# events; a rescan would replace the token dict the picker's lambda already
+	# captured, leaving subsequent drag events with stale (line, col, length)
+	# metadata. Defer until the picker closes (popup_hide schedules a final rescan).
+	if _color_picker_open_count > 0:
+		return
 	# 200ms debounce so a fast paste doesn't rescan on every keystroke.
-	# Disconnect the previous pending callback (if any) so it's superseded
-	# rather than firing as well as the new one.
-	if _color_rescan_timer != null and _color_rescan_timer.timeout.get_connections().size() > 0:
-		for c in _color_rescan_timer.timeout.get_connections():
-			_color_rescan_timer.timeout.disconnect(c["callable"])
-	_color_rescan_timer = get_tree().create_timer(0.2)
-	_color_rescan_timer.timeout.connect(_rescan_colors.bind(kind), CONNECT_ONE_SHOT)
+	# Disconnect any pending callback for THIS buffer's timer; leave the
+	# other buffer's timer alone so a fast HTML+CSS edit pair doesn't drop
+	# one of the rescans.
+	var existing = _color_rescan_timers.get(kind)
+	if existing != null:
+		for c in existing.timeout.get_connections():
+			existing.timeout.disconnect(c["callable"])
+	var t := get_tree().create_timer(0.2)
+	t.timeout.connect(_rescan_colors.bind(kind), CONNECT_ONE_SHOT)
+	_color_rescan_timers[kind] = t
 
 
 func _rescan_colors(kind: String) -> void:
@@ -1026,11 +1036,19 @@ func _open_color_picker(token: Dictionary, code_edit: CodeEdit) -> void:
 	popup.add_child(picker)
 	add_child(popup)
 
+	_color_picker_open_count += 1
+
 	picker.color_changed.connect(func(new_color: Color) -> void:
 		_write_back_color(code_edit, token, new_color)
 	)
 
-	popup.popup_hide.connect(popup.queue_free)
+	popup.popup_hide.connect(func() -> void:
+		_color_picker_open_count = maxi(0, _color_picker_open_count - 1)
+		# When the picker closes, the buffer has changed; trigger a final
+		# rescan so the gutter reflects the new colors.
+		_schedule_color_rescan("html" if code_edit == html_code_edit else "css")
+		popup.queue_free()
+	)
 	popup.popup_centered()
 
 
