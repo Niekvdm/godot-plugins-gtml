@@ -312,19 +312,104 @@ button:disabled {
 }
 ```
 
+## Combinators
+
+> **Added in v0.2 (descendant, child) / v0.3 (sibling).**
+
+| Combinator | Example | Matches |
+|---|---|---|
+| ` ` (descendant) | `.card p` | `<p>` anywhere inside `.card` |
+| `>` (child) | `.card > p` | `<p>` whose direct parent is `.card` |
+| `+` (adjacent sibling) | `.a + .b` | `.b` immediately preceded by `.a` |
+| `~` (general sibling) | `.a ~ .b` | any `.b` after a `.a` sibling |
+
+Whitespace alone is the descendant combinator. `.a+.b` (no spaces) is
+equivalent to `.a + .b`.
+
+## Compound selectors
+
+Multiple simple selectors stacked with no combinator target the same
+element. All constraints must match.
+
+```css
+div.card           /* div with class "card" */
+button.primary     /* button with class "primary" */
+input#email        /* input with id "email" */
+div.card.featured  /* div with both classes */
+```
+
+## Attribute selectors
+
+> **Added in v0.2 (`[attr]`, `[attr="val"]`) / v0.3 (substring matchers).**
+
+| Form | Matches |
+|---|---|
+| `[attr]` | element has the attribute (any value) |
+| `[attr="value"]` | exact match (quotes optional) |
+| `[attr~="word"]` | whitespace-separated word list contains "word" as a whole word |
+| `[attr^="prefix"]` | value starts with "prefix" |
+| `[attr$="suffix"]` | value ends with "suffix" |
+| `[attr*="substr"]` | value contains "substr" anywhere |
+
+```css
+input[disabled] { opacity: 0.5; }
+input[type="email"] { font-family: 'monospace'; }
+a[href^="https://"] { color: blue; }
+img[src$=".svg"] { background-color: white; }
+[class~="card"] { padding: 16px; }
+```
+
+## Structural pseudo-classes
+
+> **Added in v0.3.**
+
+| Pseudo | Matches |
+|---|---|
+| `:first-child` | first element child of its parent |
+| `:last-child` | last element child |
+| `:only-child` | the sole element child |
+| `:nth-child(N)` | the Nth element child (1-based) |
+| `:nth-child(odd \| even)` | by parity |
+| `:nth-child(an+b)` | matches positions a·n + b for n ≥ 0 |
+| `:not(selector)` | negation; argument is a simple selector |
+
+```css
+.list li:first-child { color: var(--accent); }
+.row:nth-child(2n+1) { background-color: var(--surface-2); }
+p:not(.muted) { color: var(--text-1); }
+```
+
+State pseudos (`:hover`, `:focus`, `:active`, `:disabled`, `:checked`)
+contribute to specificity but do NOT affect DOM matching — see the
+state-pseudo section above.
+
+## Multi-pseudo combined states
+
+> **Added in v0.3.**
+
+```css
+button:hover:focus {
+    background-color: var(--accent-hot);
+}
+```
+
+The rule applies only when ALL listed state pseudos are simultaneously
+active. Combined-state buckets are keyed by the sorted pseudo set, so
+`button:hover:focus` and `button:focus:hover` resolve into the same
+bucket and never duplicate.
+
 ## Limitations
 
 GTML does **not** support:
 
-- Descendant selectors: `div p { }` or `ul li { }`
-- Child selectors: `div > p { }`
-- Sibling selectors: `h1 + p { }` or `h1 ~ p { }`
-- Attribute selectors: `[type="text"] { }`
 - Pseudo-elements: `::before`, `::after`
-- `:nth-child()`, `:first-child`, `:last-child`
-- `:not()` selector
+- `:nth-of-type()`, `:first-of-type`, `:last-of-type`
+- `:nth-last-child()`
+- `:is()`, `:where()`, `:has()`, `:matches()`
+- Namespaced selectors (`ns|tag`)
 
-For complex styling needs, use unique classes or IDs on target elements.
+For substring matchers, multi-segment combinators, and structural pseudos,
+see the sections above — those ARE supported.
 
 ## See Also
 

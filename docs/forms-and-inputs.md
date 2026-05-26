@@ -215,27 +215,100 @@ func _on_selection_changed(select_id: String, value: String):
 
 ### Form Submission
 
-Connect to the `form_submitted` signal:
+> **v0.4: form value collection.**
+
+Submit buttons (`<input type="submit">`) now collect all input values
+automatically and emit them via `form_submitted`:
 
 ```gdscript
 func _ready():
     $GmlView.form_submitted.connect(_on_form_submitted)
 
 func _on_form_submitted(form_data: Dictionary):
-    print("Form data: ", form_data)
-    # form_data contains all input values by ID
+    print(form_data.get("username"))
+    print(form_data.get("remember"))   # true / false from a checkbox
 ```
 
+The dict is populated by `GmlView.get_form_data()` which you can also call
+directly any time you want a snapshot of the current form state. Returned
+types per input:
+
+| Input | Type |
+|---|---|
+| text / password / email / number | `String` |
+| `<textarea>` | `String` |
+| `<input type="range">` | `float` |
+| `<select>` | `String` (item text) |
+| `<input type="checkbox">` (no `name`) | `bool`, keyed by id |
+| `<input type="radio" name="x">` | the SELECTED radio's `value` attr, keyed by `x` |
+
+Radios without a `name` attribute fall back to checkbox semantics —
+always set `name=` on radio groups.
+
+There is no `<form>` scoping in GTML. A bare `<input type="submit">`
+anywhere in a view fires `form_submitted` with the entire view's input
+snapshot. Don't put multiple unrelated forms in one `GmlView`.
+
+### Keyboard events
+
+> **v0.4: `@keydown` attribute.**
+
+Text inputs can declare `@keydown="handler"`. Key-down events fire
+`GmlView.key_pressed(handler, event)`:
+
+```html
+<input id="search" type="text" @keydown="on_search_key">
+```
+
+```gdscript
+func _ready():
+    $GmlView.key_pressed.connect(_on_key)
+
+func _on_key(handler: String, event: InputEvent):
+    if handler == "on_search_key" and event.keycode == KEY_ENTER:
+        run_search($GmlView.get_element_by_id("search").text)
+```
+
+Only `pressed` events fire (key-up is filtered out). The handler value
+is whatever string you put in the attribute; multiple inputs can share
+a handler name and dispatch by id.
+
 ## Label Association
+
+> **v0.3: `<label for>` activation. v0.5: whole-row click target.**
 
 Use the `for` attribute to associate labels with inputs:
 
 ```html
-<label for="username">Username:</label>
-<input type="text" id="username">
+<label for="remember">Remember me</label>
+<input type="checkbox" id="remember">
 ```
 
-Clicking the label will focus the associated input.
+Clicking the label activates the associated input:
+
+- **checkbox**: toggles
+- **radio in a group**: selects (never deselects)
+- **text input / other Control**: grabs focus
+
+### Whole-row click targets
+
+A `<label>` with element children becomes a container — the whole surface
+becomes the click target. This is the standard HTML `<label><input>`
+pattern:
+
+```html
+<label class="row" for="opt-in">
+    <input id="opt-in" type="checkbox">
+    <div>
+        <span class="strong">Email me about updates</span>
+        <span class="muted">Twice a month. Unsubscribe anytime.</span>
+    </div>
+</label>
+```
+
+Now any click on the whole row toggles the checkbox. The inner `<input>`
+still gets its own click events (Godot consumes them before they reach
+the container) so there's no double-toggle.
 
 ## Styling Form Elements
 
@@ -257,14 +330,39 @@ input:focus, textarea:focus, select:focus {
 }
 ```
 
-### Checkbox Styling
+### Checkbox / Radio Styling
+
+> **v0.4: `:checked` pseudo. v0.3: `:focus` stylebox.**
+
+Checkboxes and radios respect three state pseudos at the CSS level:
 
 ```css
-input[type="checkbox"] {
-    /* Checkboxes have limited styling */
-    /* Use background-color for the box */
+.check {
+    width: 18px;
+    height: 18px;
+}
+
+.check:focus {
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+}
+
+.check:checked {
+    background-color: var(--accent);
+    border: 1px solid var(--accent-hot);
+    border-radius: 3px;
 }
 ```
+
+How they map under the hood:
+
+- `:focus` installs a custom `focus` theme stylebox in place of Godot's
+  default focus rectangle. Empty rule (`{}`) installs `StyleBoxEmpty`
+  for explicit opt-out.
+- `:checked` installs a custom `pressed` theme stylebox (Godot uses the
+  `pressed` slot as toggle-on for toggle buttons).
+- The pseudos compose with the rest of the rule's properties —
+  `background-color`, `border`, `border-radius` all flow through.
 
 ### Range Slider Styling
 

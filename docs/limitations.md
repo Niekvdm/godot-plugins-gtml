@@ -19,24 +19,27 @@ CSS must be in external files. Inline `<style>` tags and `style` attributes are 
 
 **Workaround:** Use external CSS files and classes.
 
-### No Descendant Selectors
+### Selector engine — supported as of v0.2 / v0.3
 
-Complex selectors like descendant, child, or sibling selectors are not supported.
+Descendant, child, sibling, attribute, and structural selectors are all
+supported now. See [css-selectors.md](css-selectors.md) for the full list.
+Specifically:
 
 ```css
-/* NOT supported */
+/* Supported */
 div p { }           /* Descendant */
 div > p { }         /* Child */
-h1 + p { }          /* Adjacent sibling */
-h1 ~ p { }          /* General sibling */
-ul li a { }         /* Nested descendant */
-
-/* Supported */
-.card-text { }      /* Use classes */
-#specific-item { }  /* Use IDs */
+h1 + p { }          /* Adjacent sibling (v0.3) */
+h1 ~ p { }          /* General sibling (v0.3) */
+[type="text"] { }   /* Attribute (v0.2) */
+[href^="https"] { } /* Attribute prefix matcher (v0.3) */
+li:first-child { }  /* Structural pseudos (v0.3) */
+li:nth-child(2n+1) { } /* an+b syntax (v0.3) */
+p:not(.muted) { }   /* Negation (v0.3) */
 ```
 
-**Workaround:** Use unique class names or IDs on target elements.
+What's still not supported: `::before`, `::after`, `:nth-of-type`,
+`:first-of-type`, `:is()`, `:where()`, `:has()`.
 
 ### No Multi-Value Shorthand
 
@@ -80,24 +83,25 @@ font-size: 24px;
 margin: 20px;
 ```
 
-### No CSS Variables
+### CSS Variables — supported as of v0.4
 
-Custom properties are not supported.
+Custom properties cascade just like the browser engine. `var()` resolves
+at compute-style time with cycle detection; `calc()` evaluates flat
+arithmetic. See [css-tokens.md](css-tokens.md):
 
 ```css
-/* NOT supported */
-:root {
-    --primary-color: #00d4ff;
+.app {
+    --brand: #00d4ff;
+    --gap: 16px;
 }
 button {
-    background-color: var(--primary-color);
-}
-
-/* Supported - use direct values */
-button {
-    background-color: #00d4ff;
+    background-color: var(--brand);
+    padding: calc(var(--gap) * 0.5);
 }
 ```
+
+`calc()` doesn't yet handle mixed-unit subtraction (`calc(100% - 16px)`).
+Same-unit and unitless arithmetic both work.
 
 ### No CSS Animations
 
@@ -139,34 +143,21 @@ The `!important` flag is not supported.
 }
 ```
 
-### No Attribute Selectors
+### Structural pseudos and attribute selectors — supported (v0.3)
+
+See [css-selectors.md](css-selectors.md). Quick recap:
 
 ```css
-/* NOT supported */
-[type="text"] { }
-[disabled] { }
-[data-custom="value"] { }
-
-/* Workaround - use classes */
-.text-input { }
-.disabled { }
-.custom-value { }
+[type="text"] { }              /* attribute equality */
+[href^="https"] { }            /* prefix matcher */
+[class~="card"] { }            /* whitespace-word matcher */
+li:first-child { }             /* first / last / only */
+li:nth-child(2n+1) { }         /* odd/even/an+b */
+p:not(.muted) { }              /* negation */
 ```
 
-### No :nth-child Selectors
-
-```css
-/* NOT supported */
-li:nth-child(odd) { }
-li:first-child { }
-li:last-child { }
-li:nth-of-type(2n) { }
-
-/* Workaround - use classes */
-.odd-item { }
-.first-item { }
-.last-item { }
-```
+What's NOT yet supported: `:nth-of-type`, `:first-of-type`, `:last-of-type`,
+`:nth-last-child`, `:is()`, `:where()`, `:has()`.
 
 ### No Pseudo-Elements
 
