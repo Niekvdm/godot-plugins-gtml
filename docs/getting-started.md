@@ -201,6 +201,7 @@ Check out the example files in `addons/gtml/examples/`:
 
 ## Next Steps
 
+- [The Editor Pane](editor.md) - Autocomplete, jumps, color picker, multi-cursor
 - [HTML Elements](html-elements.md) - All supported tags and attributes
 - [CSS Selectors](css-selectors.md) - Combinators, attribute matchers, pseudo-classes
 - [CSS Properties](css-properties.md) - Complete CSS reference

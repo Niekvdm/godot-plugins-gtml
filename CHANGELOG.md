@@ -1,5 +1,57 @@
 # Changelog
 
+## 0.6.0
+
+### Features — Editor pane "professional upgrade"
+
+- **Autocomplete** (HTML + CSS): element tags, tag-specific attributes,
+  enumerated attribute values, CSS property names, value keywords per
+  property, `var(--name)` declarations scanned from the buffer, and
+  class names scanned from the paired buffer. Triggered by typing
+  `<`, ` `, `"`, `:`, `.`, `#`, `(` or by Ctrl+Space.
+- **Find & Replace** (Ctrl+H toggles the Replace row). Regex toggle
+  (`.*`) and the existing match-case toggle apply to both find and
+  replace. Replace All reports the count via the match label.
+- **Jumps**: Ctrl+Click or F12 jumps between
+  - `class="x"` ↔ `.x` rule
+  - `id="x"` ↔ `#x` rule
+  - `var(--name)` ↔ `--name: ...;` declaration
+  Alt+Left returns to the previous position via a panel-local history
+  stack.
+- **Color picker on hex / rgb / rgba literals**: a 16px gutter renders
+  a swatch next to every line containing a color. Click → ColorPicker
+  popup; changes round-trip back to the buffer in the literal's
+  original kind (hex stays hex, rgba stays rgba).
+- **Multi-cursor + selection** (CodeEdit's native multi-caret enabled):
+  - Ctrl+D adds caret at next match
+  - Ctrl+L selects current line
+  - Ctrl+Alt+Up/Down adds caret one line above/below
+
+### Architecture
+
+Five new pure-data engines under `addons/gtml/src/editor/` so the panel
+script stays a thin wiring layer and the intelligence is unit-testable
+without instantiating Godot UI:
+
+- `GmlEditorContext.gd` — shared {text, cursor, other_text, kind} struct
+- `GmlAutocompleteSource.gd` — candidate generator
+- `GmlJumpResolver.gd` — cursor-context → jump target
+- `GmlSearchEngine.gd` — find / replace_all ops with regex flag
+- `GmlColorTokens.gd` — color-literal scanner + formatter
+
+50+ new tests covering all five engines plus integration tests against
+the loaded panel scene.
+
+### Deferred / not yet supported
+
+- Live rendered preview pane (use existing GmlView scene + hot reload).
+- Cross-buffer find (only the active tab).
+- Code formatting / prettify.
+- Snippet library beyond the implicit tag→`<tag></tag>` completion.
+- LSP / external protocol support.
+- Multi-tab file open (only the active GmlView's pair).
+
+
 ## 0.5.0
 
 ### Features
