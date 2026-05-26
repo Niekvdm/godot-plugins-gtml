@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.5.0
+
+### Features
+
+- **`transform` is now animated through the transition manager**. Including
+  `transform` in a `transition:` declaration interpolates scale, rotation,
+  and the layout-relative position offset together through a single tween.
+  Absent target transforms revert to the identity, so `:hover` → no-hover
+  animates back to neutral without an explicit reverse rule.
+- **Kitchen-sink showcase sample** at `addons/gtml/examples/showcase/kitchen/`
+  exercises virtually every supported element + CSS property in one scene.
+  Useful as both a feature reference card and a regression smoke test.
+- **CSS property names accept digits** (`--surface-2`, `--gap-1`). The
+  parser previously truncated at the first digit, which broke
+  numerically-suffixed token names.
+
+### Polish
+
+- All three v0.3.1 showcase scenes refactored:
+  - Palettes extracted to top-level `--*` custom properties
+  - `transform: scale(...)` on hover for KPI cards (atlas) + primary
+    buttons (atlas/forge) + a 2px translate on Atelier's related-article
+    links
+  - `:checked` styling on Forge's checkbox + radio rows fills with the
+    accent color when toggled on
+
+### Docs
+
+- New pages: `docs/css-tokens.md`, `docs/transforms.md`
+- Updated: `docs/css-selectors.md` (combinators, attribute matchers,
+  structural pseudos, multi-pseudo), `docs/forms-and-inputs.md`
+  (form value collection, `@keydown`, `<label for>`, `:checked` / `:focus`
+  styleboxes), `docs/transitions.md` (transform interpolation +
+  transparent→opaque flash workaround), `docs/getting-started.md`,
+  `docs/limitations.md` (rewrites the now-resolved sections)
+
+
 ## 0.4.0
 
 ### Features

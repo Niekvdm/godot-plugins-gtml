@@ -5,12 +5,33 @@
  */
 
 .app {
+    --bg: #0d0d0d;
+    --surface-1: #111111;
+    --surface-2: #131313;
+    --surface-2-hover: #181818;
+    --surface-input: #161616;
+    --surface-input-hover: #1a1a1a;
+    --surface-active: #1f1a2e;
+    --surface-focus: #1a1525;
+    --border-1: #1f1f1f;
+    --border-2: #2a2a2a;
+    --border-3: #3a3a3a;
+    --text-faint: #5a5a5a;
+    --text-muted: #6a6a6a;
+    --text-2: #8a8a8a;
+    --text-1: #b8b8b8;
+    --text-strong: #d4d4d4;
+    --accent: #9b7eff;
+    --accent-hot: #b39dff;
+    --accent-faint: #d4c8ff;
+    --accent-text: #b39dff;
+
     display: flex;
     flex-direction: column;
     width: 100%;
     height: 100%;
-    background-color: #0d0d0d;
-    color: #d4d4d4;
+    background-color: var(--bg);
+    color: var(--text-strong);
 }
 
 /* ─── Topbar ────────────────────────────────────────── */
@@ -24,8 +45,8 @@
     padding-right: 24px;
     padding-top: 14px;
     padding-bottom: 14px;
-    border-bottom: 1px solid #1f1f1f;
-    background-color: #111111;
+    border-bottom: 1px solid var(--border-1);
+    background-color: var(--surface-1);
 }
 
 .topbar-left {
@@ -43,13 +64,13 @@
 }
 
 .brand-divider {
-    color: #3a3a3a;
+    color: var(--border-3);
     font-size: 14px;
 }
 
 .crumb {
     font-size: 13px;
-    color: #8a8a8a;
+    color: var(--text-2);
 }
 
 .topbar-actions {
@@ -60,7 +81,7 @@
 }
 
 .btn {
-    border: 1px solid #2a2a2a;
+    border: 1px solid var(--border-2);
     border-radius: 4px;
     padding-left: 14px;
     padding-right: 14px;
@@ -73,28 +94,30 @@
 
 .btn-ghost {
     /* Match the topbar surface so hover interpolates opaque->opaque. */
-    background-color: #111111;
-    color: #d4d4d4;
+    background-color: var(--surface-1);
+    color: var(--text-strong);
 }
 
 .btn-ghost:hover {
-    background-color: #1a1a1a;
-    border: 1px solid #3a3a3a;
+    background-color: var(--surface-input-hover);
+    border: 1px solid var(--border-3);
 }
 
 .btn-primary {
-    background-color: #9b7eff;
-    color: #0d0d0d;
-    border: 1px solid #9b7eff;
+    background-color: var(--accent);
+    color: var(--bg);
+    border: 1px solid var(--accent);
+    transition: background-color 180ms, border 180ms, color 180ms, transform 180ms;
 }
 
 .btn-primary:hover {
-    background-color: #b39dff;
-    border: 1px solid #b39dff;
+    background-color: var(--accent-hot);
+    border: 1px solid var(--accent-hot);
+    transform: scale(1.03);
 }
 
 .btn-primary:focus {
-    border: 1px solid #d4c8ff;
+    border: 1px solid var(--accent-faint);
 }
 
 /* ─── Shell ──────────────────────────────────────────── */
@@ -112,8 +135,8 @@
     display: flex;
     flex-direction: column;
     width: 220px;
-    background-color: #111111;
-    border-right: 1px solid #1f1f1f;
+    background-color: var(--surface-1);
+    border-right: 1px solid var(--border-1);
     padding: 16px;
     gap: 24px;
 }
@@ -126,7 +149,7 @@
 
 .nav-group-label {
     font-size: 10px;
-    color: #5a5a5a;
+    color: var(--text-faint);
     letter-spacing: 3;
     text-transform: uppercase;
     font-weight: 700;
@@ -137,26 +160,26 @@
 .nav-link {
     display: block;
     font-size: 13px;
-    color: #8a8a8a;
+    color: var(--text-2);
     padding-left: 12px;
     padding-right: 12px;
     padding-top: 7px;
     padding-bottom: 7px;
     border-radius: 4px;
     /* Match the sidenav surface so hover doesn't flash through alpha. */
-    background-color: #111111;
+    background-color: var(--surface-1);
     transition: background-color 150ms, color 150ms;
 }
 
 .nav-link:hover {
-    background-color: #1a1a1a;
-    color: #d4d4d4;
+    background-color: var(--surface-input-hover);
+    color: var(--text-strong);
 }
 
 .nav-link-active {
-    background-color: #1f1a2e;
-    color: #b39dff;
-    border-left: 2px solid #9b7eff;
+    background-color: var(--surface-active);
+    color: var(--accent-hot);
+    border-left: 2px solid var(--accent);
     padding-left: 10px;
     font-weight: 600;
 }
@@ -178,7 +201,7 @@
 
 .section-divider {
     height: 1px;
-    background-color: #1f1f1f;
+    background-color: var(--border-1);
 }
 
 .form-section {
@@ -203,7 +226,7 @@
 
 .section-help {
     font-size: 13px;
-    color: #6a6a6a;
+    color: var(--text-muted);
 }
 
 /* ─── Field ──────────────────────────────────────────── */
@@ -216,15 +239,15 @@
 
 .field-label {
     font-size: 12px;
-    color: #b8b8b8;
+    color: var(--text-1);
     font-weight: 600;
     letter-spacing: 1;
 }
 
 .field-input {
-    background-color: #161616;
+    background-color: var(--surface-input);
     color: #ffffff;
-    border: 1px solid #2a2a2a;
+    border: 1px solid var(--border-2);
     border-radius: 4px;
     padding-left: 12px;
     padding-right: 12px;
@@ -235,18 +258,18 @@
 }
 
 .field-input:hover {
-    background-color: #1a1a1a;
-    border: 1px solid #3a3a3a;
+    background-color: var(--surface-input-hover);
+    border: 1px solid var(--border-3);
 }
 
 .field-input:focus {
-    background-color: #1a1525;
-    border: 1px solid #9b7eff;
+    background-color: var(--surface-focus);
+    border: 1px solid var(--accent);
 }
 
 .field-hint {
     font-size: 12px;
-    color: #5a5a5a;
+    color: var(--text-faint);
 }
 
 /* ─── Checkbox row ───────────────────────────────────── */
@@ -257,15 +280,15 @@
     align-items: flex-start;
     gap: 12px;
     padding: 12px;
-    border: 1px solid #1f1f1f;
+    border: 1px solid var(--border-1);
     border-radius: 4px;
-    background-color: #131313;
+    background-color: var(--surface-2);
     transition: background-color 150ms, border 150ms;
 }
 
 .check-row:hover {
-    background-color: #181818;
-    border: 1px solid #2a2a2a;
+    background-color: var(--surface-2-hover);
+    border: 1px solid var(--border-2);
 }
 
 .check-box {
@@ -274,7 +297,13 @@
 }
 
 .check-box:focus {
-    border: 1px solid #9b7eff;
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+}
+
+.check-box:checked {
+    background-color: var(--accent);
+    border: 1px solid var(--accent-hot);
     border-radius: 3px;
 }
 
@@ -292,7 +321,7 @@
 
 .check-help {
     font-size: 12px;
-    color: #6a6a6a;
+    color: var(--text-muted);
 }
 
 /* ─── Radio row ──────────────────────────────────────── */
@@ -303,15 +332,15 @@
     align-items: flex-start;
     gap: 12px;
     padding: 12px;
-    border: 1px solid #1f1f1f;
+    border: 1px solid var(--border-1);
     border-radius: 4px;
-    background-color: #131313;
+    background-color: var(--surface-2);
     transition: background-color 150ms, border 150ms;
 }
 
 .radio-row:hover {
-    background-color: #181818;
-    border: 1px solid #2a2a2a;
+    background-color: var(--surface-2-hover);
+    border: 1px solid var(--border-2);
 }
 
 .radio-dot {
@@ -320,7 +349,13 @@
 }
 
 .radio-dot:focus {
-    border: 1px solid #9b7eff;
+    border: 1px solid var(--accent);
+    border-radius: 9px;
+}
+
+.radio-dot:checked {
+    background-color: var(--accent);
+    border: 1px solid var(--accent-hot);
     border-radius: 9px;
 }
 
@@ -338,5 +373,5 @@
 
 .radio-help {
     font-size: 12px;
-    color: #6a6a6a;
+    color: var(--text-muted);
 }

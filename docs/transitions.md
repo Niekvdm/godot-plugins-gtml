@@ -84,6 +84,50 @@ These properties can be smoothly animated:
 | `opacity` | Fade in/out effects |
 | `width` | Size animations |
 | `height` | Size animations |
+| `transform` | scale / rotate / translate composite (v0.5) |
+
+### Animating `transform`
+
+> **v0.5: transform interpolation through the transition manager.**
+
+`transform` interpolates as a single composite — scale (Vector2), rotation
+(float), and the layout-relative position offset (Vector2) all tween in
+parallel through one tween:
+
+```css
+.card {
+    transition: transform 220ms;
+}
+
+.card:hover {
+    transform: scale(1.04);
+}
+```
+
+When the target style omits `transform`, the manager treats the implicit
+target as the identity transform `{translate: 0,0; scale: 1,1; rotate: 0}`
+and animates back to neutral — so hover-out reverts cleanly without
+needing an explicit `:not(:hover)` rule.
+
+See [transforms.md](transforms.md) for the full transform syntax.
+
+### Heads-up: `transparent → opaque` color flash
+
+The color tween interpolates RGBA, so a transition from
+`background-color: transparent` to an opaque color passes through
+alpha-blended intermediate frames that visually read as a gray "flash".
+
+Use an opaque base color matching the parent surface:
+
+```css
+/* Avoid */
+.nav-item { background-color: transparent; }
+.nav-item:hover { background-color: #1a1a2e; }
+
+/* Prefer */
+.nav-item { background-color: #0c1120; }  /* parent surface */
+.nav-item:hover { background-color: #1a1a2e; }
+```
 
 ## Multiple Transitions
 

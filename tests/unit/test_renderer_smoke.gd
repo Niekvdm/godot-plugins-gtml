@@ -20,6 +20,7 @@ const SHOWCASES := [
 	{"name": "atlas", "dir": "showcase/atlas"},
 	{"name": "atelier", "dir": "showcase/atelier"},
 	{"name": "forge", "dir": "showcase/forge"},
+	{"name": "kitchen", "dir": "showcase/kitchen"},
 ]
 
 
@@ -87,6 +88,14 @@ func test_showcase_forge_renders() -> void:
 	# opening the Forge demo in the editor.
 	var v := _build_showcase(SHOWCASES[2])
 	await _assert_built(v, "forge")
+
+
+func test_showcase_kitchen_renders() -> void:
+	# Kitchen-sink reference card — exercises virtually every element +
+	# CSS property in one scene, so renderer regressions on any of them
+	# will fail this build.
+	var v := _build_showcase(SHOWCASES[3])
+	await _assert_built(v, "kitchen")
 
 
 func test_get_element_by_id_returns_control() -> void:

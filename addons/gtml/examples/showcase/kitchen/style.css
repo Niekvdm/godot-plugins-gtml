@@ -1,0 +1,361 @@
+/* Kitchen sink — reference card for every supported GTML feature.
+ * Quiet neutral palette so the showcased styles themselves carry the
+ * visual interest. Heavy use of v0.4 custom properties so the whole
+ * surface re-themes by editing the .page block. */
+
+.page {
+    --bg: #1a1d24;
+    --surface-1: #21252e;
+    --surface-2: #2a2f3a;
+    --border-1: #31374a;
+    --border-2: #41475a;
+    --text-1: #e0e3eb;
+    --text-2: #a3a8b8;
+    --text-muted: #6e7488;
+    --accent: #7dd3fc;
+    --accent-hot: #bae6fd;
+    --warm: #fbbf24;
+    --rose: #fb7185;
+    --gap-md: 14px;
+    --gap-lg: calc(var(--gap-md) * 2);
+
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg);
+    color: var(--text-1);
+}
+
+.top {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-1);
+    background-color: var(--surface-1);
+}
+
+.brand {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2;
+    text-transform: uppercase;
+    color: var(--text-1);
+}
+
+.brand-sep { color: var(--text-muted); font-size: 14px; }
+.brand-context { font-size: 13px; color: var(--text-2); letter-spacing: 1; }
+.brand-flex { flex-grow: 1; }
+
+.version {
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2;
+    font-weight: 700;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    border: 1px solid var(--border-2);
+    border-radius: 999px;
+}
+
+.sheet {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: var(--gap-lg);
+    gap: var(--gap-lg);
+    overflow-y: auto;
+}
+
+/* ─── Block scaffolding ────────────────────────────── */
+
+.block {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-1);
+    border-radius: 6px;
+    background-color: var(--surface-1);
+}
+
+.block-eyebrow {
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 3;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border-1);
+    margin-bottom: 6px;
+}
+
+/* ─── Typography ───────────────────────────────────── */
+
+h1 { font-size: 32px; font-weight: 700; }
+h2 { font-size: 24px; font-weight: 700; }
+h3 { font-size: 20px; font-weight: 600; }
+h4 { font-size: 16px; font-weight: 600; color: var(--text-1); }
+h5 { font-size: 14px; font-weight: 600; color: var(--text-2); letter-spacing: 1; text-transform: uppercase; }
+h6 { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 2; text-transform: uppercase; }
+p  { font-size: 14px; color: var(--text-1); line-height: 4; }
+
+.muted   { color: var(--text-muted); }
+.spaced  { letter-spacing: 3; color: var(--text-2); }
+.upper   { text-transform: uppercase; letter-spacing: 2; color: var(--accent); font-weight: 600; font-size: 12px; }
+.indent  { text-indent: 16; color: var(--text-2); }
+
+.link {
+    color: var(--accent);
+    font-weight: 600;
+    transition: color 150ms;
+}
+
+.link:hover { color: var(--accent-hot); }
+
+/* ─── Layout ───────────────────────────────────────── */
+
+.row-demo, .col-demo {
+    display: flex;
+    flex-direction: row;
+    gap: var(--gap-md);
+}
+
+.swatch {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    padding: 16px;
+    color: var(--bg);
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+    background-color: var(--accent);
+}
+
+.swatch-2 { background-color: var(--warm); }
+.swatch-3 { background-color: var(--rose); flex-grow: 2; }
+
+.cell {
+    flex-grow: 1;
+    padding: 12px;
+    background-color: var(--surface-2);
+    border: 1px solid var(--border-1);
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--text-2);
+}
+
+.rounded {
+    padding: 16px;
+    background-color: var(--surface-2);
+    border-radius: 12px;
+    border: 1px solid var(--border-2);
+    color: var(--text-1);
+    font-size: 13px;
+}
+
+.gradient {
+    padding: 20px;
+    border-radius: 8px;
+    color: var(--bg);
+    font-size: 13px;
+    font-weight: 600;
+    background: linear-gradient(90deg, var(--accent), var(--rose));
+}
+
+/* ─── Inputs ───────────────────────────────────────── */
+
+.row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-radius: 4px;
+    background-color: var(--surface-1);
+    transition: background-color 150ms;
+}
+
+.row:hover {
+    background-color: var(--surface-2);
+}
+
+.label-text {
+    font-size: 13px;
+    color: var(--text-1);
+}
+
+.input {
+    flex-grow: 1;
+    background-color: var(--surface-2);
+    color: var(--text-1);
+    border: 1px solid var(--border-1);
+    border-radius: 4px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: 13px;
+    transition: border 180ms, background-color 180ms;
+}
+
+.input:hover { background-color: var(--surface-1); border: 1px solid var(--border-2); }
+.input:focus { background-color: var(--surface-1); border: 1px solid var(--accent); }
+
+.check { width: 18px; height: 18px; }
+
+.check:focus {
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+}
+
+.check:checked {
+    background-color: var(--accent);
+    border: 1px solid var(--accent-hot);
+    border-radius: 3px;
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.btn-secondary, .btn-primary {
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background-color 180ms, color 180ms, border 180ms, transform 180ms;
+}
+
+.btn-secondary {
+    background-color: var(--surface-2);
+    color: var(--text-1);
+    border: 1px solid var(--border-2);
+}
+
+.btn-secondary:hover {
+    background-color: var(--surface-1);
+    border: 1px solid var(--accent);
+}
+
+.btn-primary {
+    background-color: var(--accent);
+    color: var(--bg);
+    border: 1px solid var(--accent);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-hot);
+    border: 1px solid var(--accent-hot);
+    transform: scale(1.03);
+}
+
+/* ─── Lists ────────────────────────────────────────── */
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.list li {
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-radius: 3px;
+    background-color: var(--surface-1);
+    color: var(--text-1);
+    font-size: 13px;
+    transition: background-color 150ms;
+}
+
+.list li:hover {
+    background-color: var(--surface-2);
+}
+
+.list li:first-child {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* ─── States grid ─────────────────────────────────── */
+
+.state-grid {
+    display: flex;
+    flex-direction: row;
+    gap: var(--gap-md);
+}
+
+.state-card {
+    flex-grow: 1;
+    padding: 20px;
+    background-color: var(--surface-2);
+    border: 1px solid var(--border-1);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text-2);
+    text-align: center;
+    transition: border 180ms, transform 180ms, color 180ms;
+}
+
+.state-card:hover {
+    border: 1px solid var(--accent);
+    color: var(--text-1);
+    transform: scale(1.04);
+}
+
+.focus-demo {
+    background-color: var(--surface-2);
+    color: var(--text-2);
+}
+
+.focus-demo:focus {
+    border: 1px solid var(--accent-hot);
+    color: var(--accent-hot);
+}
+
+.combined:hover:focus {
+    border: 1px solid var(--warm);
+    color: var(--warm);
+}
+
+/* ─── CSS authoring feature list ───────────────────── */
+
+.feat-note {
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.feat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.feat-list li {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    font-size: 13px;
+    color: var(--text-1);
+}
+
+code {
+    font-weight: 600;
+    color: var(--accent);
+}

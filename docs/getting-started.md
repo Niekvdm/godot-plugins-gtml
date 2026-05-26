@@ -202,6 +202,18 @@ Check out the example files in `addons/gtml/examples/`:
 ## Next Steps
 
 - [HTML Elements](html-elements.md) - All supported tags and attributes
+- [CSS Selectors](css-selectors.md) - Combinators, attribute matchers, pseudo-classes
 - [CSS Properties](css-properties.md) - Complete CSS reference
+- [CSS Tokens](css-tokens.md) - Custom properties, `var()`, `calc()`
+- [Transforms](transforms.md) - `translate`, `scale`, `rotate` + animations
 - [Layout & Flexbox](layout-and-flexbox.md) - Layout system guide
-- [Forms & Inputs](forms-and-inputs.md) - Form element details
+- [Transitions](transitions.md) - Animated state changes
+- [Forms & Inputs](forms-and-inputs.md) - Form element details, `:checked`, `@keydown`
+
+### Showcase samples
+
+The `addons/gtml/examples/showcase/` directory has four crafted demos —
+**atlas** (dashboard), **atelier** (editorial reader), **forge**
+(settings panel), and **kitchen** (kitchen-sink reference). Each uses the
+v0.4 design-token + transform patterns and is good starting material for
+your own scenes.

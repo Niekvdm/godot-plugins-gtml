@@ -1,15 +1,33 @@
 /* Atlas — mission-control dashboard
  * Precision + density. Cool slate neutrals. Single cyan accent reserved for
  * live signal and primary action. Borders only, no shadows. 8/16/24 grid.
+ *
+ * Palette is declared once on .app as CSS custom properties; descendants
+ * read them via var(). Authors can re-brand the entire surface by editing
+ * the block below.
  */
 
 .app {
+    --bg: #0a0e1a;
+    --surface-1: #0c1120;
+    --surface-2: #0e1322;
+    --border-1: #1a2236;
+    --border-2: #1f2a3f;
+    --text-1: #c8cfdd;
+    --text-2: #8a93a8;
+    --text-3: #6c7691;
+    --text-4: #5a6480;
+    --accent: #5fc8ff;
+    --accent-hot: #8edaff;
+    --success: #6dd198;
+    --warn: #ffb454;
+
     display: flex;
     flex-direction: column;
     width: 100%;
     height: 100%;
-    background-color: #0a0e1a;
-    color: #c8cfdd;
+    background-color: var(--bg);
+    color: var(--text-1);
 }
 
 /* ─── Topbar ────────────────────────────────────────── */
@@ -23,8 +41,8 @@
     padding-right: 24px;
     padding-top: 14px;
     padding-bottom: 14px;
-    border-bottom: 1px solid #1a2236;
-    background-color: #0c1120;
+    border-bottom: 1px solid var(--border-1);
+    background-color: var(--surface-1);
 }
 
 .brand-block {
@@ -49,7 +67,7 @@
 
 .brand-context {
     font-size: 13px;
-    color: #8a93a8;
+    color: var(--text-2);
     letter-spacing: 1;
 }
 
@@ -69,21 +87,21 @@
     padding-right: 12px;
     padding-top: 6px;
     padding-bottom: 6px;
-    border: 1px solid #1f3045;
+    border: 1px solid var(--border-2);
     border-radius: 999px;
-    background-color: #0e1828;
+    background-color: var(--surface-2);
 }
 
 .status-dot {
     width: 6px;
     height: 6px;
     border-radius: 3px;
-    background-color: #5fc8ff;
+    background-color: var(--accent);
 }
 
 .status-label {
     font-size: 12px;
-    color: #5fc8ff;
+    color: var(--accent);
     letter-spacing: 1;
     text-transform: uppercase;
     font-weight: 600;
@@ -91,12 +109,12 @@
 
 .user-chip {
     font-size: 12px;
-    color: #8a93a8;
+    color: var(--text-2);
     padding-left: 10px;
     padding-right: 10px;
     padding-top: 6px;
     padding-bottom: 6px;
-    border: 1px solid #1f2a3f;
+    border: 1px solid var(--border-2);
     border-radius: 4px;
     letter-spacing: 1;
 }
@@ -116,8 +134,8 @@
     display: flex;
     flex-direction: column;
     width: 224px;
-    background-color: #0c1120;
-    border-right: 1px solid #1a2236;
+    background-color: var(--surface-1);
+    border-right: 1px solid var(--border-1);
     padding: 16px;
     gap: 24px;
 }
@@ -130,7 +148,7 @@
 
 .nav-label {
     font-size: 11px;
-    color: #4a5670;
+    color: var(--text-4);
     letter-spacing: 1;
     text-transform: uppercase;
     font-weight: 600;
@@ -141,7 +159,7 @@
 .nav-item {
     display: block;
     font-size: 13px;
-    color: #8a93a8;
+    color: var(--text-2);
     padding-left: 12px;
     padding-right: 12px;
     padding-top: 8px;
@@ -149,19 +167,19 @@
     border-radius: 4px;
     /* Match the sidebar surface so hover interpolates between opaque colors
        only — transparent->opaque produces a gray "alpha flash" mid-transition. */
-    background-color: #0c1120;
+    background-color: var(--surface-1);
     transition: background-color 150ms, color 150ms;
 }
 
 .nav-item:hover {
     background-color: #131a2e;
-    color: #c8cfdd;
+    color: var(--text-1);
 }
 
 .nav-active {
     background-color: #131a2e;
     color: #ffffff;
-    border-left: 2px solid #5fc8ff;
+    border-left: 2px solid var(--accent);
     padding-left: 10px;
 }
 
@@ -192,7 +210,7 @@
 
 .eyebrow {
     font-size: 11px;
-    color: #5fc8ff;
+    color: var(--accent);
     letter-spacing: 3;
     text-transform: uppercase;
     font-weight: 600;
@@ -206,12 +224,12 @@
 
 .page-subtitle {
     font-size: 13px;
-    color: #6c7691;
+    color: var(--text-3);
 }
 
 .primary-action {
-    background-color: #5fc8ff;
-    color: #0a0e1a;
+    background-color: var(--accent);
+    color: var(--bg);
     border: none;
     border-radius: 4px;
     padding-left: 16px;
@@ -222,11 +240,12 @@
     font-weight: 600;
     letter-spacing: 1;
     text-transform: uppercase;
-    transition: background-color 180ms;
+    transition: background-color 180ms, transform 180ms;
 }
 
 .primary-action:hover {
-    background-color: #8edaff;
+    background-color: var(--accent-hot);
+    transform: scale(1.03);
 }
 
 /* ─── KPI row ───────────────────────────────────────── */
@@ -243,14 +262,20 @@
     flex-grow: 1;
     gap: 8px;
     padding: 20px;
-    border: 1px solid #1a2236;
+    border: 1px solid var(--border-1);
     border-radius: 6px;
-    background-color: #0e1322;
+    background-color: var(--surface-2);
+    transition: border 220ms, transform 220ms;
+}
+
+.kpi:hover {
+    border: 1px solid var(--border-2);
+    transform: scale(1.015);
 }
 
 .kpi-label {
     font-size: 11px;
-    color: #6c7691;
+    color: var(--text-3);
     letter-spacing: 2;
     text-transform: uppercase;
     font-weight: 600;
@@ -263,25 +288,25 @@
 }
 
 .kpi-warn {
-    color: #ffb454;
+    color: var(--warn);
 }
 
 .kpi-delta {
     font-size: 11px;
-    color: #5a6480;
+    color: var(--text-4);
     letter-spacing: 1;
 }
 
 .delta-up {
-    color: #6dd198;
+    color: var(--success);
 }
 
 .delta-down {
-    color: #5fc8ff;
+    color: var(--accent);
 }
 
 .delta-flat {
-    color: #5a6480;
+    color: var(--text-4);
 }
 
 /* ─── Card grid ─────────────────────────────────────── */
@@ -296,9 +321,9 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    border: 1px solid #1a2236;
+    border: 1px solid var(--border-1);
     border-radius: 6px;
-    background-color: #0e1322;
+    background-color: var(--surface-2);
 }
 
 .card-head {
@@ -307,7 +332,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    border-bottom: 1px solid #1a2236;
+    border-bottom: 1px solid var(--border-1);
 }
 
 .card-title {
@@ -318,7 +343,7 @@
 
 .card-meta {
     font-size: 11px;
-    color: #5a6480;
+    color: var(--text-4);
     letter-spacing: 2;
     text-transform: uppercase;
 }
@@ -342,7 +367,7 @@
     border-radius: 4px;
     /* Opaque base color so the hover transition doesn't pass through an
        alpha-blended intermediate. Matches the surrounding card surface. */
-    background-color: #0e1322;
+    background-color: var(--surface-2);
     transition: background-color 150ms;
 }
 
@@ -352,7 +377,7 @@
 
 .activity-time {
     font-size: 12px;
-    color: #5a6480;
+    color: var(--text-4);
     letter-spacing: 1;
     min-width: 44px;
     font-weight: 600;
@@ -360,7 +385,7 @@
 
 .activity-text {
     font-size: 13px;
-    color: #c8cfdd;
+    color: var(--text-1);
 }
 
 /* ─── Status list ───────────────────────────────────── */
@@ -391,7 +416,7 @@
 
 .status-name {
     font-size: 13px;
-    color: #c8cfdd;
+    color: var(--text-1);
 }
 
 .status-badge {
@@ -407,12 +432,12 @@
 
 .badge-ok {
     background-color: #112d22;
-    color: #6dd198;
+    color: var(--success);
     border: 1px solid #1f4836;
 }
 
 .badge-warn {
     background-color: #2d2418;
-    color: #ffb454;
+    color: var(--warn);
     border: 1px solid #4d3c1f;
 }

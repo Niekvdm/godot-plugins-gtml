@@ -84,6 +84,16 @@ func test_var_in_dimension_property() -> void:
 	assert_eq(s.get("padding"), 24)
 
 
+func test_custom_property_name_with_digit() -> void:
+	# Pin the lexer change that allowed digits in property names. Without
+	# it, --surface-2 truncated to --surface- and parsing collapsed.
+	var s := _style_for_id(
+		"<div id='target'>x</div>",
+		"div { --surface-2: blue; color: var(--surface-2); }",
+		"target")
+	assert_eq(s.get("color"), Color.BLUE)
+
+
 #endregion
 
 

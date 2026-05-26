@@ -1,0 +1,121 @@
+<div class="page">
+
+  <header class="top">
+    <span class="brand">GTML</span>
+    <span class="brand-sep">·</span>
+    <span class="brand-context">kitchen sink</span>
+    <span class="brand-flex"></span>
+    <span class="version">v0.5</span>
+  </header>
+
+  <main class="sheet">
+
+    <!-- ─── Typography ─────────────────────────────────── -->
+    <section class="block">
+      <span class="block-eyebrow">01 · Typography</span>
+      <h1>Heading one</h1>
+      <h2>Heading two</h2>
+      <h3>Heading three</h3>
+      <h4>Heading four</h4>
+      <h5>Heading five</h5>
+      <h6>Heading six</h6>
+      <p>Plain paragraph. <strong>Bold text</strong> via &lt;strong&gt;. <em>Italic text</em> via &lt;em&gt;. A <a href="#" class="link">link</a> for good measure.</p>
+      <p class="muted">Muted secondary text. Useful for help copy and timestamps.</p>
+      <p class="spaced">Letter-spacing 3px via FontVariation (v0.3).</p>
+      <p class="upper">text-transform: uppercase</p>
+      <p class="indent">First-line indent simulated with metadata; visual rendering deferred.</p>
+    </section>
+
+    <!-- ─── Layout primitives ──────────────────────────── -->
+    <section class="block">
+      <span class="block-eyebrow">02 · Layout</span>
+      <div class="row-demo">
+        <div class="swatch swatch-1">flex 1</div>
+        <div class="swatch swatch-2">flex 1</div>
+        <div class="swatch swatch-3">flex 2</div>
+      </div>
+      <div class="col-demo">
+        <div class="cell">column gap 12</div>
+        <div class="cell">column gap 12</div>
+        <div class="cell">column gap 12</div>
+      </div>
+      <div class="rounded">border-radius + box-shadow target</div>
+      <div class="gradient">linear-gradient background</div>
+    </section>
+
+    <!-- ─── Inputs ─────────────────────────────────────── -->
+    <section class="block">
+      <span class="block-eyebrow">03 · Inputs</span>
+
+      <label class="row" for="k-text">
+        <span class="label-text">Text input</span>
+        <input id="k-text" class="input" type="text" value="hello">
+      </label>
+
+      <label class="row" for="k-pass">
+        <span class="label-text">Password</span>
+        <input id="k-pass" class="input" type="password" value="secret">
+      </label>
+
+      <label class="row" for="k-check">
+        <input id="k-check" class="check" type="checkbox" checked>
+        <span class="label-text">Checkbox (with :checked)</span>
+      </label>
+
+      <div class="radio-group">
+        <label class="row" for="k-r1">
+          <input id="k-r1" class="check" type="radio" name="kpick" value="a">
+          <span class="label-text">Radio one</span>
+        </label>
+        <label class="row" for="k-r2">
+          <input id="k-r2" class="check" type="radio" name="kpick" value="b" checked>
+          <span class="label-text">Radio two (selected)</span>
+        </label>
+      </div>
+
+      <button class="btn-secondary">Secondary button</button>
+      <button class="btn-primary">Primary action</button>
+    </section>
+
+    <!-- ─── Lists ──────────────────────────────────────── -->
+    <section class="block">
+      <span class="block-eyebrow">04 · Lists</span>
+      <ul class="list">
+        <li>Unordered first</li>
+        <li>Unordered second (hover me)</li>
+        <li>Unordered third</li>
+      </ul>
+      <ol class="list">
+        <li>Ordered first</li>
+        <li>Ordered second</li>
+        <li>Ordered third</li>
+      </ol>
+    </section>
+
+    <!-- ─── Selectors + states ─────────────────────────── -->
+    <section class="block">
+      <span class="block-eyebrow">05 · Pseudos &amp; states</span>
+      <div class="state-grid">
+        <div class="state-card">:hover scales 1.04</div>
+        <button class="state-card focus-demo">tab here for :focus</button>
+        <div class="state-card combined">:hover + :focus combined</div>
+      </div>
+    </section>
+
+    <!-- ─── CSS features ───────────────────────────────── -->
+    <section class="block">
+      <span class="block-eyebrow">06 · CSS authoring</span>
+      <p class="feat-note">All three samples in this showcase use the features below:</p>
+      <ul class="feat-list">
+        <li><code>--name</code> custom properties + <code>var(--name)</code></li>
+        <li><code>calc()</code> for derived dimensions</li>
+        <li><code>transform: scale / translate / rotate</code> animated via transitions</li>
+        <li>Structural selectors: <code>:first-child</code>, <code>:nth-child(2n+1)</code>, <code>:not(...)</code></li>
+        <li>Substring attribute matchers: <code>[href^="https"]</code>, <code>[class~="card"]</code></li>
+        <li>Sibling combinators: <code>.a + .b</code>, <code>.a ~ .b</code></li>
+      </ul>
+    </section>
+
+  </main>
+
+</div>
