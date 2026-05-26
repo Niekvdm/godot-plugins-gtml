@@ -124,12 +124,20 @@ static func build_heading_inner(node, level: int, ctx: Dictionary) -> Control:
 
 ## Build a label element.
 ## Handle a label-for click against the resolved target Control. Matches
-## the standard HTML semantics:
+## standard HTML semantics with one deliberate deviation:
 ##   - radio (BaseButton with button_group): set pressed=true unconditionally
 ##     so clicking the label of an already-selected radio does not deselect
 ##     it (which would also leave the whole group unselected)
 ##   - checkbox / toggle BaseButton (no group): invert button_pressed
 ##   - LineEdit / TextEdit / other Control: grab_focus
+##
+## Deviation from HTML: we do NOT call grab_focus on BaseButton activations.
+## Browsers do, which causes the input's focus stylebox to appear after a
+## mouse click — visually noisy on Godot's default CheckBox theme (the focus
+## rectangle extends beyond the box itself). Keyboard navigation still
+## reaches buttons through the regular focus chain, so accessibility is
+## preserved. Text inputs still get focus because focusing IS the user's
+## intent when clicking their label.
 static func _activate_for_target(target) -> void:
 	if target is BaseButton:
 		var btn: BaseButton = target
@@ -137,7 +145,6 @@ static func _activate_for_target(target) -> void:
 			btn.button_pressed = true
 		else:
 			btn.button_pressed = not btn.button_pressed
-		btn.grab_focus()
 		return
 	if target is Control:
 		(target as Control).grab_focus()
