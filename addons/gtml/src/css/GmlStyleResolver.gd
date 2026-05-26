@@ -16,23 +16,41 @@ extends RefCounted
 ## holding pseudo-class overrides.
 func resolve(root, rules: Array) -> Dictionary:
 	var styles: Dictionary = {}
-	_resolve_node(root, [], rules, styles)
+	_resolve_node(root, [], {}, rules, styles)
 	return styles
 
 
-func _resolve_node(node, ancestor_chain: Array, rules: Array, styles: Dictionary) -> void:
+## ``scope`` holds the cascade-accumulated custom properties (``--name`` -> raw
+## value string) inherited from this node's ancestors. Each node merges its
+## own ``--*`` declarations on top before passing the dict to its children, so
+## var() resolution at compute-style time only ever needs to look at one map.
+func _resolve_node(node, ancestor_chain: Array, scope: Dictionary, rules: Array, styles: Dictionary) -> void:
 	if node == null or node.is_text_node:
 		return
 
 	var chain := ancestor_chain.duplicate()
 	chain.append(node)
 
-	var computed := _compute_style(node, chain, rules)
+	# Build this node's scope by overlaying its own custom-property
+	# declarations (from any matching rule) onto the inherited scope. We do
+	# this BEFORE computing the style so var() lookups against the node's
+	# own props work the same way as ancestor-defined ones.
+	var child_scope := scope.duplicate()
+	for rule in rules:
+		if rule.selector == null:
+			continue
+		if not GmlSelector.matches(rule.selector, chain):
+			continue
+		for key in rule.properties:
+			if str(key).begins_with("--"):
+				child_scope[key] = rule.properties[key]
+
+	var computed := _compute_style(node, chain, rules, child_scope)
 	if not computed.is_empty():
 		styles[node] = computed
 
 	for child in node.children:
-		_resolve_node(child, chain, rules, styles)
+		_resolve_node(child, chain, child_scope, rules, styles)
 
 
 ## Walks all rules, gathers the matching ones for ``node``, sorts them by
@@ -45,7 +63,7 @@ func _resolve_node(node, ancestor_chain: Array, rules: Array, styles: Dictionary
 ## ``a:hover:focus`` and ``a:focus:hover`` produce the same ``_focus+hover``
 ## key). A rule whose pseudo set contains any unknown state pseudo is dropped
 ## with a warning — see test_multi_pseudo.
-func _compute_style(node, ancestor_chain: Array, rules: Array) -> Dictionary:
+func _compute_style(node, ancestor_chain: Array, rules: Array, scope: Dictionary = {}) -> Dictionary:
 	var matches: Array = []
 
 	for rule in rules:
@@ -97,7 +115,36 @@ func _compute_style(node, ancestor_chain: Array, rules: Array) -> Dictionary:
 	for key in state_buckets:
 		style["_" + key] = state_buckets[key]
 
+	# Resolve lazy values (var() / calc()) against this node's scope, then
+	# re-dispatch through the type parser. Custom-property keys (--*) are
+	# scope-only and never part of the rendered style — strip them now.
+	_resolve_lazy_values(style, scope)
+	for bucket_key in state_buckets:
+		_resolve_lazy_values(style["_" + bucket_key], scope)
+
 	return style
+
+
+## Walk a flat style dict in place: resolve any lazy {_lazy,raw,prop} value
+## through GmlCssEval (var() substitution + calc() evaluation) and re-dispatch
+## through the type parser, and drop --* custom-property keys (they belong
+## to the cascade scope, not the rendered style).
+static func _resolve_lazy_values(style: Dictionary, scope: Dictionary) -> void:
+	var to_drop: Array = []
+	for key in style.keys():
+		var k := str(key)
+		if k.begins_with("--"):
+			to_drop.append(key)
+			continue
+		if k.begins_with("_"):
+			continue  # state buckets are dicts, recursed by the caller
+		var v = style[key]
+		if v is Dictionary and v.get("_lazy", false):
+			var raw: String = v.get("raw", "")
+			var resolved: String = GmlCssEval.resolve(raw, scope)
+			style[key] = GmlCssParser.convert_value(k, resolved)
+	for k in to_drop:
+		style.erase(k)
 
 
 ## All state pseudos on the selector's rightmost compound, in source order.
