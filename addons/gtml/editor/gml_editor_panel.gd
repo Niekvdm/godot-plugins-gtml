@@ -8,6 +8,7 @@ const HtmlSyntaxHighlighter = preload("res://addons/gtml/editor/html_syntax_high
 const CssSyntaxHighlighter = preload("res://addons/gtml/editor/css_syntax_highlighter.gd")
 const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
 const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
+const GmlSearchEngineScript = preload("res://addons/gtml/src/editor/GmlSearchEngine.gd")
 
 #region Node References
 
@@ -30,10 +31,17 @@ const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
 @onready var search_bar: HBoxContainer = $MainContainer/SearchBar
 @onready var search_input: LineEdit = $MainContainer/SearchBar/SearchInput
 @onready var match_case_check: CheckBox = $MainContainer/SearchBar/MatchCaseCheck
+@onready var regex_check: CheckBox = $MainContainer/SearchBar/RegexCheck
 @onready var prev_button: Button = $MainContainer/SearchBar/PrevButton
 @onready var next_button: Button = $MainContainer/SearchBar/NextButton
 @onready var match_count_label: Label = $MainContainer/SearchBar/MatchCountLabel
 @onready var close_search_button: Button = $MainContainer/SearchBar/CloseSearchButton
+
+# Replace bar references
+@onready var replace_bar: HBoxContainer = $MainContainer/ReplaceBar
+@onready var replace_input: LineEdit = $MainContainer/ReplaceBar/ReplaceInput
+@onready var replace_button: Button = $MainContainer/ReplaceBar/ReplaceButton
+@onready var replace_all_button: Button = $MainContainer/ReplaceBar/ReplaceAllButton
 
 # Go to line dialog references
 @onready var goto_line_dialog: AcceptDialog = $GotoLineDialog
@@ -92,6 +100,11 @@ func _ready() -> void:
 	next_button.pressed.connect(_on_search_next)
 	close_search_button.pressed.connect(_close_search)
 	match_case_check.toggled.connect(_on_match_case_toggled)
+	regex_check.toggled.connect(func(_p): _perform_search())
+
+	# Connect replace bar signals
+	replace_button.pressed.connect(_on_replace_pressed)
+	replace_all_button.pressed.connect(_on_replace_all_pressed)
 
 	# Connect go to line dialog
 	goto_line_dialog.confirmed.connect(_on_goto_line_confirmed)
@@ -136,6 +149,13 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		# Ctrl+F to open search
 		elif event.keycode == KEY_F and event.ctrl_pressed:
 			_open_search()
+			get_viewport().set_input_as_handled()
+
+		# Ctrl+H to toggle replace bar (also opens search bar if hidden)
+		elif event.keycode == KEY_H and event.ctrl_pressed:
+			if not search_bar.visible:
+				_open_search()
+			_toggle_replace_bar(not replace_bar.visible)
 			get_viewport().set_input_as_handled()
 
 		# Ctrl+G to go to line
@@ -644,12 +664,45 @@ func _open_search() -> void:
 
 func _close_search() -> void:
 	search_bar.visible = false
+	replace_bar.visible = false
 	_clear_search_highlights()
 	_search_matches.clear()
 	_current_match_index = -1
 	match_count_label.text = ""
 	# Return focus to code edit
 	_get_active_code_edit().grab_focus()
+
+
+func _toggle_replace_bar(show_it: bool) -> void:
+	replace_bar.visible = show_it
+	if show_it:
+		replace_input.grab_focus()
+
+
+func _on_replace_pressed() -> void:
+	if _search_matches.is_empty() or _current_match_index < 0:
+		return
+	var code_edit := _get_active_code_edit()
+	var m: Dictionary = _search_matches[_current_match_index]
+	# Engine.replace_one expects {line, col, length}; panel state uses 'column'.
+	var engine_match := {"line": m["line"], "col": m["column"], "length": m["length"]}
+	code_edit.text = GmlSearchEngineScript.replace_one(code_edit.text, engine_match, replace_input.text)
+	_perform_search()
+	_on_search_next()
+
+
+func _on_replace_all_pressed() -> void:
+	var code_edit := _get_active_code_edit()
+	var result: Dictionary = GmlSearchEngineScript.replace_all(
+		code_edit.text,
+		search_input.text,
+		replace_input.text,
+		match_case_check.button_pressed,
+		regex_check.button_pressed,
+	)
+	code_edit.text = result["new_text"]
+	match_count_label.text = "Replaced %d" % result["count"]
+	_perform_search()
 
 
 func _on_search_text_changed(_new_text: String) -> void:
@@ -694,28 +747,21 @@ func _perform_search() -> void:
 		return
 
 	var code_edit = _get_active_code_edit()
-	var text = code_edit.text
-	var match_case = match_case_check.button_pressed
+	var engine_matches: Array = GmlSearchEngineScript.find_all(
+		code_edit.text,
+		search_text,
+		match_case_check.button_pressed,
+		regex_check.button_pressed,
+	)
 
-	if not match_case:
-		text = text.to_lower()
-		search_text = search_text.to_lower()
-
-	# Find all matches
-	var pos = 0
-	while true:
-		var found = text.find(search_text, pos)
-		if found == -1:
-			break
-
-		# Convert position to line and column
-		var line_col = _pos_to_line_col(code_edit.text, found)
+	# Translate engine's {line, col, length} -> panel's {line, column, length}
+	# so existing _goto_match / _highlight_matches logic keeps working.
+	for em in engine_matches:
 		_search_matches.append({
-			"line": line_col.line,
-			"column": line_col.column,
-			"length": search_input.text.length()
+			"line": em["line"],
+			"column": em["col"],
+			"length": em["length"],
 		})
-		pos = found + 1
 
 	# Update match count label
 	if _search_matches.is_empty():

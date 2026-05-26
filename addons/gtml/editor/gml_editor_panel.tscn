@@ -63,6 +63,11 @@ layout_mode = 2
 text = "Aa"
 tooltip_text = "Match case"
 
+[node name="RegexCheck" type="CheckBox" parent="MainContainer/SearchBar"]
+layout_mode = 2
+text = ".*"
+tooltip_text = "Use regular expression"
+
 [node name="PrevButton" type="Button" parent="MainContainer/SearchBar"]
 layout_mode = 2
 text = "◀"
@@ -82,6 +87,30 @@ text = ""
 layout_mode = 2
 text = "✕"
 tooltip_text = "Close search (Escape)"
+
+[node name="ReplaceBar" type="HBoxContainer" parent="MainContainer"]
+visible = false
+layout_mode = 2
+
+[node name="ReplaceLabel" type="Label" parent="MainContainer/ReplaceBar"]
+layout_mode = 2
+text = "Replace:"
+
+[node name="ReplaceInput" type="LineEdit" parent="MainContainer/ReplaceBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Replace with..."
+clear_button_enabled = true
+
+[node name="ReplaceButton" type="Button" parent="MainContainer/ReplaceBar"]
+layout_mode = 2
+text = "Replace"
+tooltip_text = "Replace current match"
+
+[node name="ReplaceAllButton" type="Button" parent="MainContainer/ReplaceBar"]
+layout_mode = 2
+text = "Replace All"
+tooltip_text = "Replace all matches"
 
 [node name="TabContainer" type="TabContainer" parent="MainContainer"]
 layout_mode = 2
