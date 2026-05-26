@@ -1,5 +1,60 @@
 # Changelog
 
+## 0.4.0
+
+### Features
+
+- **CSS custom properties + `var()` + `calc()`** (`GmlCssEval`):
+  - `--name: value` declarations on any selector cascade through descendants
+  - `var(--name)` and `var(--name, fallback)` substitute at compute-style
+    time against the inherited scope; recursive resolution of nested vars
+  - `calc(...)` evaluates flat arithmetic with `+ - * /` and standard
+    precedence. Unit rules: `+`/`-` need matching units, `*`/`/` accept at
+    most one unit-bearing operand. Mixed expressions emit a warning and
+    leave the substring intact.
+- **`:checked` pseudo-class** for CheckBox + radio inputs. Resolver routes
+  to a `_checked` bucket; `GmlInputBuilder` installs the bucket on the
+  CheckBox `pressed` theme stylebox slot (Godot treats `pressed` as the
+  toggle-on visual). Empty `:checked` rule installs `StyleBoxEmpty` for
+  explicit opt-out.
+- **CSS transforms** (`GmlTransformValues`):
+  - `translate(x[, y])` / `translateX` / `translateY` — px values
+  - `scale(s)` / `scale(sx, sy)` / `scaleX` / `scaleY` — unitless
+  - `rotate(45deg | 0.5rad | 0.25turn)` — normalized to radians
+  - Multiple functions compose left-to-right. Pivot defaults to centre
+    (`transform-origin: 50% 50%`).
+- **Form value collection on submit**: `GmlView.get_form_data()` returns
+  `{id|name -> value}` for every registered input — text, textarea,
+  checkbox, slider, select, and the *selected* radio per group keyed by
+  the group's name. Submit buttons now unconditionally emit
+  `form_submitted(get_form_data())` (previously the signal was unused).
+- **`@keydown` attribute** on inputs forwards key-down events to a new
+  `key_pressed(handler: String, event: InputEvent)` signal on `GmlView`.
+  Lets author scripts implement search-as-you-type, autocomplete, hotkeys.
+- **Editor inline parse-warnings overlay**: the GML editor panel grows a
+  PanelContainer that lists every HTML + CSS parser warning after save.
+  Each row is a click-to-jump button that activates the relevant tab and
+  positions the caret at the warning's line + column.
+- **FileSystem-signal hot reload**: in the editor, `GmlView` subscribes
+  to `EditorInterface.get_resource_filesystem().filesystem_changed` and
+  re-checks its files only when the project actually changes. The
+  per-frame `_process` mtime poll stays as a safety net for changes made
+  outside Godot.
+
+### Improvements
+
+- `GmlHtmlParser.get_warnings()` mirrors the CSS parser's contract; every
+  push_warning now carries `{line, col, msg}` for editor tooling.
+
+### Limitations / deferred
+
+- Transforms apply at build time and on resize; they do not yet interpolate
+  through the transition manager. `transform` inside a `:hover` rule will
+  snap instead of animating.
+- `calc()` does not yet handle mixed-unit subtraction (e.g.
+  `calc(100% - 20px)`). Same-unit and unitless arithmetic only.
+
+
 ## 0.3.1
 
 ### Fixes
