@@ -17,3 +17,6 @@ mono_crash.*.json
 
 # Disable all . directories
 .*/
+
+# Test artifacts
+tests/snapshots/.actual/

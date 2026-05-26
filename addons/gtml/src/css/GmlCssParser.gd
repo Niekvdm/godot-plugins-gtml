@@ -23,6 +23,32 @@ extends RefCounted
 var _pos: int = 0
 var _css: String = ""
 var _length: int = 0
+var _warnings: Array = []  # [{line:int, col:int, msg:String}]
+
+
+## Get all warnings emitted during the last parse. Each entry: {line, col, msg}.
+func get_warnings() -> Array:
+	return _warnings
+
+
+## Compute the 1-based line and column for a given byte position.
+func _line_col_for(p: int) -> Dictionary:
+	var line := 1
+	var col := 1
+	var limit: int = mini(p, _length)
+	for i in range(limit):
+		if _css[i] == "\n":
+			line += 1
+			col = 1
+		else:
+			col += 1
+	return {"line": line, "col": col}
+
+
+func _warn(msg: String) -> void:
+	var lc := _line_col_for(_pos)
+	_warnings.append({"line": lc["line"], "col": lc["col"], "msg": msg})
+	push_warning("GmlCssParser [%d:%d]: %s" % [lc["line"], lc["col"], msg])
 
 # Property categories for dispatch
 const PASSTHROUGH_PROPS = [
@@ -67,15 +93,31 @@ const TRANSITION_PROPS = [
 
 
 ## Represents a CSS rule.
+##
+## v0.2: a rule carries a structured ``GmlSelector.Selector`` and the resolver
+## matches against the live DOM with full combinator + specificity support.
+## The legacy fields (``selector_type`` / ``selector_value`` / ``pseudo_class``)
+## are derived from the rightmost compound and kept around so older callers
+## and serializers continue to function.
 class CssRule:
-	var selector_type: String = ""  # "tag", "class", "id"
-	var selector_value: String = ""  # The actual selector (e.g., "div", "container", "main")
-	var pseudo_class: String = ""  # Pseudo-class (e.g., "hover", "active", "focus")
-	var properties: Dictionary = {}  # {"display": "flex", "gap": 10, etc.}
+	var selector = null              # GmlSelector.Selector
+	var properties: Dictionary = {}  # {"display": "flex", "gap": 10, ...}
+	var source_index: int = 0        # rule's position in source for tie-breaking
+
+	# Legacy mirror of the rightmost compound — used by code paths and
+	# snapshot serializers that haven't migrated to the new selector engine yet.
+	var selector_type: String = ""   # "tag" | "class" | "id"
+	var selector_value: String = ""
+	var pseudo_class: String = ""    # First pseudo (legacy single-pseudo callers)
 
 	func _to_string() -> String:
-		var pseudo_str = ":" + pseudo_class if not pseudo_class.is_empty() else ""
+		var pseudo_str: String = ":" + pseudo_class if not pseudo_class.is_empty() else ""
 		return "%s:%s%s { %s }" % [selector_type, selector_value, pseudo_str, properties]
+
+	func specificity() -> Vector3i:
+		if selector == null:
+			return Vector3i(0, 0, 0)
+		return selector.specificity()
 
 
 ## Parse CSS string and return an array of CssRule.
@@ -83,6 +125,7 @@ func parse(css: String) -> Array:
 	_css = css
 	_pos = 0
 	_length = css.length()
+	_warnings.clear()
 
 	var rules: Array = []
 
@@ -93,55 +136,35 @@ func parse(css: String) -> Array:
 
 		var parsed_rules := _parse_rules_group()
 		for rule in parsed_rules:
+			rule.source_index = rules.size()
 			rules.append(rule)
 
 	return rules
 
 
 ## Parse CSS rules, handling comma-separated selectors.
-## Returns an array of CssRule objects.
+## Delegates selector parsing to GmlSelector so combinators + attribute
+## selectors + compound selectors are all supported.
 func _parse_rules_group() -> Array:
 	_skip_whitespace_and_comments()
 
-	# Parse all selectors (comma-separated)
-	var selectors: Array = []
-	while _pos < _length:
-		var selector := _parse_selector()
-		if selector.is_empty():
-			break
-
-		selectors.append(selector)
-		_skip_whitespace_and_comments()
-
-		# Check for comma (more selectors) or opening brace (properties)
-		if _peek() == ",":
-			_advance()  # consume comma
-			_skip_whitespace_and_comments()
-		elif _peek() == "{":
-			break
-		else:
-			# Might be a space (descendant selector) - skip to brace
-			while _pos < _length and _peek() != "{" and _peek() != ",":
-				if _peek() == " " or _peek() == "\t" or _peek() == "\n":
-					_skip_whitespace_and_comments()
-					# If next char is a selector char, this is a descendant selector
-					# Just use the first selector and skip the rest
-					if _peek().is_valid_identifier() or _peek() == "." or _peek() == "#":
-						while _pos < _length and _peek() != "{" and _peek() != ",":
-							_advance()
-						break
-				else:
-					break
-
-	if selectors.is_empty():
+	# Read the whole selector list up to the opening brace, then hand the
+	# string off to the selector parser. This avoids reimplementing tokenization
+	# in two places.
+	var selector_text_start := _pos
+	while _pos < _length and _peek() != "{":
+		_advance()
+	if _pos >= _length:
+		_warn("Expected '{' after selector(s)")
+		return []
+	var selector_text: String = _css.substr(selector_text_start, _pos - selector_text_start).strip_edges()
+	if selector_text.is_empty():
 		return []
 
-	_skip_whitespace_and_comments()
+	var selectors: Array = GmlSelector.parse_group(selector_text)
 
-	# Expect opening brace
-	if not _consume("{"):
-		push_warning("GmlCssParser: Expected '{' after selector(s)")
-		return []
+	# Consume the opening brace
+	_consume("{")
 
 	# Parse properties
 	var properties := _parse_properties()
@@ -149,57 +172,61 @@ func _parse_rules_group() -> Array:
 	# Expect closing brace
 	_skip_whitespace_and_comments()
 	if not _consume("}"):
-		push_warning("GmlCssParser: Expected '}' after properties")
+		_warn("Expected '}' after properties")
 		# Try to recover
 		while _pos < _length and _peek() != "}":
 			_advance()
 		_advance()
 
-	# Create a rule for each selector
+	# Create one rule per selector. Deep-clone properties so mutations in one
+	# rule's nested dicts can never bleed into a sibling rule.
 	var rules: Array = []
-	for selector in selectors:
+	for sel in selectors:
 		var rule := CssRule.new()
-
-		# Extract pseudo-class if present (e.g., "button:hover" -> "button" + "hover")
-		var pseudo_class: String = ""
-		var base_selector: String = selector
-
-		# Find pseudo-class (but not at the start, which would be invalid)
-		var colon_pos: int = selector.find(":")
-		if colon_pos > 0:
-			base_selector = selector.substr(0, colon_pos)
-			pseudo_class = selector.substr(colon_pos + 1)
-
-		if base_selector.begins_with("#"):
-			rule.selector_type = "id"
-			rule.selector_value = base_selector.substr(1)
-		elif base_selector.begins_with("."):
-			rule.selector_type = "class"
-			rule.selector_value = base_selector.substr(1)
-		else:
-			rule.selector_type = "tag"
-			rule.selector_value = base_selector
-
-		rule.pseudo_class = pseudo_class
-		rule.properties = properties.duplicate()
+		rule.selector = sel
+		rule.properties = _deep_clone_properties(properties)
+		_populate_legacy_fields(rule, sel)
 		rules.append(rule)
-
 	return rules
 
 
-## Parse a CSS selector (including pseudo-classes like :hover).
-func _parse_selector() -> String:
-	var start := _pos
+## Mirror the rightmost compound + first pseudo onto the legacy fields so older
+## consumers (snapshot serializer, debug output) keep working until they migrate.
+static func _populate_legacy_fields(rule, sel) -> void:
+	if sel == null or sel.compounds.is_empty():
+		return
+	var last_idx: int = sel.compounds.size() - 1
+	var c = sel.compounds[last_idx]
+	if not c.id.is_empty():
+		rule.selector_type = "id"
+		rule.selector_value = c.id
+	elif not c.classes.is_empty():
+		rule.selector_type = "class"
+		rule.selector_value = c.classes[0]
+	elif not c.tag.is_empty():
+		rule.selector_type = "tag"
+		rule.selector_value = c.tag
+	if c.pseudos.size() > 0:
+		rule.pseudo_class = c.pseudos[0]
 
-	while _pos < _length:
-		var ch := _peek()
-		# Include ":" to support pseudo-classes like :hover, :active, :focus
-		if ch.is_valid_identifier() or ch == "-" or ch == "_" or ch == "." or ch == "#" or ch == ":" or ch.is_valid_int():
-			_advance()
-		else:
-			break
 
-	return _css.substr(start, _pos - start)
+## Deep-clone a properties dictionary so nested Dictionaries / Arrays are independent.
+static func _deep_clone_properties(src: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	for k in src:
+		out[k] = _deep_clone_value(src[k])
+	return out
+
+
+static func _deep_clone_value(v: Variant) -> Variant:
+	if v is Dictionary:
+		return _deep_clone_properties(v)
+	if v is Array:
+		var arr: Array = []
+		for x in v:
+			arr.append(_deep_clone_value(x))
+		return arr
+	return v
 
 
 ## Parse CSS properties inside a rule block.
@@ -219,7 +246,7 @@ func _parse_properties() -> Dictionary:
 		_skip_whitespace_and_comments()
 
 		if not _consume(":"):
-			push_warning("GmlCssParser: Expected ':' after property name '%s'" % prop_name)
+			_warn("Expected ':' after property name '%s'" % prop_name)
 			break
 
 		_skip_whitespace_and_comments()
@@ -251,17 +278,49 @@ func _parse_property_name() -> String:
 	return _css.substr(start, _pos - start)
 
 
-## Parse a property value (until ; or }).
+## Parse a property value (until ; or } at the top level).
+## Quoted strings and parenthesized expressions are treated as opaque so
+## punctuation inside them (semicolons in "a;b", commas in url(foo,bar)) does
+## not terminate the value.
 func _parse_property_value() -> String:
 	var start := _pos
+	var paren_depth := 0
 
 	while _pos < _length:
 		var ch := _peek()
-		if ch == ";" or ch == "}":
+
+		if ch == "\"" or ch == "'":
+			_skip_string(ch)
+			continue
+		if ch == "(":
+			paren_depth += 1
+			_advance()
+			continue
+		if ch == ")":
+			if paren_depth > 0:
+				paren_depth -= 1
+			_advance()
+			continue
+		if paren_depth == 0 and (ch == ";" or ch == "}"):
 			break
 		_advance()
 
 	return _css.substr(start, _pos - start).strip_edges()
+
+
+## Skip past a quoted CSS string, handling backslash escapes.
+func _skip_string(quote: String) -> void:
+	_advance()  # opening quote
+	while _pos < _length:
+		var ch := _peek()
+		if ch == "\\" and _pos + 1 < _length:
+			_advance()
+			_advance()
+			continue
+		if ch == quote:
+			_advance()  # closing quote
+			return
+		_advance()
 
 
 ## Convert a property value string to the appropriate type.

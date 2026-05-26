@@ -26,13 +26,13 @@ addons/gtml/src/
     ├── GmlTransitionManager.gd   # CSS transitions
     ├── SvgDrawControl.gd         # SVG drawing control
     └── elements/                 # Element builders
-        ├── GmlContainerElements.gd
-        ├── GmlTextElements.gd
-        ├── GmlButtonElements.gd
-        ├── GmlInputElements.gd
-        ├── GmlMediaElements.gd
-        ├── GmlListElements.gd
-        └── GmlAnchorElements.gd
+        ├── GmlContainerBuilder.gd
+        ├── GmlTextBuilder.gd
+        ├── GmlButtonBuilder.gd
+        ├── GmlInputBuilder.gd
+        ├── GmlMediaBuilder.gd
+        ├── GmlListBuilder.gd
+        └── GmlAnchorBuilder.gd
 ```
 
 ## Adding a New CSS Property
@@ -124,7 +124,7 @@ const PASSTHROUGH_PROPS = [
 ]
 ```
 
-**2. Apply in GmlTextElements.gd:**
+**2. Apply in GmlTextBuilder.gd:**
 
 ```gdscript
 static func _build_text_inner(node, ctx: Dictionary, default_size: int, autowrap: bool) -> Control:
@@ -303,7 +303,7 @@ GmlStyles.apply_cursor_style(button, style)
 
 ## Extending SVG Support
 
-Add new SVG elements in `GmlMediaElements._parse_svg_element()`:
+Add new SVG elements in `GmlMediaBuilder._parse_svg_element()`:
 
 ```gdscript
 static func _parse_svg_element(svg_control, node, parent_stroke, parent_fill, parent_stroke_width) -> void:
@@ -395,9 +395,9 @@ if not src.is_empty() and ResourceLoader.exists(src):
 
 Look at existing element builders for patterns:
 
-- Container elements → `GmlContainerElements.gd`
-- Text elements → `GmlTextElements.gd`
-- Interactive elements → `GmlButtonElements.gd`, `GmlInputElements.gd`
+- Container elements → `GmlContainerBuilder.gd`
+- Text elements → `GmlTextBuilder.gd`
+- Interactive elements → `GmlButtonBuilder.gd`, `GmlInputBuilder.gd`
 
 ## See Also
 

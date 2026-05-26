@@ -1,97 +1,126 @@
 class_name GmlStyleResolver
 extends RefCounted
 
-## Resolves CSS rules to DOM nodes.
-## Matches selectors and merges styles with proper cascade priority.
+## Resolves CSS rules against a DOM tree using the v0.2 selector engine.
 ##
-## Priority (lowest to highest): tag < class < id
-## Pseudo-classes (:hover, :active, :focus) are resolved separately.
+## For each node we collect all rules whose selector matches that node, then
+## sort by (specificity, source order) and merge properties in increasing
+## priority so later wins. Pseudo-class rules (``:hover`` / ``:active`` /
+## ``:focus``) feed dedicated sub-dictionaries so the renderer can swap them
+## in based on runtime input state.
+
 
 ## Resolve all styles for a DOM tree.
-## Returns a Dictionary mapping GmlNode -> style Dictionary.
-## The style Dictionary contains:
-##   - Regular properties at the top level
-##   - "_hover" key with hover-specific properties (if any)
-##   - "_active" key with active-specific properties (if any)
-##   - "_focus" key with focus-specific properties (if any)
+## Returns ``Dictionary[GmlNode -> Dictionary]`` where the value is the merged
+## style for that node, with ``_hover`` / ``_active`` / ``_focus`` sub-dicts
+## holding pseudo-class overrides.
 func resolve(root, rules: Array) -> Dictionary:
 	var styles: Dictionary = {}
-	_resolve_node(root, rules, styles)
+	_resolve_node(root, [], rules, styles)
 	return styles
 
 
-## Recursively resolve styles for a node and its children.
-func _resolve_node(node, rules: Array, styles: Dictionary) -> void:
+func _resolve_node(node, ancestor_chain: Array, rules: Array, styles: Dictionary) -> void:
 	if node == null or node.is_text_node:
 		return
 
-	# Compute style for this node (including pseudo-class styles)
-	var computed_style := _compute_style(node, rules)
-	if not computed_style.is_empty():
-		styles[node] = computed_style
+	var chain := ancestor_chain.duplicate()
+	chain.append(node)
 
-	# Process children
+	var computed := _compute_style(node, chain, rules)
+	if not computed.is_empty():
+		styles[node] = computed
+
 	for child in node.children:
-		_resolve_node(child, rules, styles)
+		_resolve_node(child, chain, rules, styles)
 
 
-## Compute the final style for a single node.
-func _compute_style(node, rules: Array) -> Dictionary:
+## Walks all rules, gathers the matching ones for ``node``, sorts them by
+## (specificity, source_index), and merges them into one final style dict.
+func _compute_style(node, ancestor_chain: Array, rules: Array) -> Dictionary:
+	var matches: Array = []  # Array of {rule, specificity, pseudo}
+
+	for rule in rules:
+		if rule.selector == null:
+			continue
+		if not GmlSelector.matches(rule.selector, ancestor_chain):
+			continue
+		# Use the rightmost compound's pseudo to decide the style bucket.
+		# Multi-pseudo (a:hover:focus) is deferred to v0.3 — we currently route
+		# such rules to the first pseudo's bucket.
+		var pseudo := _primary_pseudo(rule.selector)
+		matches.append({
+			"rule": rule,
+			"specificity": rule.specificity(),
+			"pseudo": pseudo,
+			"source_index": rule.source_index,
+		})
+
+	if matches.is_empty():
+		return {}
+
+	matches.sort_custom(_compare_matches)
+
 	var style: Dictionary = {}
 	var hover_style: Dictionary = {}
 	var active_style: Dictionary = {}
 	var focus_style: Dictionary = {}
+	var disabled_style: Dictionary = {}
 
-	# Apply rules in cascade order: tag < class < id
+	for m in matches:
+		var props: Dictionary = m["rule"].properties
+		match m["pseudo"]:
+			"":
+				_merge_properties(style, props)
+			"hover":
+				_merge_properties(hover_style, props)
+			"active":
+				_merge_properties(active_style, props)
+			"focus":
+				_merge_properties(focus_style, props)
+			"disabled":
+				_merge_properties(disabled_style, props)
+			_:
+				# Drop unknown pseudo rules — merging them into the base style
+				# would let a typo like :hovr silently overwrite the un-hovered
+				# appearance. Warn the developer so the typo is visible.
+				push_warning("GmlStyleResolver: unknown pseudo-class ':%s' — rule dropped" % m["pseudo"])
 
-	# 1. Tag rules
-	for rule in rules:
-		if rule.selector_type == "tag" and rule.selector_value == node.tag:
-			_apply_rule_by_pseudo(rule, style, hover_style, active_style, focus_style)
-
-	# 2. Class rules
-	var classes = node.get_classes()
-	for rule in rules:
-		if rule.selector_type == "class" and rule.selector_value in classes:
-			_apply_rule_by_pseudo(rule, style, hover_style, active_style, focus_style)
-
-	# 3. ID rules
-	var id = node.get_id()
-	if not id.is_empty():
-		for rule in rules:
-			if rule.selector_type == "id" and rule.selector_value == id:
-				_apply_rule_by_pseudo(rule, style, hover_style, active_style, focus_style)
-
-	# Add pseudo-class styles as nested dictionaries
 	if not hover_style.is_empty():
 		style["_hover"] = hover_style
 	if not active_style.is_empty():
 		style["_active"] = active_style
 	if not focus_style.is_empty():
 		style["_focus"] = focus_style
+	if not disabled_style.is_empty():
+		style["_disabled"] = disabled_style
 
 	return style
 
 
-## Apply a rule to the appropriate style dictionary based on pseudo-class.
-func _apply_rule_by_pseudo(rule, style: Dictionary, hover_style: Dictionary, active_style: Dictionary, focus_style: Dictionary) -> void:
-	match rule.pseudo_class:
-		"hover":
-			_merge_properties(hover_style, rule.properties)
-		"active":
-			_merge_properties(active_style, rule.properties)
-		"focus":
-			_merge_properties(focus_style, rule.properties)
-		"":
-			# No pseudo-class - apply to base style
-			_merge_properties(style, rule.properties)
-		_:
-			# Unknown pseudo-class - apply to base style with warning
-			push_warning("GmlStyleResolver: Unknown pseudo-class ':%s'" % rule.pseudo_class)
-			_merge_properties(style, rule.properties)
+static func _primary_pseudo(sel) -> String:
+	if sel == null or sel.compounds.is_empty():
+		return ""
+	var last = sel.compounds[sel.compounds.size() - 1]
+	if last.pseudos.is_empty():
+		return ""
+	return last.pseudos[0]
 
 
-## Merge properties from source into target.
-func _merge_properties(target: Dictionary, source: Dictionary) -> void:
+## Order rules so the highest-priority is last (so the final merge wins).
+## Priority: specificity tuple ascending, then source_index ascending.
+static func _compare_matches(a: Dictionary, b: Dictionary) -> bool:
+	var sa: Vector3i = a["specificity"]
+	var sb: Vector3i = b["specificity"]
+	if sa.x != sb.x:
+		return sa.x < sb.x
+	if sa.y != sb.y:
+		return sa.y < sb.y
+	if sa.z != sb.z:
+		return sa.z < sb.z
+	return a["source_index"] < b["source_index"]
+
+
+static func _merge_properties(target: Dictionary, source: Dictionary) -> void:
 	for key in source:
 		target[key] = source[key]

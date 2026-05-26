@@ -12,6 +12,17 @@ const GmlNodeScript = preload("res://addons/gtml/src/html_parser/GmlNode.gd")
 const SELF_CLOSING_TAGS := ["img", "br", "hr", "input", "meta", "link", "circle", "ellipse", "line", "path", "polygon", "polyline", "rect", "use"]
 const MAX_DEPTH := 100  # Prevent stack overflow on deeply nested HTML
 
+# Minimal HTML named entity table. Anything not listed is left as the literal
+# &name; sequence so user content is preserved on lookup miss.
+const NAMED_ENTITIES := {
+	"amp": "&", "lt": "<", "gt": ">", "quot": "\"", "apos": "'",
+	"nbsp": " ", "copy": "©", "reg": "®", "trade": "™",
+	"hellip": "…", "mdash": "—", "ndash": "–",
+	"lsquo": "‘", "rsquo": "’", "ldquo": "“", "rdquo": "”",
+	"laquo": "«", "raquo": "»", "deg": "°", "plusmn": "±",
+	"times": "×", "divide": "÷", "middot": "·", "bull": "•",
+}
+
 var _pos: int = 0
 var _html: String = ""
 var _length: int = 0
@@ -219,7 +230,7 @@ func _parse_attribute_value() -> String:
 
 		var value := _html.substr(start, _pos - start)
 		_advance()  # Skip closing quote
-		return value
+		return _decode_entities(value)
 	else:
 		# Unquoted value
 		var start := _pos
@@ -228,7 +239,7 @@ func _parse_attribute_value() -> String:
 			if ch == " " or ch == ">" or ch == "/" or ch == "\t" or ch == "\n":
 				break
 			_advance()
-		return _html.substr(start, _pos - start)
+		return _decode_entities(_html.substr(start, _pos - start))
 
 
 ## Parse a text node.
@@ -240,7 +251,10 @@ func _parse_text():
 
 	var text := _html.substr(start, _pos - start)
 
-	# Normalize whitespace
+	# Decode HTML entities first, then collapse whitespace.
+	# Entity decoding must precede normalization so &nbsp; -> " " participates
+	# in the whitespace collapse instead of being preserved as a literal.
+	text = _decode_entities(text)
 	text = _normalize_whitespace(text)
 
 	if text.is_empty():
@@ -350,3 +364,78 @@ func _consume(expected: String) -> bool:
 		_advance()
 		return true
 	return false
+
+
+## Decode HTML entities in a string. Unknown entities are passed through verbatim
+## so user content is preserved on lookup miss.
+static func _decode_entities(s: String) -> String:
+	if s.find("&") < 0:
+		return s
+
+	var out := ""
+	var i := 0
+	var n := s.length()
+	while i < n:
+		var ch := s[i]
+		if ch != "&":
+			out += ch
+			i += 1
+			continue
+
+		# Find terminating semicolon within a reasonable window. The window
+		# must cover the longest plausible entity: numeric refs like
+		# &#x10FFFF; (10 chars) and possibly overflowing user input we still
+		# want to recognize-and-replace (vs. passing through as literal "&").
+		var semi := s.find(";", i + 1)
+		if semi < 0 or semi - i > 16:
+			out += ch
+			i += 1
+			continue
+
+		var entity := s.substr(i + 1, semi - i - 1)
+		# Numeric entities: always consumed. Valid -> decoded codepoint,
+		# invalid (overflow / surrogate / non-numeric) -> U+FFFD replacement.
+		# Named entities: decoded if known, otherwise preserved verbatim so
+		# user-authored "&unknown;" content survives intact.
+		if entity.begins_with("#"):
+			out += _decode_numeric_entity(entity)
+		else:
+			var named := _decode_named_entity(entity)
+			if named.is_empty():
+				out += s.substr(i, semi - i + 1)
+			else:
+				out += named
+		i = semi + 1
+	return out
+
+
+## Decode a numeric character reference ("#65", "#x2603"). Returns U+FFFD
+## (the Unicode replacement character) for any unparseable, overflowing, or
+## surrogate codepoint per the HTML spec — never an empty string and never
+## the raw entity, so invalid numeric refs can't masquerade as user text.
+const REPLACEMENT_CHAR := "�"
+
+static func _decode_numeric_entity(entity: String) -> String:
+	var num_part := entity.substr(1)
+	var code: int = 0
+	if num_part.begins_with("x") or num_part.begins_with("X"):
+		code = num_part.substr(1).hex_to_int()
+	elif num_part.is_valid_int():
+		code = num_part.to_int()
+	else:
+		return REPLACEMENT_CHAR
+	if code <= 0 or code > 0x10FFFF:
+		return REPLACEMENT_CHAR
+	if code >= 0xD800 and code <= 0xDFFF:
+		return REPLACEMENT_CHAR
+	return String.chr(code)
+
+
+## Decode a named entity. Returns "" if unknown — caller is responsible for
+## preserving the raw "&name;" verbatim in that case.
+static func _decode_named_entity(entity: String) -> String:
+	if entity.is_empty():
+		return ""
+	if NAMED_ENTITIES.has(entity):
+		return NAMED_ENTITIES[entity]
+	return ""
