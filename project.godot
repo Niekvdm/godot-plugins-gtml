@@ -1,12 +1,21 @@
-; Godot project file for GTML addon development + tests.
-; Not shipped with the addon - consumers only need addons/gtml/.
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
 config/name="GTML Addon Dev"
-config/features=PackedStringArray("4.4", "GL Compatibility")
+config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://addons/gtml/icons/gml_view.svg"
 
 [editor_plugins]

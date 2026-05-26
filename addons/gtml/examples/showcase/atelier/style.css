@@ -1,0 +1,290 @@
+/* Atelier — editorial reader
+ * Editorial / magazine. Warm cream surface, deep ink text. Single rust accent.
+ * Surface-color hierarchy for depth (no shadows, no borders on the body).
+ * Generous 16/24/32/48 spacing. Letter-spaced eyebrows show off v0.3.
+ */
+
+.page {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: #f5f0e8;
+    color: #1a1612;
+}
+
+/* ─── Masthead ──────────────────────────────────────── */
+
+.masthead {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 48px;
+    padding-right: 48px;
+    padding-top: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #d8cfc0;
+}
+
+.masthead-left {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+}
+
+.logo {
+    font-size: 18px;
+    color: #1a1612;
+    font-weight: 700;
+    letter-spacing: 6;
+}
+
+.tagline {
+    font-size: 11px;
+    color: #6e6457;
+    letter-spacing: 2;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.masthead-right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.issue {
+    font-size: 11px;
+    color: #a8451f;
+    letter-spacing: 3;
+    font-weight: 600;
+}
+
+/* ─── Content split ─────────────────────────────────── */
+
+.content {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+/* ─── Essay column ──────────────────────────────────── */
+
+.essay {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding-left: 80px;
+    padding-right: 80px;
+    padding-top: 56px;
+    padding-bottom: 56px;
+    gap: 24px;
+    overflow-y: auto;
+    max-width: 720px;
+}
+
+.essay-meta {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+}
+
+.essay-section {
+    font-size: 11px;
+    color: #a8451f;
+    letter-spacing: 4;
+    font-weight: 700;
+}
+
+.essay-dot {
+    color: #c4b8a4;
+    font-size: 12px;
+}
+
+.essay-kind {
+    font-size: 11px;
+    color: #6e6457;
+    letter-spacing: 4;
+    font-weight: 600;
+}
+
+.essay-title {
+    font-size: 48px;
+    color: #1a1612;
+    font-weight: 700;
+    line-height: 4;
+    margin-bottom: 8px;
+}
+
+.essay-deck {
+    font-size: 18px;
+    color: #4a4035;
+    line-height: 8;
+    font-weight: 400;
+    margin-bottom: 16px;
+}
+
+.essay-byline {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #d8cfc0;
+    margin-bottom: 16px;
+}
+
+.byline-name {
+    font-size: 12px;
+    color: #1a1612;
+    font-weight: 600;
+    letter-spacing: 1;
+}
+
+.byline-sep {
+    color: #c4b8a4;
+    font-size: 11px;
+}
+
+.byline-time {
+    font-size: 11px;
+    color: #6e6457;
+    letter-spacing: 1;
+}
+
+.byline-date {
+    font-size: 11px;
+    color: #6e6457;
+    letter-spacing: 1;
+}
+
+.essay-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.lead {
+    font-size: 17px;
+    color: #2a2218;
+    line-height: 9;
+    font-weight: 500;
+}
+
+.essay-body p {
+    font-size: 15px;
+    color: #2a2218;
+    line-height: 10;
+}
+
+.callout {
+    font-size: 20px;
+    color: #a8451f;
+    font-weight: 600;
+    line-height: 6;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    padding-left: 24px;
+    border-left: 3px solid #a8451f;
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+/* ─── Sidebar ───────────────────────────────────────── */
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 280px;
+    background-color: #ebe3d4;
+    padding-left: 32px;
+    padding-right: 32px;
+    padding-top: 56px;
+    padding-bottom: 56px;
+    gap: 40px;
+    border-left: 1px solid #d8cfc0;
+    /* Sidebar content can exceed viewport height — scroll independently of
+       the essay column so neither falls off the bottom. */
+    overflow-y: auto;
+}
+
+.side-block {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.side-heading {
+    font-size: 11px;
+    color: #6e6457;
+    letter-spacing: 4;
+    font-weight: 700;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #c4b8a4;
+    margin-bottom: 4px;
+}
+
+.side-list {
+    display: flex;
+    flex-direction: column;
+    list-style-type: none;
+    gap: 2px;
+}
+
+.side-item {
+    font-size: 13px;
+    color: #2a2218;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+    border-radius: 2px;
+    /* Opaque base matches the sidebar so hover interpolates clean. */
+    background-color: #ebe3d4;
+    transition: background-color 180ms, color 180ms;
+}
+
+.side-item:hover {
+    background-color: #ddd3c0;
+}
+
+.side-active {
+    color: #a8451f;
+    font-weight: 600;
+    border-left: 2px solid #a8451f;
+    padding-left: 10px;
+}
+
+.side-item-link {
+    font-size: 13px;
+    color: #4a4035;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+    border-radius: 2px;
+    background-color: #ebe3d4;
+    border-bottom: 1px solid #ddd3c0;
+    transition: color 180ms, border-bottom 180ms;
+}
+
+.side-item-link:hover {
+    color: #a8451f;
+    border-bottom: 1px solid #a8451f;
+}
+
+.side-block-quiet {
+    background-color: #e0d8c8;
+    padding: 20px;
+    border-radius: 2px;
+}
+
+.side-note {
+    font-size: 12px;
+    color: #4a4035;
+    line-height: 8;
+}

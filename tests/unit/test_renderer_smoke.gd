@@ -16,12 +16,27 @@ const EXAMPLES := [
 	"transitions",
 ]
 
+const SHOWCASES := [
+	{"name": "atlas", "dir": "showcase/atlas"},
+	{"name": "atelier", "dir": "showcase/atelier"},
+	{"name": "forge", "dir": "showcase/forge"},
+]
+
 
 func _build_view(name: String) -> GmlView:
 	var view: GmlView = GmlViewScript.new()
 	view.html_path = "res://addons/gtml/examples/%s.html" % name
 	view.css_path = "res://addons/gtml/examples/%s.css" % name
 	view.size = Vector2(1280, 720)
+	add_child_autofree(view)
+	return view
+
+
+func _build_showcase(spec: Dictionary) -> GmlView:
+	var view: GmlView = GmlViewScript.new()
+	view.html_path = "res://addons/gtml/examples/%s/index.html" % spec["dir"]
+	view.css_path = "res://addons/gtml/examples/%s/style.css" % spec["dir"]
+	view.size = Vector2(1280, 800)
 	add_child_autofree(view)
 	return view
 
@@ -55,6 +70,23 @@ func test_css_features_renders() -> void:
 func test_transitions_renders() -> void:
 	var v := _build_view("transitions")
 	await _assert_built(v, "transitions")
+
+
+func test_showcase_atlas_renders() -> void:
+	var v := _build_showcase(SHOWCASES[0])
+	await _assert_built(v, "atlas")
+
+
+func test_showcase_atelier_renders() -> void:
+	var v := _build_showcase(SHOWCASES[1])
+	await _assert_built(v, "atelier")
+
+
+func test_showcase_forge_renders() -> void:
+	# Regression pin for the </input> hang that originally surfaced when
+	# opening the Forge demo in the editor.
+	var v := _build_showcase(SHOWCASES[2])
+	await _assert_built(v, "forge")
 
 
 func test_get_element_by_id_returns_control() -> void:
