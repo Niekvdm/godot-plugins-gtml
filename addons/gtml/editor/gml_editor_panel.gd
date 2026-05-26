@@ -94,9 +94,13 @@ var _color_picker_open_count: int = 0
 
 
 func _ready() -> void:
-	if not Engine.is_editor_hint():
-		return
+	# Always run setup so integration tests can instantiate the scene
+	# headlessly. The previous `if not Engine.is_editor_hint(): return`
+	# guard was historical — the panel works fine outside the editor host.
+	_setup_panel()
 
+
+func _setup_panel() -> void:
 	# Connect button signals
 	save_button.pressed.connect(_on_save_pressed)
 	reload_button.pressed.connect(_on_reload_pressed)
@@ -154,6 +158,12 @@ func _ready() -> void:
 		ce.code_completion_enabled = true
 		ce.code_completion_prefixes = ["<", " ", "\"", ":", ".", "#", "("]
 		ce.code_completion_requested.connect(_on_code_completion_requested.bind(ce))
+
+	# Multi-cursor (Task 7) — enable secondary carets on both buffers. Keybinds
+	# (Ctrl+D / Ctrl+L / Ctrl+Alt+Up/Down) are wired in _input below. The
+	# Godot 4.6 property is `caret_multiple` (TextEdit base class).
+	for ce in [html_code_edit, css_code_edit]:
+		ce.caret_multiple = true
 
 	# Debounced rescan on edits so the gutter stays in sync.
 	html_code_edit.text_changed.connect(_schedule_color_rescan.bind("html"))
@@ -214,6 +224,72 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			else:
 				_on_search_next()
 			get_viewport().set_input_as_handled()
+
+
+# Multi-cursor shortcuts (Task 7). These live on _input rather than
+# _unhandled_key_input because CodeEdit consumes most key events itself when
+# focused; _input fires earlier in the dispatch chain.
+func _input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if not (event is InputEventKey) or not event.pressed:
+		return
+	var code_edit := _get_active_code_edit()
+	if code_edit == null or not code_edit.has_focus():
+		return
+
+	if event.ctrl_pressed and event.alt_pressed and event.keycode == KEY_DOWN:
+		_add_caret_relative(code_edit, 1)
+		get_viewport().set_input_as_handled()
+	elif event.ctrl_pressed and event.alt_pressed and event.keycode == KEY_UP:
+		_add_caret_relative(code_edit, -1)
+		get_viewport().set_input_as_handled()
+	elif event.ctrl_pressed and event.keycode == KEY_D:
+		_add_caret_at_next_match(code_edit)
+		get_viewport().set_input_as_handled()
+	elif event.ctrl_pressed and event.keycode == KEY_L:
+		var line := code_edit.get_caret_line()
+		code_edit.select(line, 0, line, code_edit.get_line(line).length())
+		get_viewport().set_input_as_handled()
+
+
+func _add_caret_at_next_match(code_edit: CodeEdit) -> void:
+	var selected := code_edit.get_selected_text(0)
+	if selected.is_empty():
+		# Promote the word under the caret to a selection so repeated Ctrl+D
+		# behaves like other editors.
+		var line := code_edit.get_caret_line()
+		var col := code_edit.get_caret_column()
+		var line_text := code_edit.get_line(line)
+		var word_start := col
+		while word_start > 0 and (line_text[word_start - 1].is_valid_identifier() or line_text[word_start - 1] == "-"):
+			word_start -= 1
+		var word_end := col
+		while word_end < line_text.length() and (line_text[word_end].is_valid_identifier() or line_text[word_end] == "-"):
+			word_end += 1
+		if word_end > word_start:
+			code_edit.select(line, word_start, line, word_end)
+			selected = code_edit.get_selected_text(0)
+	if selected.is_empty():
+		return
+
+	var matches: Array = GmlSearchEngineScript.find_all(code_edit.text, selected, true, false)
+	if matches.size() < 2:
+		return
+	# Find the next match strictly after the primary caret position.
+	var anchor_line := code_edit.get_caret_line(0)
+	var anchor_col := code_edit.get_caret_column(0)
+	for m in matches:
+		if m["line"] > anchor_line or (m["line"] == anchor_line and m["col"] > anchor_col):
+			code_edit.add_caret(m["line"], m["col"])
+			return
+
+
+func _add_caret_relative(code_edit: CodeEdit, delta: int) -> void:
+	var line := code_edit.get_caret_line()
+	var col := code_edit.get_caret_column()
+	var target_line := clampi(line + delta, 0, code_edit.get_line_count() - 1)
+	code_edit.add_caret(target_line, col)
 
 
 #region Public API
