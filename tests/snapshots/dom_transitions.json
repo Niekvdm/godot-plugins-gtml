@@ -1,0 +1,706 @@
+{
+  "_t": "el",
+  "tag": "section",
+  "attrs": {
+    "class": "showcase"
+  },
+  "children": [
+    {
+      "_t": "el",
+      "tag": "header",
+      "attrs": {
+        "class": "page-header"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "h1",
+          "attrs": {
+            "class": "title-shadow"
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "CSS Transitions Showcase"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_t": "el",
+      "tag": "article",
+      "attrs": {
+        "class": "card"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "h2",
+          "attrs": {
+
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "Button Hover Transitions"
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "card-content"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+                "class": "description"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Hover over buttons to see smooth color transitions"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "row"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    "class": "btn-transition-fast"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Fast (0.15s)"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    "class": "btn-transition-normal"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Normal (0.3s)"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    "class": "btn-transition-slow"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Slow (0.5s)"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_t": "el",
+      "tag": "article",
+      "attrs": {
+        "class": "card"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "h2",
+          "attrs": {
+
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "Timing Functions"
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "card-content"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+                "class": "description"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Different easing curves for transitions"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "row"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    "class": "btn-ease-linear"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Linear"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    "class": "btn-ease-ease"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Ease"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    "class": "btn-ease-in"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Ease In"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    "class": "btn-ease-out"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Ease Out"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    "class": "btn-ease-in-out"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Ease In-Out"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_t": "el",
+      "tag": "article",
+      "attrs": {
+        "class": "card"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "h2",
+          "attrs": {
+
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "Button Pressed State"
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "card-content"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+                "class": "description"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Click and hold to see pressed state transitions"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "row"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    "class": "btn-press-primary"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Primary Action"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    "class": "btn-press-danger"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Danger Action"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    "class": "btn-press-success"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Success Action"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_t": "el",
+      "tag": "article",
+      "attrs": {
+        "class": "card"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "h2",
+          "attrs": {
+
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "Input Focus Transitions"
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "card-content"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+                "class": "description"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Click inputs to see focus transition effects"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "form-grid"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "form-group"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "label",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Border Glow Effect"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "input",
+                      "attrs": {
+                        "class": "input-glow",
+                        "placeholder": "Focus me...",
+                        "type": "text"
+                      },
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "form-group"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "label",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Background Shift"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "input",
+                      "attrs": {
+                        "class": "input-bg-shift",
+                        "placeholder": "Focus me...",
+                        "type": "text"
+                      },
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "form-group"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "label",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Combined Effect"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "input",
+                      "attrs": {
+                        "class": "input-combined",
+                        "placeholder": "Focus me...",
+                        "type": "text"
+                      },
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_t": "el",
+      "tag": "article",
+      "attrs": {
+        "class": "card"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "h2",
+          "attrs": {
+
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "Container Hover Effects"
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "card-content"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+                "class": "description"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Hover over containers to see background transitions"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "row"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "hover-box hover-bg-change"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Background Color"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "hover-box hover-border-change"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Border Color"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "hover-box hover-multi-prop"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Multiple Props"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_t": "el",
+      "tag": "article",
+      "attrs": {
+        "class": "card"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "h2",
+          "attrs": {
+
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "Transition Delay"
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "card-content"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+                "class": "description"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Hover to see staggered transitions with delays"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "row"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "delay-box delay-0"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "No Delay"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "delay-box delay-1"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "0.1s Delay"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "delay-box delay-2"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "0.2s Delay"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "delay-box delay-3"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "0.3s Delay"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

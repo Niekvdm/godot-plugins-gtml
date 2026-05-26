@@ -2,16 +2,17 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b3wvvgdw1slmi"
-path="res://.godot/imported/gml_view.svg-b64a9ab53f52c0947b8bec20926e999c.ctex"
+uid="uid://ljc2viafngwd"
+path="res://.godot/imported/HSplitContainer.svg-81e594d94ee80e4176e099672ef6025b.ctex"
 metadata={
+"has_editor_variant": true,
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/gtml/icons/gml_view.svg"
-dest_files=["res://.godot/imported/gml_view.svg-b64a9ab53f52c0947b8bec20926e999c.ctex"]
+source_file="res://addons/gut/images/HSplitContainer.svg"
+dest_files=["res://.godot/imported/HSplitContainer.svg-81e594d94ee80e4176e099672ef6025b.ctex"]
 
 [params]
 
@@ -39,5 +40,5 @@ process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
 svg/scale=1.0
-editor/scale_with_editor_scale=false
+editor/scale_with_editor_scale=true
 editor/convert_colors_with_editor_theme=false

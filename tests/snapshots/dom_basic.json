@@ -1,0 +1,217 @@
+{
+  "_t": "el",
+  "tag": "div",
+  "attrs": {
+    "class": "container"
+  },
+  "children": [
+    {
+      "_t": "el",
+      "tag": "header",
+      "attrs": {
+        "class": "header"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "h1",
+          "attrs": {
+
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "Welcome to GML"
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "p",
+          "attrs": {
+            "class": "subtitle"
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "Build Godot UI with HTML & CSS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_t": "el",
+      "tag": "div",
+      "attrs": {
+        "class": "content"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "p",
+          "attrs": {
+
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "GML lets you create game interfaces using familiar web technologies. Write HTML for structure, CSS for styling."
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "features"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "feature"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "icon"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "✓"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Flexbox Layout"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "feature"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "icon"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "✓"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "CSS Styling"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "feature"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "icon"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "✓"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Live Reload"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_t": "el",
+      "tag": "div",
+      "attrs": {
+        "class": "actions"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "button",
+          "attrs": {
+            "@click": "on_get_started",
+            "class": "primary"
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "Get Started"
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "button",
+          "attrs": {
+            "@click": "on_learn_more",
+            "class": "secondary"
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "Learn More"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

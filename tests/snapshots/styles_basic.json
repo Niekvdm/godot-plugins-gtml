@@ -1,0 +1,242 @@
+[
+  {
+    "path": "div.container",
+    "style": {
+      "background-color": "Color(0.1020,0.1020,0.1804,1.0000)",
+      "border": {
+        "color": "Color(0.1647,0.1647,0.3059,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 12,
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 32,
+      "max-width": {
+        "unit": "px",
+        "value": 500
+      },
+      "padding": 40,
+      "width": {
+        "unit": "%",
+        "value": 80.0
+      }
+    }
+  },
+  {
+    "path": "div.container > header.header",
+    "style": {
+      "align-items": "center",
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 8
+    }
+  },
+  {
+    "path": "div.container > header.header > h1",
+    "style": {
+      "color": "Color(1.0000,1.0000,1.0000,1.0000)",
+      "font-size": 32,
+      "text-align": "center"
+    }
+  },
+  {
+    "path": "div.container > header.header > p.subtitle",
+    "style": {
+      "color": "Color(0.5333,0.5333,0.6667,1.0000)",
+      "font-size": 16,
+      "text-align": "center"
+    }
+  },
+  {
+    "path": "div.container > div.content",
+    "style": {
+      "color": "Color(0.6667,0.6667,0.8000,1.0000)",
+      "display": "flex",
+      "flex-direction": "column",
+      "font-size": 15,
+      "gap": 20,
+      "text-align": "center"
+    }
+  },
+  {
+    "path": "div.container > div.content > p",
+    "style": {
+      "color": "Color(0.6667,0.6667,0.8000,1.0000)",
+      "font-size": 15,
+      "text-align": "center"
+    }
+  },
+  {
+    "path": "div.container > div.content > div.features",
+    "style": {
+      "display": "flex",
+      "flex-direction": "row",
+      "gap": 24,
+      "justify-content": "center"
+    }
+  },
+  {
+    "path": "div.container > div.content > div.features > div.feature",
+    "style": {
+      "align-items": "center",
+      "color": "Color(0.5333,0.5333,0.6667,1.0000)",
+      "display": "flex",
+      "flex-direction": "column",
+      "font-size": 13,
+      "gap": 8
+    }
+  },
+  {
+    "path": "div.container > div.content > div.features > div.feature > div.icon",
+    "style": {
+      "background-color": "Color(0.1647,0.2902,0.4157,1.0000)",
+      "border-radius": 20,
+      "color": "Color(0.0000,0.8314,1.0000,1.0000)",
+      "font-size": 20,
+      "height": {
+        "unit": "px",
+        "value": 40
+      },
+      "padding-top": 8,
+      "text-align": "center",
+      "width": {
+        "unit": "px",
+        "value": 40
+      }
+    }
+  },
+  {
+    "path": "div.container > div.content > div.features > div.feature > span",
+    "style": {
+      "color": "Color(0.5333,0.5333,0.6667,1.0000)",
+      "font-size": 13
+    }
+  },
+  {
+    "path": "div.container > div.content > div.features > div.feature",
+    "style": {
+      "align-items": "center",
+      "color": "Color(0.5333,0.5333,0.6667,1.0000)",
+      "display": "flex",
+      "flex-direction": "column",
+      "font-size": 13,
+      "gap": 8
+    }
+  },
+  {
+    "path": "div.container > div.content > div.features > div.feature > div.icon",
+    "style": {
+      "background-color": "Color(0.1647,0.2902,0.4157,1.0000)",
+      "border-radius": 20,
+      "color": "Color(0.0000,0.8314,1.0000,1.0000)",
+      "font-size": 20,
+      "height": {
+        "unit": "px",
+        "value": 40
+      },
+      "padding-top": 8,
+      "text-align": "center",
+      "width": {
+        "unit": "px",
+        "value": 40
+      }
+    }
+  },
+  {
+    "path": "div.container > div.content > div.features > div.feature > span",
+    "style": {
+      "color": "Color(0.5333,0.5333,0.6667,1.0000)",
+      "font-size": 13
+    }
+  },
+  {
+    "path": "div.container > div.content > div.features > div.feature",
+    "style": {
+      "align-items": "center",
+      "color": "Color(0.5333,0.5333,0.6667,1.0000)",
+      "display": "flex",
+      "flex-direction": "column",
+      "font-size": 13,
+      "gap": 8
+    }
+  },
+  {
+    "path": "div.container > div.content > div.features > div.feature > div.icon",
+    "style": {
+      "background-color": "Color(0.1647,0.2902,0.4157,1.0000)",
+      "border-radius": 20,
+      "color": "Color(0.0000,0.8314,1.0000,1.0000)",
+      "font-size": 20,
+      "height": {
+        "unit": "px",
+        "value": 40
+      },
+      "padding-top": 8,
+      "text-align": "center",
+      "width": {
+        "unit": "px",
+        "value": 40
+      }
+    }
+  },
+  {
+    "path": "div.container > div.content > div.features > div.feature > span",
+    "style": {
+      "color": "Color(0.5333,0.5333,0.6667,1.0000)",
+      "font-size": 13
+    }
+  },
+  {
+    "path": "div.container > div.actions",
+    "style": {
+      "display": "flex",
+      "flex-direction": "row",
+      "gap": 16,
+      "justify-content": "center"
+    }
+  },
+  {
+    "path": "div.container > div.actions > button.primary",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.0000,0.6588,0.8000,1.0000)"
+      },
+      "background-color": "Color(0.0000,0.8314,1.0000,1.0000)",
+      "border": {
+        "color": "Color(1.0000,1.0000,1.0000,0.0000)",
+        "style": "none",
+        "width": 0
+      },
+      "border-radius": 6,
+      "color": "Color(0.0392,0.0392,0.1020,1.0000)",
+      "font-size": 14,
+      "font-weight": 600,
+      "padding": 14,
+      "padding-left": 28,
+      "padding-right": 28
+    }
+  },
+  {
+    "path": "div.container > div.actions > button.secondary",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.1647,0.1647,0.3059,1.0000)",
+        "border-color": "Color(0.4157,0.4157,0.5569,1.0000)"
+      },
+      "background-color": "Color(1.0000,1.0000,1.0000,0.0000)",
+      "border": {
+        "color": "Color(0.2902,0.2902,0.4314,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 6,
+      "color": "Color(0.6667,0.6667,0.8000,1.0000)",
+      "font-size": 14,
+      "font-weight": 600,
+      "padding": 14,
+      "padding-left": 28,
+      "padding-right": 28
+    }
+  }
+]

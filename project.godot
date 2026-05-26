@@ -1,0 +1,19 @@
+; Godot project file for GTML addon development + tests.
+; Not shipped with the addon - consumers only need addons/gtml/.
+
+config_version=5
+
+[application]
+
+config/name="GTML Addon Dev"
+config/features=PackedStringArray("4.4", "GL Compatibility")
+config/icon="res://addons/gtml/icons/gml_view.svg"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gtml/plugin.cfg", "res://addons/gut/plugin.cfg")
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
