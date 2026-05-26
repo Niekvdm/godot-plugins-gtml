@@ -124,6 +124,7 @@ static func _build_checkbox_input(node, style: Dictionary, gml_view, defaults: D
 		)
 
 	_apply_button_focus_stylebox(checkbox, style)
+	_apply_button_checked_stylebox(checkbox, style)
 	return checkbox
 
 
@@ -174,7 +175,38 @@ static func _build_radio_input(node, style: Dictionary, gml_view, defaults: Dict
 		)
 
 	_apply_button_focus_stylebox(radio, style)
+	_apply_button_checked_stylebox(radio, style)
 	return radio
+
+
+## Apply a CSS-driven :checked stylebox to a CheckBox / radio. Godot draws
+## the "pressed" stylebox while button_pressed is true (toggle buttons treat
+## "pressed" as the checked state), so we install the :checked bucket's
+## visual onto that slot. Empty :checked rule still wins over default —
+## installs StyleBoxEmpty to silence Godot's pressed indicator.
+static func _apply_button_checked_stylebox(btn: CheckBox, style: Dictionary) -> void:
+	if not style.has("_checked"):
+		return
+	var checked_style: Dictionary = style["_checked"]
+	var has_visual := false
+	var box := StyleBoxFlat.new()
+	box.bg_color = Color.TRANSPARENT
+	if checked_style.has("background-color"):
+		box.bg_color = checked_style["background-color"]
+		has_visual = true
+	if checked_style.has("border") or checked_style.has("border-width") or checked_style.has("border-color"):
+		GmlStyles.apply_border_to_stylebox(box, checked_style)
+		has_visual = true
+	if checked_style.has("border-radius"):
+		box.corner_radius_top_left = checked_style["border-radius"]
+		box.corner_radius_top_right = checked_style["border-radius"]
+		box.corner_radius_bottom_left = checked_style["border-radius"]
+		box.corner_radius_bottom_right = checked_style["border-radius"]
+		has_visual = true
+	if not has_visual:
+		btn.add_theme_stylebox_override("pressed", StyleBoxEmpty.new())
+		return
+	btn.add_theme_stylebox_override("pressed", box)
 
 
 ## Apply a CSS-driven :focus stylebox to a CheckBox / radio so authors can

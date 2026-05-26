@@ -24,7 +24,7 @@ extends RefCounted
 ## input events) but do NOT participate in DOM matching. Anything else with a
 ## ":" prefix is treated as a structural pseudo and routed through the
 ## matcher's structural-pseudo path.
-const STATE_PSEUDOS := ["hover", "active", "focus", "disabled"]
+const STATE_PSEUDOS := ["hover", "active", "focus", "disabled", "checked"]
 
 
 class Compound:
