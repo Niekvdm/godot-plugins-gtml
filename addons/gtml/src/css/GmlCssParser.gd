@@ -400,6 +400,10 @@ static func _convert_property_value_static(prop_name: String, value: String):
 	if prop_name == "outline":
 		return GmlBorderValues.parse_outline(value)
 
+	# Transform: translate/scale/rotate composite
+	if prop_name == "transform":
+		return GmlTransformValues.parse_transform(value)
+
 	# Transition properties
 	if prop_name == "transition":
 		return GmlTransitionValues.parse_transition(value)
