@@ -273,13 +273,17 @@ func _parse_properties() -> Dictionary:
 	return properties
 
 
-## Parse a property name.
+## Parse a property name. Allows identifiers, hyphens, underscores, AND digits
+## for embedded numeric tokens (e.g. ``--surface-2``, ``border-top-width``).
+## CSS forbids leading digits on custom properties, but `--` always prefixes
+## a custom property so the digit can only appear at index >= 2; standard
+## property names start with a letter via the lexer's outer loop.
 func _parse_property_name() -> String:
 	var start := _pos
 
 	while _pos < _length:
 		var ch := _peek()
-		if ch.is_valid_identifier() or ch == "-":
+		if ch.is_valid_identifier() or ch == "-" or ch == "_" or ch.is_valid_int():
 			_advance()
 		else:
 			break
