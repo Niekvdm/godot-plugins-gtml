@@ -45,9 +45,21 @@ func parse(html: String):
 		if _pos >= _length:
 			break
 
+		# Stray closing tag at the top level — skip the whole </tag> sequence
+		# so it doesn't become a stuck cursor or get sliced into text fragments.
+		if _peek() == "<" and _peek(1) == "/":
+			_skip_closing_tag()
+			continue
+
+		var pos_before := _pos
 		var node = _parse_node()
 		if node != null:
 			root.add_child(node)
+		# Defensive termination guarantee: if _parse_node returned null and
+		# didn't advance the cursor for any other reason, bump past one
+		# character so the loop can make progress instead of spinning forever.
+		if _pos == pos_before:
+			_advance()
 
 	# If there's only one child, return it directly
 	if root.children.size() == 1:
@@ -135,8 +147,15 @@ func _parse_element():
 		if _pos >= _length:
 			break
 
-		# Check for closing tag
+		# Closing tag — but check whether it's a stray close for a void
+		# element first (e.g. </input> after <input>). Authors who write
+		# explicit void-tag closes shouldn't blow up the parent's structure.
+		# Skipping the stray as a no-op keeps the child loop honest.
 		if _peek() == "<" and _peek(1) == "/":
+			var ahead := _peek_closing_tag_name()
+			if ahead in SELF_CLOSING_TAGS:
+				_skip_closing_tag()
+				continue
 			break
 
 		var child = _parse_node()
@@ -148,6 +167,34 @@ func _parse_element():
 
 	_depth -= 1
 	return node
+
+
+## Peek at the tag name in the closing tag at the current position
+## (``</tagname>``) without consuming any input. Returns "" if the cursor
+## isn't sitting on a closing tag.
+func _peek_closing_tag_name() -> String:
+	if _peek() != "<" or _peek(1) != "/":
+		return ""
+	var i: int = _pos + 2
+	var start: int = i
+	while i < _length:
+		var ch: String = _html[i]
+		if ch.is_valid_identifier() or ch == "-" or ch == "_" or ch.is_valid_int():
+			i += 1
+		else:
+			break
+	return _html.substr(start, i - start).to_lower()
+
+
+## Skip past a closing tag (``</tagname>``) at the current position. Used to
+## ignore stray closes for void elements without invoking the strict
+## _parse_closing_tag path (which would warn and unwind).
+func _skip_closing_tag() -> void:
+	_consume("<")
+	_consume("/")
+	while _pos < _length and _peek() != ">":
+		_advance()
+	_consume(">")
 
 
 ## Parse closing tag.

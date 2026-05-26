@@ -1,0 +1,140 @@
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand-block">
+      <span class="brand-mark">atlas</span>
+      <span class="brand-sep">/</span>
+      <span class="brand-context">orbital ops</span>
+    </div>
+    <div class="topbar-right">
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        <span class="status-label">all systems nominal</span>
+      </div>
+      <div class="user-chip">jl · ops</div>
+    </div>
+  </header>
+
+  <div class="shell">
+
+    <nav class="sidebar">
+      <div class="nav-section">
+        <span class="nav-label">workspace</span>
+        <a class="nav-item nav-active">Mission control</a>
+        <a class="nav-item">Activity feed</a>
+        <a class="nav-item">Alerts</a>
+      </div>
+      <div class="nav-section">
+        <span class="nav-label">infrastructure</span>
+        <a class="nav-item">Nodes</a>
+        <a class="nav-item">Telemetry</a>
+        <a class="nav-item">Configuration</a>
+      </div>
+      <div class="nav-section">
+        <span class="nav-label">archive</span>
+        <a class="nav-item">Incident log</a>
+        <a class="nav-item">Reports</a>
+      </div>
+    </nav>
+
+    <main class="main">
+
+      <div class="page-head">
+        <div class="page-head-text">
+          <span class="eyebrow">DASHBOARD</span>
+          <h1 class="page-title">Mission control</h1>
+          <p class="page-subtitle">Real-time visibility into the production fleet across all regions.</p>
+        </div>
+        <button class="primary-action">Trigger sweep</button>
+      </div>
+
+      <section class="kpi-row">
+        <article class="kpi">
+          <span class="kpi-label">Active nodes</span>
+          <span class="kpi-value">142</span>
+          <span class="kpi-delta delta-up">+3 since 09:00</span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Uptime</span>
+          <span class="kpi-value">99.84</span>
+          <span class="kpi-delta delta-flat">30-day rolling</span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Median latency</span>
+          <span class="kpi-value">17ms</span>
+          <span class="kpi-delta delta-down">-2ms vs yesterday</span>
+        </article>
+        <article class="kpi">
+          <span class="kpi-label">Open alerts</span>
+          <span class="kpi-value kpi-warn">3</span>
+          <span class="kpi-delta delta-flat">1 high severity</span>
+        </article>
+      </section>
+
+      <section class="grid-split">
+
+        <article class="card">
+          <header class="card-head">
+            <h2 class="card-title">Recent activity</h2>
+            <span class="card-meta">last 30 minutes</span>
+          </header>
+          <ul class="activity">
+            <li class="activity-item">
+              <span class="activity-time">12:48</span>
+              <span class="activity-text">node-04 reconnected after maintenance window</span>
+            </li>
+            <li class="activity-item">
+              <span class="activity-time">12:31</span>
+              <span class="activity-text">alert ALR-2841 resolved by m.tanaka</span>
+            </li>
+            <li class="activity-item">
+              <span class="activity-time">12:19</span>
+              <span class="activity-text">node-12 joined eu-west cluster</span>
+            </li>
+            <li class="activity-item">
+              <span class="activity-time">12:02</span>
+              <span class="activity-text">scheduled sweep completed in 1.4s</span>
+            </li>
+            <li class="activity-item">
+              <span class="activity-time">11:47</span>
+              <span class="activity-text">configuration deployed to 142 nodes</span>
+            </li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <header class="card-head">
+            <h2 class="card-title">System status</h2>
+            <span class="card-meta">live</span>
+          </header>
+          <ul class="status-list">
+            <li class="status-row">
+              <span class="status-name">API gateway</span>
+              <span class="status-badge badge-ok">OPERATIONAL</span>
+            </li>
+            <li class="status-row">
+              <span class="status-name">Database replica</span>
+              <span class="status-badge badge-ok">OPERATIONAL</span>
+            </li>
+            <li class="status-row">
+              <span class="status-name">Edge CDN</span>
+              <span class="status-badge badge-warn">DEGRADED</span>
+            </li>
+            <li class="status-row">
+              <span class="status-name">Auth provider</span>
+              <span class="status-badge badge-ok">OPERATIONAL</span>
+            </li>
+            <li class="status-row">
+              <span class="status-name">Webhook dispatcher</span>
+              <span class="status-badge badge-ok">OPERATIONAL</span>
+            </li>
+          </ul>
+        </article>
+
+      </section>
+
+    </main>
+
+  </div>
+
+</div>

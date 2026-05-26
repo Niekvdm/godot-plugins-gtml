@@ -1,0 +1,140 @@
+<div class="app">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="brand">Forge</span>
+      <span class="brand-divider">/</span>
+      <span class="crumb">Workspace settings</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost">Cancel</button>
+      <button class="btn btn-primary">Save changes</button>
+    </div>
+  </header>
+
+  <div class="shell">
+
+    <nav class="sidenav">
+
+      <div class="nav-group">
+        <span class="nav-group-label">Workspace</span>
+        <a class="nav-link nav-link-active">Account</a>
+        <a class="nav-link">Members</a>
+        <a class="nav-link">Billing</a>
+        <a class="nav-link">Audit log</a>
+      </div>
+
+      <div class="nav-group">
+        <span class="nav-group-label">Develop</span>
+        <a class="nav-link">API keys</a>
+        <a class="nav-link">Webhooks</a>
+        <a class="nav-link">Integrations</a>
+      </div>
+
+      <div class="nav-group">
+        <span class="nav-group-label">Security</span>
+        <a class="nav-link">Two-factor auth</a>
+        <a class="nav-link">Active sessions</a>
+        <a class="nav-link">SSO</a>
+      </div>
+
+    </nav>
+
+    <main class="panel">
+
+      <section class="form-section">
+        <header class="section-head">
+          <h2 class="section-title">Identity</h2>
+          <p class="section-help">How your workspace is referenced across the product.</p>
+        </header>
+
+        <div class="field">
+          <label class="field-label" for="workspace-name">Workspace name</label>
+          <input id="workspace-name" class="field-input" type="text" value="Acme Industries">
+          <span class="field-hint">Shown in the topbar, billing receipts, and the API.</span>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="workspace-slug">Slug</label>
+          <input id="workspace-slug" class="field-input" type="text" value="acme-industries">
+          <span class="field-hint">Used in URLs. Lowercase, no spaces, hyphens allowed.</span>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="workspace-region">Region</label>
+          <input id="workspace-region" class="field-input" type="text" value="eu-west-1">
+          <span class="field-hint">Data residency cannot be changed after creation.</span>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <section class="form-section">
+        <header class="section-head">
+          <h2 class="section-title">Preferences</h2>
+          <p class="section-help">Per-user defaults you can override anytime.</p>
+        </header>
+
+        <label class="check-row" for="notify-email">
+          <input id="notify-email" class="check-box" type="checkbox" checked>
+          <div class="check-text">
+            <span class="check-label">Email notifications</span>
+            <span class="check-help">Receive a digest of mentions, comments, and alerts twice daily.</span>
+          </div>
+        </label>
+
+        <label class="check-row" for="notify-slack">
+          <input id="notify-slack" class="check-box" type="checkbox">
+          <div class="check-text">
+            <span class="check-label">Slack notifications</span>
+            <span class="check-help">Mirror your inbox into the configured Slack channel.</span>
+          </div>
+        </label>
+
+        <label class="check-row" for="notify-weekly">
+          <input id="notify-weekly" class="check-box" type="checkbox" checked>
+          <div class="check-text">
+            <span class="check-label">Weekly summary</span>
+            <span class="check-help">A Monday-morning recap of the previous week's activity.</span>
+          </div>
+        </label>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <section class="form-section">
+        <header class="section-head">
+          <h2 class="section-title">Archival policy</h2>
+          <p class="section-help">How long inactive projects remain visible in your workspace.</p>
+        </header>
+
+        <label class="radio-row" for="archive-keep">
+          <input id="archive-keep" class="radio-dot" type="radio" name="archive">
+          <div class="radio-text">
+            <span class="radio-label">Keep everything indefinitely</span>
+            <span class="radio-help">Best for compliance-heavy workspaces.</span>
+          </div>
+        </label>
+
+        <label class="radio-row" for="archive-auto">
+          <input id="archive-auto" class="radio-dot" type="radio" name="archive" checked>
+          <div class="radio-text">
+            <span class="radio-label">Auto-archive after 30 days of inactivity</span>
+            <span class="radio-help">Recommended for most teams.</span>
+          </div>
+        </label>
+
+        <label class="radio-row" for="archive-manual">
+          <input id="archive-manual" class="radio-dot" type="radio" name="archive">
+          <div class="radio-text">
+            <span class="radio-label">Manual archive only</span>
+            <span class="radio-help">Nothing is hidden without an explicit action.</span>
+          </div>
+        </label>
+      </section>
+
+    </main>
+
+  </div>
+
+</div>

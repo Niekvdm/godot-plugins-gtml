@@ -29,52 +29,27 @@ static func _build_list_inner(node, ordered: bool, ctx: Dictionary) -> Control:
 	var gap: int = style.get("gap", defaults.get("default_gap", 8))
 	container.add_theme_constant_override("separation", gap)
 
-	# Get list-style-type (defaults based on ordered/unordered)
+	# Resolve list-style-type and ordering ONCE on the list itself, then
+	# stamp the per-item marker info onto each <li> as metadata. Routing each
+	# <li> through the central dispatcher (ctx.build_node) is what gives list
+	# items their CSS-driven background, padding, hover transitions, etc.
+	# The old implementation built items inline here and silently bypassed
+	# the styling pipeline, so `.side-item:hover` rules never fired.
 	var list_style: String = style.get("list-style-type", "decimal" if ordered else "disc")
 
 	var item_number := 1
-
 	for child in node.children:
-		if child.tag == "li":
-			var item_container := HBoxContainer.new()
-			item_container.add_theme_constant_override("separation", 8)
+		if child.tag != "li":
+			continue
+		child.set_meta("_list_marker", list_style)
+		child.set_meta("_list_item_number", item_number)
+		child.set_meta("_list_ordered", ordered)
+		if list_style != "none":
+			item_number += 1
 
-			# Add bullet or number based on list-style-type
-			var marker := Label.new()
-			marker.text = _get_marker_text(list_style, item_number, ordered)
-			if list_style != "none":
-				item_number += 1
-
-			var font_size: int = style.get("font-size", defaults.get("p_font_size", 16))
-			marker.add_theme_font_size_override("font_size", font_size)
-			marker.custom_minimum_size.x = _get_marker_width(list_style, ordered)
-
-			# Hide marker if list-style-type is none
-			if list_style == "none":
-				marker.visible = false
-				marker.custom_minimum_size.x = 0
-
-			item_container.add_child(marker)
-
-			# Build the list item content
-			var item_content := VBoxContainer.new()
-			item_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
-			for li_child in child.children:
-				var li_control = ctx.build_node.call(li_child)
-				if li_control != null:
-					item_content.add_child(li_control)
-
-			# If no children, use text content
-			if child.children.is_empty():
-				var text_label := Label.new()
-				text_label.text = child.get_text_content()
-				text_label.add_theme_font_size_override("font_size", font_size)
-				text_label.autowrap_mode = TextServer.AUTOWRAP_WORD
-				item_content.add_child(text_label)
-
-			item_container.add_child(item_content)
-			container.add_child(item_container)
+		var li_control = ctx.build_node.call(child)
+		if li_control != null:
+			container.add_child(li_control)
 
 	return container
 
@@ -173,26 +148,33 @@ static func _build_list_item_inner(node, ctx: Dictionary) -> Control:
 	var container := HBoxContainer.new()
 	container.add_theme_constant_override("separation", 8)
 
-	# Get list-style-type from style (defaults to disc for standalone li)
-	var list_style: String = style.get("list-style-type", "disc")
+	# Marker info comes from the parent <ul>/<ol> via meta when available,
+	# so the list dictates style and numbering instead of each <li> guessing.
+	# Standalone <li> usage falls back to its own style.
+	var list_style: String = node.get_meta("_list_marker", style.get("list-style-type", "disc"))
+	var item_number: int = node.get_meta("_list_item_number", 1)
+	var ordered: bool = node.get_meta("_list_ordered", false)
 
-	# Add bullet/marker
 	var marker := Label.new()
-	marker.text = _get_marker_text(list_style, 1, false)
+	marker.text = _get_marker_text(list_style, item_number, ordered)
 	var font_size: int = style.get("font-size", defaults.get("p_font_size", 16))
 	marker.add_theme_font_size_override("font_size", font_size)
-	marker.custom_minimum_size.x = _get_marker_width(list_style, false)
+	marker.custom_minimum_size.x = _get_marker_width(list_style, ordered)
 
-	# Hide marker if list-style-type is none
+	# Hide marker entirely for list-style-type: none so spacing reads as if
+	# the marker column doesn't exist.
 	if list_style == "none":
 		marker.visible = false
 		marker.custom_minimum_size.x = 0
 
+	# Marker must not intercept hover events meant for the row.
+	marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	container.add_child(marker)
 
 	# Build content
 	var content := VBoxContainer.new()
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	for child in node.children:
 		var child_control = ctx.build_node.call(child)
@@ -204,6 +186,7 @@ static func _build_list_item_inner(node, ctx: Dictionary) -> Control:
 		text_label.text = node.get_text_content()
 		text_label.add_theme_font_size_override("font_size", font_size)
 		text_label.autowrap_mode = TextServer.AUTOWRAP_WORD
+		text_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		content.add_child(text_label)
 
 	container.add_child(content)

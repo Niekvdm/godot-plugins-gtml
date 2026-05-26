@@ -1,5 +1,44 @@
 # Changelog
 
+## 0.3.1
+
+### Fixes
+
+- **HTML parser termination**: stray closing tags for void elements
+  (`</input>`, `</br>`) are now skipped as no-ops inside parent loops
+  instead of cascading "expected `</X>` but found `</Y>`" warnings and
+  corrupting the DOM. Unmatched closing tags at the top level are
+  consumed cleanly. `parse()` has a defensive cursor-advance guard so
+  it can never spin on a non-advancing return.
+- **`<li>` styling pipeline**: `GmlListBuilder.build_list` used to build
+  list items inline and silently bypass the central dispatcher, so
+  per-item CSS (background, hover transitions, padding, ...) was lost.
+  Items now go through `ctx.build_node` and receive the full styling
+  pipeline. Marker info travels via meta so the list still owns marker
+  resolution.
+- **`<label for>` activation**: clicking a label associated with a
+  CheckBox now toggles it; with a radio in a `ButtonGroup` it selects
+  (never deselects); with a text input or other Control it focuses.
+  Cursor shape on for-labels is set to pointing-hand.
+
+### Samples
+
+- New `addons/gtml/examples/showcase/` directory with three crafted
+  scenes — `atlas` (mission-control dashboard), `atelier` (editorial
+  reader), `forge` (workspace settings) — each demonstrating a distinct
+  aesthetic and exercising a different subset of GTML capabilities.
+
+### Notes
+
+- Anything using `background-color: transparent` that transitions to an
+  opaque color will visibly "flash" through alpha-blended intermediate
+  frames, because the renderer's color tween interpolates alpha as well
+  as RGB. Workaround: use an opaque base color matching the parent
+  surface. Documented in the showcase CSS comments. A proper fix would
+  require pre-compositing the start color against its background before
+  the tween — deferred.
+
+
 ## 0.3.0
 
 ### Features
