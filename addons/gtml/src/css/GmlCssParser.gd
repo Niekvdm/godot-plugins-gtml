@@ -23,6 +23,32 @@ extends RefCounted
 var _pos: int = 0
 var _css: String = ""
 var _length: int = 0
+var _warnings: Array = []  # [{line:int, col:int, msg:String}]
+
+
+## Get all warnings emitted during the last parse. Each entry: {line, col, msg}.
+func get_warnings() -> Array:
+	return _warnings
+
+
+## Compute the 1-based line and column for a given byte position.
+func _line_col_for(p: int) -> Dictionary:
+	var line := 1
+	var col := 1
+	var limit: int = mini(p, _length)
+	for i in range(limit):
+		if _css[i] == "\n":
+			line += 1
+			col = 1
+		else:
+			col += 1
+	return {"line": line, "col": col}
+
+
+func _warn(msg: String) -> void:
+	var lc := _line_col_for(_pos)
+	_warnings.append({"line": lc["line"], "col": lc["col"], "msg": msg})
+	push_warning("GmlCssParser [%d:%d]: %s" % [lc["line"], lc["col"], msg])
 
 # Property categories for dispatch
 const PASSTHROUGH_PROPS = [
@@ -83,6 +109,7 @@ func parse(css: String) -> Array:
 	_css = css
 	_pos = 0
 	_length = css.length()
+	_warnings.clear()
 
 	var rules: Array = []
 
@@ -140,7 +167,7 @@ func _parse_rules_group() -> Array:
 
 	# Expect opening brace
 	if not _consume("{"):
-		push_warning("GmlCssParser: Expected '{' after selector(s)")
+		_warn("Expected '{' after selector(s)")
 		return []
 
 	# Parse properties
@@ -149,7 +176,7 @@ func _parse_rules_group() -> Array:
 	# Expect closing brace
 	_skip_whitespace_and_comments()
 	if not _consume("}"):
-		push_warning("GmlCssParser: Expected '}' after properties")
+		_warn("Expected '}' after properties")
 		# Try to recover
 		while _pos < _length and _peek() != "}":
 			_advance()
@@ -181,10 +208,32 @@ func _parse_rules_group() -> Array:
 			rule.selector_value = base_selector
 
 		rule.pseudo_class = pseudo_class
-		rule.properties = properties.duplicate()
+		# Deep-clone properties: nested Dictionaries (border, transitions, gradients)
+		# must not be shared between rules emitted from a comma-separated selector,
+		# or a mutation in one rule will bleed into the others.
+		rule.properties = _deep_clone_properties(properties)
 		rules.append(rule)
 
 	return rules
+
+
+## Deep-clone a properties dictionary so nested Dictionaries / Arrays are independent.
+static func _deep_clone_properties(src: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	for k in src:
+		out[k] = _deep_clone_value(src[k])
+	return out
+
+
+static func _deep_clone_value(v: Variant) -> Variant:
+	if v is Dictionary:
+		return _deep_clone_properties(v)
+	if v is Array:
+		var arr: Array = []
+		for x in v:
+			arr.append(_deep_clone_value(x))
+		return arr
+	return v
 
 
 ## Parse a CSS selector (including pseudo-classes like :hover).
@@ -219,7 +268,7 @@ func _parse_properties() -> Dictionary:
 		_skip_whitespace_and_comments()
 
 		if not _consume(":"):
-			push_warning("GmlCssParser: Expected ':' after property name '%s'" % prop_name)
+			_warn("Expected ':' after property name '%s'" % prop_name)
 			break
 
 		_skip_whitespace_and_comments()
@@ -251,17 +300,49 @@ func _parse_property_name() -> String:
 	return _css.substr(start, _pos - start)
 
 
-## Parse a property value (until ; or }).
+## Parse a property value (until ; or } at the top level).
+## Quoted strings and parenthesized expressions are treated as opaque so
+## punctuation inside them (semicolons in "a;b", commas in url(foo,bar)) does
+## not terminate the value.
 func _parse_property_value() -> String:
 	var start := _pos
+	var paren_depth := 0
 
 	while _pos < _length:
 		var ch := _peek()
-		if ch == ";" or ch == "}":
+
+		if ch == "\"" or ch == "'":
+			_skip_string(ch)
+			continue
+		if ch == "(":
+			paren_depth += 1
+			_advance()
+			continue
+		if ch == ")":
+			if paren_depth > 0:
+				paren_depth -= 1
+			_advance()
+			continue
+		if paren_depth == 0 and (ch == ";" or ch == "}"):
 			break
 		_advance()
 
 	return _css.substr(start, _pos - start).strip_edges()
+
+
+## Skip past a quoted CSS string, handling backslash escapes.
+func _skip_string(quote: String) -> void:
+	_advance()  # opening quote
+	while _pos < _length:
+		var ch := _peek()
+		if ch == "\\" and _pos + 1 < _length:
+			_advance()
+			_advance()
+			continue
+		if ch == quote:
+			_advance()  # closing quote
+			return
+		_advance()
 
 
 ## Convert a property value string to the appropriate type.

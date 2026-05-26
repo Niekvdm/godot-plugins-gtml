@@ -12,6 +12,17 @@ const GmlNodeScript = preload("res://addons/gtml/src/html_parser/GmlNode.gd")
 const SELF_CLOSING_TAGS := ["img", "br", "hr", "input", "meta", "link", "circle", "ellipse", "line", "path", "polygon", "polyline", "rect", "use"]
 const MAX_DEPTH := 100  # Prevent stack overflow on deeply nested HTML
 
+# Minimal HTML named entity table. Anything not listed is left as the literal
+# &name; sequence so user content is preserved on lookup miss.
+const NAMED_ENTITIES := {
+	"amp": "&", "lt": "<", "gt": ">", "quot": "\"", "apos": "'",
+	"nbsp": " ", "copy": "©", "reg": "®", "trade": "™",
+	"hellip": "…", "mdash": "—", "ndash": "–",
+	"lsquo": "‘", "rsquo": "’", "ldquo": "“", "rdquo": "”",
+	"laquo": "«", "raquo": "»", "deg": "°", "plusmn": "±",
+	"times": "×", "divide": "÷", "middot": "·", "bull": "•",
+}
+
 var _pos: int = 0
 var _html: String = ""
 var _length: int = 0
@@ -219,7 +230,7 @@ func _parse_attribute_value() -> String:
 
 		var value := _html.substr(start, _pos - start)
 		_advance()  # Skip closing quote
-		return value
+		return _decode_entities(value)
 	else:
 		# Unquoted value
 		var start := _pos
@@ -228,7 +239,7 @@ func _parse_attribute_value() -> String:
 			if ch == " " or ch == ">" or ch == "/" or ch == "\t" or ch == "\n":
 				break
 			_advance()
-		return _html.substr(start, _pos - start)
+		return _decode_entities(_html.substr(start, _pos - start))
 
 
 ## Parse a text node.
@@ -240,7 +251,10 @@ func _parse_text():
 
 	var text := _html.substr(start, _pos - start)
 
-	# Normalize whitespace
+	# Decode HTML entities first, then collapse whitespace.
+	# Entity decoding must precede normalization so &nbsp; -> " " participates
+	# in the whitespace collapse instead of being preserved as a literal.
+	text = _decode_entities(text)
 	text = _normalize_whitespace(text)
 
 	if text.is_empty():
@@ -350,3 +364,57 @@ func _consume(expected: String) -> bool:
 		_advance()
 		return true
 	return false
+
+
+## Decode HTML entities in a string. Unknown entities are passed through verbatim
+## so user content is preserved on lookup miss.
+static func _decode_entities(s: String) -> String:
+	if s.find("&") < 0:
+		return s
+
+	var out := ""
+	var i := 0
+	var n := s.length()
+	while i < n:
+		var ch := s[i]
+		if ch != "&":
+			out += ch
+			i += 1
+			continue
+
+		# Find terminating semicolon within a reasonable window
+		var semi := s.find(";", i + 1)
+		if semi < 0 or semi - i > 10:
+			out += ch
+			i += 1
+			continue
+
+		var entity := s.substr(i + 1, semi - i - 1)
+		var decoded := _decode_entity_body(entity)
+		if decoded.is_empty():
+			# Unknown entity - keep the raw &...; so user content is preserved
+			out += s.substr(i, semi - i + 1)
+		else:
+			out += decoded
+		i = semi + 1
+	return out
+
+
+static func _decode_entity_body(entity: String) -> String:
+	if entity.is_empty():
+		return ""
+	if entity.begins_with("#"):
+		var num_part := entity.substr(1)
+		var code: int = 0
+		if num_part.begins_with("x") or num_part.begins_with("X"):
+			code = num_part.substr(1).hex_to_int()
+		elif num_part.is_valid_int():
+			code = num_part.to_int()
+		else:
+			return ""
+		if code <= 0:
+			return ""
+		return String.chr(code)
+	if NAMED_ENTITIES.has(entity):
+		return NAMED_ENTITIES[entity]
+	return ""
