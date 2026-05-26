@@ -38,10 +38,11 @@ static func apply_text_styles(label: Label, style: Dictionary, defaults: Diction
 	if not family.is_empty() or style.has("font-weight"):
 		_apply_font_family_and_weight(label, family, weight, defaults)
 
-	# Letter spacing: applied via a FontVariation wrapping the resolved font.
-	# Stored as metadata for consumers that read it back, and visually
-	# realized via spacing_glyph on the variation.
-	if style.has("letter-spacing"):
+	# Letter spacing AND word spacing both flow through a single FontVariation
+	# applied to the resolved font. Calling _apply_font_spacing once handles
+	# either or both keys; the helper reuses an existing FontVariation override
+	# if one is already on the label.
+	if style.has("letter-spacing") or style.has("word-spacing"):
 		_apply_font_spacing(label, style)
 
 	# Text transform (uppercase, lowercase, capitalize)
@@ -60,19 +61,6 @@ static func apply_text_styles(label: Label, style: Dictionary, defaults: Diction
 	if style.has("line-height"):
 		var line_height: int = style["line-height"]
 		label.add_theme_constant_override("line_spacing", line_height)
-
-	# Word spacing: applied via the same FontVariation as letter-spacing.
-	# (Skipped above if letter-spacing already handled it.)
-	if style.has("word-spacing") and not style.has("letter-spacing"):
-		_apply_font_spacing(label, style)
-	elif style.has("word-spacing"):
-		# Already created the variation for letter-spacing; just stamp the
-		# word-spacing onto it. _apply_font_spacing is idempotent so we can
-		# call again, but skip the redundant work.
-		var fv = label.get_theme_font("font")
-		if fv is FontVariation:
-			(fv as FontVariation).spacing_space = style["word-spacing"]
-		label.set_meta("word_spacing", style["word-spacing"])
 
 	# text-indent: no native Label support in Godot 4. Stored as metadata so
 	# consumers (or future RichTextLabel-backed elements) can read it back.

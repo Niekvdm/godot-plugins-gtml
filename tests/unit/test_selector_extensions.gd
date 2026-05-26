@@ -221,4 +221,49 @@ func test_not_does_not_match_when_excluded_class_present() -> void:
 	assert_false(s.has("color"))
 
 
+func test_nested_not_double_negative_matches() -> void:
+	# :not(:not(.x)) is the double-negative — should match elements WITH .x.
+	# Guards against accidental infinite recursion in the matcher.
+	var s = _style_for_id(
+		"<div><p id='target' class='x'></p></div>",
+		"p:not(:not(.x)) { color: red; }",
+		"target")
+	assert_eq(s.get("color"), Color.RED)
+
+
+func test_adjacent_sibling_parses_without_spaces() -> void:
+	# .a+.b (no whitespace around the combinator) must parse identically to
+	# ".a + .b". This pins the lexer branch that fires when a combinator
+	# character appears immediately after the previous compound.
+	var s = _style_for_id(
+		"<div><p class='a'></p><p id='target' class='b'></p></div>",
+		".a+.b { color: red; }",
+		"target")
+	assert_eq(s.get("color"), Color.RED)
+
+
+func test_nth_child_an_plus_b() -> void:
+	# nth-child(2n+1) -> 1st, 3rd, 5th. Third <li> (target) should match.
+	var s = _style_for_id(
+		"<ul><li>a</li><li>b</li><li id='target'>c</li></ul>",
+		"li:nth-child(2n+1) { color: red; }",
+		"target")
+	assert_eq(s.get("color"), Color.RED)
+
+
+func test_nth_child_negative_an_plus_b() -> void:
+	# nth-child(-n+2) -> first 2 elements. Second <li> (target) matches; third doesn't.
+	var s_in = _style_for_id(
+		"<ul><li>a</li><li id='target'>b</li><li>c</li></ul>",
+		"li:nth-child(-n+2) { color: red; }",
+		"target")
+	assert_eq(s_in.get("color"), Color.RED)
+
+	var s_out = _style_for_id(
+		"<ul><li>a</li><li>b</li><li id='target'>c</li></ul>",
+		"li:nth-child(-n+2) { color: red; }",
+		"target")
+	assert_false(s_out.has("color"))
+
+
 #endregion

@@ -17,8 +17,9 @@ extends RefCounted
 ## them simply never fire.
 
 
-## State pseudos the runtime currently tracks. Anything else in a bucket key
-## means the bucket can never become active.
+## Default state pseudos the renderer is willing to track on a generic Control.
+## Buttons override this via setup_with_signals() so their active/pressed
+## state participates in bucket matching too.
 const TRACKED_STATES := ["hover", "focus"]
 
 
@@ -26,36 +27,43 @@ const TRACKED_STATES := ["hover", "focus"]
 ## so the transition manager interpolates the style as states toggle.
 ## No-op if there are no transitions defined or no state buckets present.
 static func setup(control: Control, style: Dictionary, transition_manager) -> void:
+	var signals: Array = [
+		{"state": "hover", "on_enter": control.mouse_entered, "on_exit": control.mouse_exited},
+		{"state": "focus", "on_enter": control.focus_entered, "on_exit": control.focus_exited},
+	]
+	setup_with_signals(control, style, transition_manager, signals)
+
+
+## Generic state-bucket transition setup. ``signals`` is a list of
+## ``{state: String, on_enter: Signal, on_exit: Signal}`` entries that tell us
+## which pseudo states to track and which Signal pair toggles each. Buttons
+## use this directly to add ``active`` (button_down/up) on top of the hover +
+## focus pair the generic ``setup()`` provides.
+static func setup_with_signals(control: Control, style: Dictionary, transition_manager, signals: Array) -> void:
 	var transitions: Array = style.get("transition", [])
 	if transitions.is_empty() or transition_manager == null:
 		return
 
-	# Extract all state buckets (keys prefixed with "_"). Each bucket is
-	# (sorted-pseudo-set, props). We skip "_disabled"/"_active" buckets at the
-	# event level (no runtime signal), but we still parse them so future wiring
-	# can pick them up.
 	var buckets: Array = _collect_state_buckets(style)
 	if buckets.is_empty():
 		return
 
-	# Determine which tracked events are actually needed. If no bucket
-	# references hover, don't bother connecting mouse signals; same for focus.
-	var needs_hover := false
-	var needs_focus := false
+	# Only connect handlers for states some bucket actually references.
+	var needed: Dictionary = {}
 	for b in buckets:
-		if "hover" in (b["set"] as Array):
-			needs_hover = true
-		if "focus" in (b["set"] as Array):
-			needs_focus = true
-	if not (needs_hover or needs_focus):
+		for p in (b["set"] as Array):
+			needed[p] = true
+	var any_signal_needed := false
+	for spec in signals:
+		if needed.get(spec["state"], false):
+			any_signal_needed = true
+			break
+	if not any_signal_needed:
 		return
 
 	var base_style: Dictionary = _strip_state_keys(style)
 	_normalize_border_properties(base_style)
 
-	# Cache stylebox metas so the transition manager can interpolate corner
-	# radius, border width, and border color even when they come from the
-	# border shorthand.
 	var stylebox_props: Dictionary = {}
 	if base_style.has("border-radius"):
 		stylebox_props["corner_radius"] = base_style["border-radius"]
@@ -65,34 +73,29 @@ static func setup(control: Control, style: Dictionary, transition_manager) -> vo
 		stylebox_props["border_color"] = base_style["border-color"]
 	control.set_meta("_stylebox_props", stylebox_props)
 
-	var state := {"hover": false, "focus": false}
+	var state: Dictionary = {}
+	for spec in signals:
+		state[spec["state"]] = false
 
 	var apply_transition := func(prev_state: Dictionary):
 		var from_style: Dictionary = _compute_target(base_style, buckets, prev_state)
 		var to_style: Dictionary = _compute_target(base_style, buckets, state)
 		transition_manager.transition_style(control, from_style, to_style, transitions)
 
-	if needs_hover:
-		control.mouse_entered.connect(func():
+	for spec in signals:
+		var state_name: String = spec["state"]
+		if not needed.get(state_name, false):
+			continue
+		var enter_sig: Signal = spec["on_enter"]
+		var exit_sig: Signal = spec["on_exit"]
+		enter_sig.connect(func():
 			var prev := state.duplicate()
-			state["hover"] = true
+			state[state_name] = true
 			apply_transition.call(prev)
 		)
-		control.mouse_exited.connect(func():
+		exit_sig.connect(func():
 			var prev := state.duplicate()
-			state["hover"] = false
-			apply_transition.call(prev)
-		)
-
-	if needs_focus:
-		control.focus_entered.connect(func():
-			var prev := state.duplicate()
-			state["focus"] = true
-			apply_transition.call(prev)
-		)
-		control.focus_exited.connect(func():
-			var prev := state.duplicate()
-			state["focus"] = false
+			state[state_name] = false
 			apply_transition.call(prev)
 		)
 
@@ -113,8 +116,26 @@ static func _collect_state_buckets(style: Dictionary) -> Array:
 		if body == "stylebox_props":
 			continue
 		var set: Array = Array(body.split("+", false))
-		out.append({"set": set, "props": style[key], "size": set.size()})
-	out.sort_custom(func(a, b): return int(a["size"]) < int(b["size"]))
+		# Sort the set itself so two buckets that mention the same pseudos
+		# in different source orders share a stable comparison key. The
+		# resolver already emits sorted-key bucket names so this is normally
+		# a no-op, but defensive sorting keeps the tie-break deterministic.
+		set.sort()
+		out.append({
+			"set": set,
+			"props": style[key],
+			"size": set.size(),
+			"key": "+".join(set),
+		})
+	# Sort by ascending set size so larger (more specific) buckets are
+	# merged last in _compute_target. For same-size buckets, fall back to
+	# the lexicographic key so the merge order is stable across runs —
+	# Godot's sort_custom is not guaranteed stable.
+	out.sort_custom(func(a, b):
+		if int(a["size"]) != int(b["size"]):
+			return int(a["size"]) < int(b["size"])
+		return str(a["key"]) < str(b["key"])
+	)
 	return out
 
 

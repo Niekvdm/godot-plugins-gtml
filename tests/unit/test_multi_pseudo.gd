@@ -95,6 +95,21 @@ func test_combined_bucket_wins_when_all_pseudos_active() -> void:
 	assert_eq(none.get("color"), Color.GREEN, "no states should leave base color")
 
 
+func test_active_and_disabled_buckets_resolve_but_never_fire_on_non_buttons() -> void:
+	# Document the intentional limitation: the generic GmlTransitionSetup only
+	# tracks hover + focus signals on plain controls. _active / _disabled
+	# buckets parse and land on the style, but the runtime won't toggle them
+	# unless the element type drives those signals (buttons do; inputs/anchors
+	# don't yet). This test pins the resolver behavior so a future contributor
+	# can see the buckets exist and only the wiring is missing.
+	var s := _resolved_style(
+		"<a id='target' href='#'>x</a>",
+		"a:active { color: red; } a:disabled { color: gray; }",
+		"target")
+	assert_true(s.has("_active"), "active bucket must still resolve so future wiring picks it up")
+	assert_true(s.has("_disabled"), "disabled bucket must still resolve so future wiring picks it up")
+
+
 func test_unknown_pseudo_in_multi_drops_rule() -> void:
 	# :hover:hovr — one valid + one typo. The whole rule should be dropped
 	# rather than silently routed into the _hover bucket (which would

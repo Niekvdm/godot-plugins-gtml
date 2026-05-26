@@ -500,12 +500,17 @@ static func _prev_element_sibling(parent, current):
 
 
 ## True when the 1-based ``position`` satisfies ``an + b`` for some non-negative
-## integer n. ``a == 0`` reduces to ``position == b``.
+## integer n. ``a == 0`` reduces to ``position == b``. Uses integer arithmetic
+## so very large positions don't lose precision.
 static func _nth_matches(position: int, a: int, b: int) -> bool:
 	if a == 0:
 		return position == b
-	var n: float = float(position - b) / float(a)
-	return n >= 0 and n == floor(n)
+	var diff: int = position - b
+	# n must be a non-negative integer satisfying a*n == diff
+	if a > 0:
+		return diff >= 0 and (diff % a) == 0
+	# a < 0 — solutions exist when diff <= 0 and diff % a == 0
+	return diff <= 0 and (diff % a) == 0
 
 
 static func _attr_matches(attr: Dictionary, node) -> bool:
