@@ -26,19 +26,17 @@ func test_checkbox_toggles_on_label_click() -> void:
 	assert_false(cb.button_pressed, "second activation should toggle off")
 
 
-func test_button_activation_does_not_grab_focus() -> void:
-	# UX contract: clicking a label that points to a checkbox/radio should
-	# toggle the input but NOT show a focus indicator. Godot's CheckBox
-	# focus stylebox extends beyond the box and reads as visual noise after
-	# a mouse click. Keyboard nav still reaches the button via Tab.
+func test_button_activation_grabs_focus() -> void:
+	# Matches HTML semantics — clicking a label of a checkbox focuses the
+	# checkbox so keyboard nav can take over from there. CSS :focus rules
+	# control the visual indicator (see GmlInputBuilder focus stylebox path).
 	var cb := CheckBox.new()
 	add_child_autofree(cb)
 	await get_tree().process_frame
 	assert_false(cb.has_focus())
 	_activate(cb)
-	assert_false(cb.has_focus(),
-		"label activation must not grab focus on a button — would draw an unwanted focus ring")
-	assert_true(cb.button_pressed, "...but the toggle itself must still happen")
+	assert_true(cb.has_focus(), "label activation should focus the button")
+	assert_true(cb.button_pressed)
 
 
 func test_radio_in_group_selects_never_deselects() -> void:

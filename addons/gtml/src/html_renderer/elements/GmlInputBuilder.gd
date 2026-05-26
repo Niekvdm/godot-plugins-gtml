@@ -123,6 +123,7 @@ static func _build_checkbox_input(node, style: Dictionary, gml_view, defaults: D
 				view.input_changed.emit(input_id, "true" if pressed else "false")
 		)
 
+	_apply_button_focus_stylebox(checkbox, style)
 	return checkbox
 
 
@@ -172,7 +173,42 @@ static func _build_radio_input(node, style: Dictionary, gml_view, defaults: Dict
 					view.input_changed.emit(input_id, value)
 		)
 
+	_apply_button_focus_stylebox(radio, style)
 	return radio
+
+
+## Apply a CSS-driven :focus stylebox to a CheckBox / radio so authors can
+## replace Godot's default focus rectangle with something on-brand.
+##
+## If the style has a _focus bucket, build a StyleBoxFlat from its
+## background-color / border / border-radius and install it as the "focus"
+## theme override. Empty bucket (no recognized properties) yields a
+## transparent StyleBoxEmpty so authors can opt out of any focus indicator.
+## When the style has no _focus rule, leave Godot's default in place.
+static func _apply_button_focus_stylebox(btn: CheckBox, style: Dictionary) -> void:
+	if not style.has("_focus"):
+		return
+	var focus_style: Dictionary = style["_focus"]
+	var has_visual := false
+	var box := StyleBoxFlat.new()
+	box.bg_color = Color.TRANSPARENT
+	if focus_style.has("background-color"):
+		box.bg_color = focus_style["background-color"]
+		has_visual = true
+	if focus_style.has("border") or focus_style.has("border-width") or focus_style.has("border-color"):
+		GmlStyles.apply_border_to_stylebox(box, focus_style)
+		has_visual = true
+	if focus_style.has("border-radius"):
+		box.corner_radius_top_left = focus_style["border-radius"]
+		box.corner_radius_top_right = focus_style["border-radius"]
+		box.corner_radius_bottom_left = focus_style["border-radius"]
+		box.corner_radius_bottom_right = focus_style["border-radius"]
+		has_visual = true
+	if not has_visual:
+		# Empty :focus rule — explicit opt-out: silence the default ring.
+		btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+		return
+	btn.add_theme_stylebox_override("focus", box)
 
 
 ## Build a range input (slider).

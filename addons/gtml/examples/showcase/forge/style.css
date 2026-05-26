@@ -273,6 +273,11 @@
     height: 18px;
 }
 
+.check-box:focus {
+    border: 1px solid #9b7eff;
+    border-radius: 3px;
+}
+
 .check-text {
     display: flex;
     flex-direction: column;
@@ -312,6 +317,11 @@
 .radio-dot {
     width: 18px;
     height: 18px;
+}
+
+.radio-dot:focus {
+    border: 1px solid #9b7eff;
+    border-radius: 9px;
 }
 
 .radio-text {
