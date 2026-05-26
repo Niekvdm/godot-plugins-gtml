@@ -192,27 +192,26 @@ func _animate_height(control: Control, from_value, to_value, tween: Tween, durat
 ## tween. Missing values on either side default to the identity transform
 ## (scale = 1, rotation = 0, translate = ZERO) so going from a transformed
 ## :hover back to a transform-less base reverts cleanly.
-func _animate_transform(control: Control, from_value, to_value, tween: Tween, duration: float) -> void:
-	var from_t := _normalize_transform(from_value)
+##
+## Interruption-safe: we read the live control.scale / control.rotation /
+## control.position rather than the caller's from_value so a hover-in
+## followed by a quick hover-out continues from the mid-tween visual state
+## instead of snapping back to the un-tweened baseline.
+##
+## Base-position fallback: if GmlDimensions hasn't stamped
+## _transform_base_position (the base style had no transform declaration),
+## we stamp it here using the live position so reverts return to layout.
+func _animate_transform(control: Control, _from_value, to_value, tween: Tween, duration: float) -> void:
 	var to_t := _normalize_transform(to_value)
 
-	# Seed the control with the from state so the first frame is correct
-	# even when the caller's previous state didn't match the visual state.
-	control.scale = from_t["scale"]
-	control.rotation = from_t["rotate"]
+	if not control.has_meta("_transform_base_position"):
+		control.set_meta("_transform_base_position", control.position)
+	var base_pos: Vector2 = control.get_meta("_transform_base_position")
 
 	tween.set_parallel(true)
 	tween.tween_property(control, "scale", to_t["scale"], duration)
 	tween.tween_property(control, "rotation", to_t["rotate"], duration)
-
-	# Translate animates the position relative to the layout-driven base.
-	# GmlDimensions stamps _transform_base_position on first build; we fall
-	# back to the control's current position when that meta is absent.
-	var base_pos: Vector2 = control.get_meta("_transform_base_position", control.position)
-	var to_pos: Vector2 = base_pos + to_t["translate"]
-	var from_pos: Vector2 = base_pos + from_t["translate"]
-	control.position = from_pos
-	tween.tween_property(control, "position", to_pos, duration)
+	tween.tween_property(control, "position", base_pos + to_t["translate"], duration)
 
 
 ## Normalize a transform value to the canonical {translate, scale, rotate}
@@ -373,7 +372,12 @@ func _apply_property_value(control: Control, property: String, value) -> void:
 			var t := _normalize_transform(value)
 			control.scale = t["scale"]
 			control.rotation = t["rotate"]
-			var base_pos: Vector2 = control.get_meta("_transform_base_position", control.position)
+			# Stamp the base position the first time we touch transform so
+			# subsequent reverts return to the pre-translate layout spot
+			# instead of accumulating offsets each toggle.
+			if not control.has_meta("_transform_base_position"):
+				control.set_meta("_transform_base_position", control.position)
+			var base_pos: Vector2 = control.get_meta("_transform_base_position")
 			control.position = base_pos + t["translate"]
 
 
