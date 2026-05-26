@@ -75,29 +75,29 @@
           <p class="section-help">Per-user defaults you can override anytime.</p>
         </header>
 
-        <div class="check-row">
+        <label class="check-row" for="notify-email">
           <input id="notify-email" class="check-box" type="checkbox" checked>
           <div class="check-text">
-            <label class="check-label" for="notify-email">Email notifications</label>
+            <span class="check-label">Email notifications</span>
             <span class="check-help">Receive a digest of mentions, comments, and alerts twice daily.</span>
           </div>
-        </div>
+        </label>
 
-        <div class="check-row">
+        <label class="check-row" for="notify-slack">
           <input id="notify-slack" class="check-box" type="checkbox">
           <div class="check-text">
-            <label class="check-label" for="notify-slack">Slack notifications</label>
+            <span class="check-label">Slack notifications</span>
             <span class="check-help">Mirror your inbox into the configured Slack channel.</span>
           </div>
-        </div>
+        </label>
 
-        <div class="check-row">
+        <label class="check-row" for="notify-weekly">
           <input id="notify-weekly" class="check-box" type="checkbox" checked>
           <div class="check-text">
-            <label class="check-label" for="notify-weekly">Weekly summary</label>
+            <span class="check-label">Weekly summary</span>
             <span class="check-help">A Monday-morning recap of the previous week's activity.</span>
           </div>
-        </div>
+        </label>
       </section>
 
       <div class="section-divider"></div>
@@ -108,29 +108,29 @@
           <p class="section-help">How long inactive projects remain visible in your workspace.</p>
         </header>
 
-        <div class="radio-row">
+        <label class="radio-row" for="archive-keep">
           <input id="archive-keep" class="radio-dot" type="radio" name="archive">
           <div class="radio-text">
-            <label class="radio-label" for="archive-keep">Keep everything indefinitely</label>
+            <span class="radio-label">Keep everything indefinitely</span>
             <span class="radio-help">Best for compliance-heavy workspaces.</span>
           </div>
-        </div>
+        </label>
 
-        <div class="radio-row">
+        <label class="radio-row" for="archive-auto">
           <input id="archive-auto" class="radio-dot" type="radio" name="archive" checked>
           <div class="radio-text">
-            <label class="radio-label" for="archive-auto">Auto-archive after 30 days of inactivity</label>
+            <span class="radio-label">Auto-archive after 30 days of inactivity</span>
             <span class="radio-help">Recommended for most teams.</span>
           </div>
-        </div>
+        </label>
 
-        <div class="radio-row">
+        <label class="radio-row" for="archive-manual">
           <input id="archive-manual" class="radio-dot" type="radio" name="archive">
           <div class="radio-text">
-            <label class="radio-label" for="archive-manual">Manual archive only</label>
+            <span class="radio-label">Manual archive only</span>
             <span class="radio-help">Nothing is hidden without an explicit action.</span>
           </div>
-        </div>
+        </label>
       </section>
 
     </main>

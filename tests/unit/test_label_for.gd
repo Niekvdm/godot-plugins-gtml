@@ -114,3 +114,61 @@ func _find_label_with_for(node: Node):
 		if found != null:
 			return found
 	return null
+
+
+func _find_node_with_for_meta(node: Node):
+	if node is Control and (node as Control).has_meta("for"):
+		return node
+	for child in node.get_children():
+		var found = _find_node_with_for_meta(child)
+		if found != null:
+			return found
+	return null
+
+
+func test_label_with_element_children_becomes_container() -> void:
+	# Whole-surface click target: <label><input/>text</label>. The label
+	# builder should produce a container (HBox/VBox), not a Label widget,
+	# so the entire row — padding, sibling spans, surrounding chrome —
+	# activates the for-target on click.
+	var GmlViewScript = preload("res://addons/gtml/src/GmlView.gd")
+	var dir := "res://tests/snapshots/.actual/label_container_fixture"
+	var html_path := dir + "/index.html"
+	var css_path := dir + "/style.css"
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+	var fh := FileAccess.open(html_path, FileAccess.WRITE)
+	fh.store_string('<label for="cb"><input id="cb" type="checkbox"><span>toggle me</span></label>')
+	fh.close()
+	var fc := FileAccess.open(css_path, FileAccess.WRITE)
+	fc.store_string("")
+	fc.close()
+
+	var view: GmlView = GmlViewScript.new()
+	view.html_path = html_path
+	view.css_path = css_path
+	view.size = Vector2(400, 200)
+	add_child_autofree(view)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	# The label is now a container — find the node carrying the for-meta.
+	var label_container = _find_node_with_for_meta(view)
+	assert_not_null(label_container)
+	assert_false(label_container is Label,
+		"label with element children must NOT be a Label widget (would lose those children)")
+	assert_true(label_container is Container,
+		"label with element children should be a Container — got %s" % typeof(label_container))
+
+	var checkbox = view.get_element_by_id("cb")
+	assert_not_null(checkbox)
+	assert_false(checkbox.button_pressed)
+
+	# Click on the label container (not on the checkbox itself). The
+	# whole row must toggle the checkbox.
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	label_container.gui_input.emit(click)
+
+	assert_true(checkbox.button_pressed,
+		"clicking anywhere on the label container should toggle the wrapped input")

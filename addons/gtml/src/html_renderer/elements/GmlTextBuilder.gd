@@ -151,6 +151,16 @@ static func build_label(node, ctx: Dictionary) -> Dictionary:
 
 
 static func build_label_inner(node, ctx: Dictionary) -> Control:
+	# Mixed-content labels (the <label><input>...</label> pattern) become a
+	# container whose entire surface is clickable, matching standard HTML.
+	# Pure-text labels keep the lean Label widget.
+	for child in node.children:
+		if not child.is_text_node:
+			return _build_label_as_container(node, ctx)
+	return _build_label_as_text(node, ctx)
+
+
+static func _build_label_as_text(node, ctx: Dictionary) -> Control:
 	var style = ctx.get_style.call(node)
 	var defaults: Dictionary = ctx.defaults
 	var gml_view = ctx.gml_view
@@ -202,6 +212,79 @@ static func build_label_inner(node, ctx: Dictionary) -> Control:
 			result = GmlStyles.apply_text_decoration(label, style["text-decoration"], color)
 
 	return result
+
+
+## Build a <label> whose body holds element children (the
+## ``<label><input>...</label>`` pattern). The container's entire surface
+## becomes the click target, so any padding, spans, or sibling controls
+## inside the label activate the for-target. Clicks consumed by interactive
+## descendants (the wrapped <input> itself) never reach gui_input here, so
+## there is no double-toggle risk.
+static func _build_label_as_container(node, ctx: Dictionary) -> Control:
+	var style = ctx.get_style.call(node)
+	var defaults: Dictionary = ctx.defaults
+	var gml_view = ctx.gml_view
+
+	# Same layout decision as <div>: flex direction picks between H/VBox.
+	# Defaulting to row matches the most common label-wrap-input shape.
+	var display: String = style.get("display", "block")
+	var direction: String = style.get("flex-direction", "row" if display == "flex" else "column")
+	var container: BoxContainer = HBoxContainer.new() if direction == "row" else VBoxContainer.new()
+	container.add_theme_constant_override("separation", style.get("gap", defaults.get("default_gap", 8)))
+
+	# align-items maps to the box's cross-axis alignment.
+	if style.has("align-items"):
+		match style["align-items"]:
+			"center":
+				container.alignment = BoxContainer.ALIGNMENT_CENTER
+			"flex-end", "end":
+				container.alignment = BoxContainer.ALIGNMENT_END
+			_:
+				container.alignment = BoxContainer.ALIGNMENT_BEGIN
+
+	# Build children through the normal dispatcher so they receive full
+	# styling + nested label-for wiring etc.
+	for child in node.children:
+		if child.is_text_node:
+			var stripped: String = child.text.strip_edges()
+			if stripped.is_empty():
+				continue
+			var text_label := Label.new()
+			text_label.text = stripped
+			text_label.add_theme_font_size_override("font_size", style.get("font-size", defaults.get("p_font_size", 16)))
+			GmlStyles.apply_text_color(text_label, style, defaults)
+			GmlStyles.apply_text_styles(text_label, style, defaults)
+			text_label.mouse_filter = Control.MOUSE_FILTER_IGNORE  # so the row's gui_input still fires
+			container.add_child(text_label)
+		else:
+			var child_control = ctx.build_node.call(child)
+			if child_control != null:
+				container.add_child(child_control)
+
+	# Whole-surface click target. Interactive descendants (CheckBox, LineEdit)
+	# consume their own clicks before this fires, so we never double-toggle.
+	var for_id: String = node.get_attr("for", "")
+	if not for_id.is_empty():
+		container.set_meta("for", for_id)
+		container.mouse_filter = Control.MOUSE_FILTER_STOP
+		container.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		if gml_view != null:
+			var view_ref = weakref(gml_view)
+			container.gui_input.connect(func(event: InputEvent):
+				if not (event is InputEventMouseButton):
+					return
+				if not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+					return
+				var view = view_ref.get_ref()
+				if view == null:
+					return
+				var target = view.get_element_by_id(for_id)
+				if target == null:
+					return
+				_activate_for_target(target)
+			)
+
+	return container
 
 
 ## Build bold text.
