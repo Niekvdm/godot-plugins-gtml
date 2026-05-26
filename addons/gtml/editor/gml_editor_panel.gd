@@ -8,6 +8,13 @@ const HtmlSyntaxHighlighter = preload("res://addons/gtml/editor/html_syntax_high
 const CssSyntaxHighlighter = preload("res://addons/gtml/editor/css_syntax_highlighter.gd")
 const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
 const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
+const GmlSearchEngineScript = preload("res://addons/gtml/src/editor/GmlSearchEngine.gd")
+const GmlJumpResolverScript = preload("res://addons/gtml/src/editor/GmlJumpResolver.gd")
+const GmlEditorContextScript = preload("res://addons/gtml/src/editor/GmlEditorContext.gd")
+const GmlColorTokensScript = preload("res://addons/gtml/src/editor/GmlColorTokens.gd")
+const GmlAutocompleteSourceScript = preload("res://addons/gtml/src/editor/GmlAutocompleteSource.gd")
+
+const COLOR_GUTTER_IDX := 0
 
 #region Node References
 
@@ -30,10 +37,17 @@ const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
 @onready var search_bar: HBoxContainer = $MainContainer/SearchBar
 @onready var search_input: LineEdit = $MainContainer/SearchBar/SearchInput
 @onready var match_case_check: CheckBox = $MainContainer/SearchBar/MatchCaseCheck
+@onready var regex_check: CheckBox = $MainContainer/SearchBar/RegexCheck
 @onready var prev_button: Button = $MainContainer/SearchBar/PrevButton
 @onready var next_button: Button = $MainContainer/SearchBar/NextButton
 @onready var match_count_label: Label = $MainContainer/SearchBar/MatchCountLabel
 @onready var close_search_button: Button = $MainContainer/SearchBar/CloseSearchButton
+
+# Replace bar references
+@onready var replace_bar: HBoxContainer = $MainContainer/ReplaceBar
+@onready var replace_input: LineEdit = $MainContainer/ReplaceBar/ReplaceInput
+@onready var replace_button: Button = $MainContainer/ReplaceBar/ReplaceButton
+@onready var replace_all_button: Button = $MainContainer/ReplaceBar/ReplaceAllButton
 
 # Go to line dialog references
 @onready var goto_line_dialog: AcceptDialog = $GotoLineDialog
@@ -67,13 +81,26 @@ var _pending_state_restore: Dictionary = {}  # Pending state to restore when tab
 var _search_matches: Array = []  # Array of {line, column, length}
 var _current_match_index: int = -1
 
+# Jump history (Ctrl+Click / F12 push, Alt+Left pops)
+var _jump_history: Array = []  # [{source: "html"|"css", line, col}, ...]
+
+# Color tokens (gutter swatches + ColorPicker popup)
+var _color_swatch_cache: Dictionary = {}   # color.to_html() -> Texture2D
+var _color_tokens_by_buffer: Dictionary = {"html": [], "css": []}
+var _color_rescan_timers: Dictionary = {}  # kind -> SceneTreeTimer | null
+var _color_picker_open_count: int = 0
+
 #endregion
 
 
 func _ready() -> void:
-	if not Engine.is_editor_hint():
-		return
+	# Always run setup so integration tests can instantiate the scene
+	# headlessly. The previous `if not Engine.is_editor_hint(): return`
+	# guard was historical — the panel works fine outside the editor host.
+	_setup_panel()
 
+
+func _setup_panel() -> void:
 	# Connect button signals
 	save_button.pressed.connect(_on_save_pressed)
 	reload_button.pressed.connect(_on_reload_pressed)
@@ -92,10 +119,20 @@ func _ready() -> void:
 	next_button.pressed.connect(_on_search_next)
 	close_search_button.pressed.connect(_close_search)
 	match_case_check.toggled.connect(_on_match_case_toggled)
+	regex_check.toggled.connect(_on_regex_toggled)
+
+	# Connect replace bar signals
+	replace_button.pressed.connect(_on_replace_pressed)
+	replace_all_button.pressed.connect(_on_replace_all_pressed)
 
 	# Connect go to line dialog
 	goto_line_dialog.confirmed.connect(_on_goto_line_confirmed)
 	line_input.get_line_edit().text_submitted.connect(_on_goto_line_submitted)
+
+	# Wire Ctrl+Click on the CodeEdits to trigger jumps. F12/Alt+Left are
+	# handled by _unhandled_key_input alongside the other editor shortcuts.
+	html_code_edit.gui_input.connect(_on_code_edit_gui_input.bind(html_code_edit))
+	css_code_edit.gui_input.connect(_on_code_edit_gui_input.bind(css_code_edit))
 
 	# Configure CodeEdit settings
 	_configure_code_edit(html_code_edit)
@@ -106,6 +143,31 @@ func _ready() -> void:
 	_css_highlighter = CssSyntaxHighlighter.new()
 	html_code_edit.syntax_highlighter = _html_highlighter
 	css_code_edit.syntax_highlighter = _css_highlighter
+
+	# Color swatch gutter (Task 5) — add to both CodeEdits, clickable.
+	for ce in [html_code_edit, css_code_edit]:
+		ce.add_gutter(COLOR_GUTTER_IDX)
+		ce.set_gutter_name(COLOR_GUTTER_IDX, "color")
+		ce.set_gutter_width(COLOR_GUTTER_IDX, 16)
+		ce.set_gutter_clickable(COLOR_GUTTER_IDX, true)
+		ce.gutter_clicked.connect(_on_gutter_clicked.bind(ce))
+
+	# Autocomplete (Task 6) — enable the native CodeEdit popup on both buffers
+	# and route every request through GmlAutocompleteSource.
+	for ce in [html_code_edit, css_code_edit]:
+		ce.code_completion_enabled = true
+		ce.code_completion_prefixes = ["<", " ", "\"", ":", ".", "#", "("]
+		ce.code_completion_requested.connect(_on_code_completion_requested.bind(ce))
+
+	# Multi-cursor (Task 7) — enable secondary carets on both buffers. Keybinds
+	# (Ctrl+D / Ctrl+L / Ctrl+Alt+Up/Down) are wired in _input below. The
+	# Godot 4.6 property is `caret_multiple` (TextEdit base class).
+	for ce in [html_code_edit, css_code_edit]:
+		ce.caret_multiple = true
+
+	# Debounced rescan on edits so the gutter stays in sync.
+	html_code_edit.text_changed.connect(_schedule_color_rescan.bind("html"))
+	css_code_edit.text_changed.connect(_schedule_color_rescan.bind("css"))
 
 	# Show initial state (no selection)
 	_show_no_selection()
@@ -138,6 +200,13 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_open_search()
 			get_viewport().set_input_as_handled()
 
+		# Ctrl+H to toggle replace bar (also opens search bar if hidden)
+		elif event.keycode == KEY_H and event.ctrl_pressed:
+			if not search_bar.visible:
+				_open_search()
+			_toggle_replace_bar(not replace_bar.visible)
+			get_viewport().set_input_as_handled()
+
 		# Ctrl+G to go to line
 		elif event.keycode == KEY_G and event.ctrl_pressed:
 			_open_goto_line()
@@ -155,6 +224,72 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			else:
 				_on_search_next()
 			get_viewport().set_input_as_handled()
+
+
+# Multi-cursor shortcuts (Task 7). These live on _input rather than
+# _unhandled_key_input because CodeEdit consumes most key events itself when
+# focused; _input fires earlier in the dispatch chain.
+func _input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if not (event is InputEventKey) or not event.pressed:
+		return
+	var code_edit := _get_active_code_edit()
+	if code_edit == null or not code_edit.has_focus():
+		return
+
+	if event.ctrl_pressed and event.alt_pressed and event.keycode == KEY_DOWN:
+		_add_caret_relative(code_edit, 1)
+		get_viewport().set_input_as_handled()
+	elif event.ctrl_pressed and event.alt_pressed and event.keycode == KEY_UP:
+		_add_caret_relative(code_edit, -1)
+		get_viewport().set_input_as_handled()
+	elif event.ctrl_pressed and event.keycode == KEY_D:
+		_add_caret_at_next_match(code_edit)
+		get_viewport().set_input_as_handled()
+	elif event.ctrl_pressed and event.keycode == KEY_L:
+		var line := code_edit.get_caret_line()
+		code_edit.select(line, 0, line, code_edit.get_line(line).length())
+		get_viewport().set_input_as_handled()
+
+
+func _add_caret_at_next_match(code_edit: CodeEdit) -> void:
+	var selected := code_edit.get_selected_text(0)
+	if selected.is_empty():
+		# Promote the word under the caret to a selection so repeated Ctrl+D
+		# behaves like other editors.
+		var line := code_edit.get_caret_line()
+		var col := code_edit.get_caret_column()
+		var line_text := code_edit.get_line(line)
+		var word_start := col
+		while word_start > 0 and (line_text[word_start - 1].is_valid_identifier() or line_text[word_start - 1] == "-"):
+			word_start -= 1
+		var word_end := col
+		while word_end < line_text.length() and (line_text[word_end].is_valid_identifier() or line_text[word_end] == "-"):
+			word_end += 1
+		if word_end > word_start:
+			code_edit.select(line, word_start, line, word_end)
+			selected = code_edit.get_selected_text(0)
+	if selected.is_empty():
+		return
+
+	var matches: Array = GmlSearchEngineScript.find_all(code_edit.text, selected, true, false)
+	if matches.size() < 2:
+		return
+	# Find the next match strictly after the primary caret position.
+	var anchor_line := code_edit.get_caret_line(0)
+	var anchor_col := code_edit.get_caret_column(0)
+	for m in matches:
+		if m["line"] > anchor_line or (m["line"] == anchor_line and m["col"] > anchor_col):
+			code_edit.add_caret(m["line"], m["col"])
+			return
+
+
+func _add_caret_relative(code_edit: CodeEdit, delta: int) -> void:
+	var line := code_edit.get_caret_line()
+	var col := code_edit.get_caret_column()
+	var target_line := clampi(line + delta, 0, code_edit.get_line_count() - 1)
+	code_edit.add_caret(target_line, col)
 
 
 #region Public API
@@ -351,6 +486,10 @@ func _load_files() -> void:
 
 	_html_dirty = false
 	_css_dirty = false
+
+	# Initial color-token scan now that the buffers are populated.
+	_rescan_colors("html")
+	_rescan_colors("css")
 
 
 func _update_ui() -> void:
@@ -644,12 +783,45 @@ func _open_search() -> void:
 
 func _close_search() -> void:
 	search_bar.visible = false
+	replace_bar.visible = false
 	_clear_search_highlights()
 	_search_matches.clear()
 	_current_match_index = -1
 	match_count_label.text = ""
 	# Return focus to code edit
 	_get_active_code_edit().grab_focus()
+
+
+func _toggle_replace_bar(show_it: bool) -> void:
+	replace_bar.visible = show_it
+	if show_it:
+		replace_input.grab_focus()
+
+
+func _on_replace_pressed() -> void:
+	if _search_matches.is_empty() or _current_match_index < 0:
+		return
+	var code_edit := _get_active_code_edit()
+	var m: Dictionary = _search_matches[_current_match_index]
+	# Engine.replace_one expects {line, col, length}; panel state uses 'column'.
+	var engine_match := {"line": m["line"], "col": m["column"], "length": m["length"]}
+	code_edit.text = GmlSearchEngineScript.replace_one(code_edit.text, engine_match, replace_input.text)
+	_perform_search()
+	_on_search_next()
+
+
+func _on_replace_all_pressed() -> void:
+	var code_edit := _get_active_code_edit()
+	var result: Dictionary = GmlSearchEngineScript.replace_all(
+		code_edit.text,
+		search_input.text,
+		replace_input.text,
+		match_case_check.button_pressed,
+		regex_check.button_pressed,
+	)
+	code_edit.text = result["new_text"]
+	match_count_label.text = "Replaced %d" % result["count"]
+	_perform_search()
 
 
 func _on_search_text_changed(_new_text: String) -> void:
@@ -664,6 +836,10 @@ func _on_search_submitted(_text: String) -> void:
 
 
 func _on_match_case_toggled(_pressed: bool) -> void:
+	_perform_search()
+
+
+func _on_regex_toggled(_pressed: bool) -> void:
 	_perform_search()
 
 
@@ -694,28 +870,21 @@ func _perform_search() -> void:
 		return
 
 	var code_edit = _get_active_code_edit()
-	var text = code_edit.text
-	var match_case = match_case_check.button_pressed
+	var engine_matches: Array = GmlSearchEngineScript.find_all(
+		code_edit.text,
+		search_text,
+		match_case_check.button_pressed,
+		regex_check.button_pressed,
+	)
 
-	if not match_case:
-		text = text.to_lower()
-		search_text = search_text.to_lower()
-
-	# Find all matches
-	var pos = 0
-	while true:
-		var found = text.find(search_text, pos)
-		if found == -1:
-			break
-
-		# Convert position to line and column
-		var line_col = _pos_to_line_col(code_edit.text, found)
+	# Translate engine's {line, col, length} -> panel's {line, column, length}
+	# so existing _goto_match / _highlight_matches logic keeps working.
+	for em in engine_matches:
 		_search_matches.append({
-			"line": line_col.line,
-			"column": line_col.column,
-			"length": search_input.text.length()
+			"line": em["line"],
+			"column": em["col"],
+			"length": em["length"],
 		})
-		pos = found + 1
 
 	# Update match count label
 	if _search_matches.is_empty():
@@ -733,18 +902,6 @@ func _perform_search() -> void:
 				break
 
 	_highlight_matches()
-
-
-func _pos_to_line_col(text: String, pos: int) -> Dictionary:
-	var line = 0
-	var col = 0
-	for i in range(pos):
-		if text[i] == "\n":
-			line += 1
-			col = 0
-		else:
-			col += 1
-	return {"line": line, "column": col}
 
 
 func _highlight_matches() -> void:
@@ -804,5 +961,255 @@ func _on_goto_line_confirmed() -> void:
 func _on_goto_line_submitted(_text: String) -> void:
 	_on_goto_line_confirmed()
 	goto_line_dialog.hide()
+
+#endregion
+
+
+#region Jumps (Ctrl+Click / F12 / Alt+Left)
+
+func _on_code_edit_gui_input(event: InputEvent, code_edit: CodeEdit) -> void:
+	# Handle key events here too — CodeEdit otherwise swallows them
+	# (Alt+Left = move-word-backward, etc.) before _unhandled_key_input.
+	if event is InputEventKey and event.pressed:
+		if event.keycode == KEY_F12:
+			_trigger_jump_at_caret(code_edit)
+			code_edit.accept_event()
+			return
+		if event.alt_pressed and event.keycode == KEY_LEFT:
+			_pop_jump_history()
+			code_edit.accept_event()
+			return
+		return
+
+	if not (event is InputEventMouseButton):
+		return
+	if not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+		return
+	if not event.ctrl_pressed:
+		return
+	code_edit.accept_event()
+	# Caret update from the click happens after gui_input; defer one frame
+	# so get_caret_line/column reflect the clicked position.
+	await get_tree().process_frame
+	_trigger_jump_at_caret(code_edit)
+
+
+func _trigger_jump_at_caret(code_edit: CodeEdit) -> void:
+	if code_edit == null:
+		return
+	var kind: String = "html" if code_edit == html_code_edit else "css"
+	var other: String = css_code_edit.text if kind == "html" else html_code_edit.text
+	var ctx: GmlEditorContext
+	if kind == "html":
+		ctx = GmlEditorContextScript.from_html(
+			code_edit.text,
+			code_edit.get_caret_line(),
+			code_edit.get_caret_column(),
+			other,
+		)
+	else:
+		ctx = GmlEditorContextScript.from_css(
+			code_edit.text,
+			code_edit.get_caret_line(),
+			code_edit.get_caret_column(),
+			other,
+		)
+
+	var jump = GmlJumpResolverScript.resolve(ctx)
+	if jump == null:
+		return
+
+	# Push current position to history BEFORE jumping so Alt+Left returns here.
+	_jump_history.append({
+		"source": kind,
+		"line": code_edit.get_caret_line(),
+		"col": code_edit.get_caret_column(),
+	})
+
+	_go_to(jump["target_kind"], int(jump["line"]), int(jump.get("col", 0)))
+
+
+func _go_to(target_kind: String, line: int, col: int) -> void:
+	var target_edit: CodeEdit = html_code_edit if target_kind == "html" else css_code_edit
+	var target_tab: Control = html_tab if target_kind == "html" else css_tab
+	var idx: int = tab_container.get_tab_idx_from_control(target_tab)
+	if idx >= 0:
+		tab_container.current_tab = idx
+	target_edit.set_caret_line(line)
+	target_edit.set_caret_column(col)
+	target_edit.center_viewport_to_caret()
+	target_edit.grab_focus()
+
+
+func _pop_jump_history() -> void:
+	if _jump_history.is_empty():
+		return
+	var prev: Dictionary = _jump_history.pop_back()
+	_go_to(prev["source"], int(prev["line"]), int(prev["col"]))
+
+#endregion
+
+
+#region Color tokens (gutter swatches + ColorPicker popup)
+
+func _schedule_color_rescan(kind: String) -> void:
+	# While a ColorPicker is open the buffer is being mutated by color_changed
+	# events; a rescan would replace the token dict the picker's lambda already
+	# captured, leaving subsequent drag events with stale (line, col, length)
+	# metadata. Defer until the picker closes (popup_hide schedules a final rescan).
+	if _color_picker_open_count > 0:
+		return
+	# 200ms debounce so a fast paste doesn't rescan on every keystroke.
+	# Disconnect any pending callback for THIS buffer's timer; leave the
+	# other buffer's timer alone so a fast HTML+CSS edit pair doesn't drop
+	# one of the rescans.
+	var existing = _color_rescan_timers.get(kind)
+	if existing != null:
+		for c in existing.timeout.get_connections():
+			existing.timeout.disconnect(c["callable"])
+	var t := get_tree().create_timer(0.2)
+	t.timeout.connect(_rescan_colors.bind(kind), CONNECT_ONE_SHOT)
+	_color_rescan_timers[kind] = t
+
+
+func _rescan_colors(kind: String) -> void:
+	var code_edit: CodeEdit = html_code_edit if kind == "html" else css_code_edit
+	if code_edit == null:
+		return
+	var tokens: Array = GmlColorTokensScript.scan(code_edit.text)
+	_color_tokens_by_buffer[kind] = tokens
+	# Clear all gutter icons first so removed colors stop showing a swatch.
+	for line in range(code_edit.get_line_count()):
+		code_edit.set_line_gutter_icon(line, COLOR_GUTTER_IDX, null)
+		code_edit.set_line_gutter_metadata(line, COLOR_GUTTER_IDX, null)
+	# Set icons + metadata for each token. If multiple colors share a line,
+	# the metadata holds the LAST scanned token on that line (good enough
+	# for click→picker; the popup can still edit any of them sequentially).
+	for t in tokens:
+		var line: int = t["line"]
+		if line < 0 or line >= code_edit.get_line_count():
+			continue
+		code_edit.set_line_gutter_icon(line, COLOR_GUTTER_IDX, _swatch_for(t["color"]))
+		code_edit.set_line_gutter_metadata(line, COLOR_GUTTER_IDX, t)
+
+
+func _swatch_for(color: Color) -> Texture2D:
+	var key := color.to_html()
+	if _color_swatch_cache.has(key):
+		return _color_swatch_cache[key]
+	var img := Image.create(12, 12, false, Image.FORMAT_RGBA8)
+	img.fill(color)
+	var tex := ImageTexture.create_from_image(img)
+	_color_swatch_cache[key] = tex
+	return tex
+
+
+func _on_gutter_clicked(line: int, gutter: int, code_edit: CodeEdit) -> void:
+	if gutter != COLOR_GUTTER_IDX:
+		return
+	var token = code_edit.get_line_gutter_metadata(line, COLOR_GUTTER_IDX)
+	if token == null or typeof(token) != TYPE_DICTIONARY:
+		return
+	_open_color_picker(token, code_edit)
+
+
+func _open_color_picker(token: Dictionary, code_edit: CodeEdit) -> void:
+	var popup := PopupPanel.new()
+	var picker := ColorPicker.new()
+	picker.color = token["color"]
+	popup.add_child(picker)
+	add_child(popup)
+
+	_color_picker_open_count += 1
+
+	picker.color_changed.connect(func(new_color: Color) -> void:
+		_write_back_color(code_edit, token, new_color)
+	)
+
+	popup.popup_hide.connect(func() -> void:
+		_color_picker_open_count = maxi(0, _color_picker_open_count - 1)
+		# When the picker closes, the buffer has changed; trigger a final
+		# rescan so the gutter reflects the new colors.
+		_schedule_color_rescan("html" if code_edit == html_code_edit else "css")
+		popup.queue_free()
+	)
+	popup.popup_centered()
+
+
+func _write_back_color(code_edit: CodeEdit, token: Dictionary, new_color: Color) -> void:
+	var new_literal := GmlColorTokensScript.format(new_color, token["kind"])
+	var line: int = token["line"]
+	var col: int = token["col"]
+	var length: int = token["length"]
+	if line < 0 or line >= code_edit.get_line_count():
+		return
+	var old_line_text := code_edit.get_line(line)
+	if col < 0 or col + length > old_line_text.length():
+		return
+	var new_line_text := old_line_text.substr(0, col) + new_literal + old_line_text.substr(col + length)
+	code_edit.set_line(line, new_line_text)
+	# Update the token's length in-place so subsequent color_changed events
+	# from the same picker still target the right span (e.g. #fff -> #ffffff).
+	token["length"] = new_literal.length()
+	token["color"] = new_color
+	# A debounced rescan will run via text_changed and refresh metadata.
+
+#endregion
+
+
+#region Autocomplete (CodeEdit native popup wired to GmlAutocompleteSource)
+
+func _on_code_completion_requested(code_edit: CodeEdit) -> void:
+	var kind: String = "html" if code_edit == html_code_edit else "css"
+	var other: String = css_code_edit.text if kind == "html" else html_code_edit.text
+	var ctx: GmlEditorContext
+	if kind == "html":
+		ctx = GmlEditorContextScript.from_html(
+			code_edit.text,
+			code_edit.get_caret_line(),
+			code_edit.get_caret_column(),
+			other,
+		)
+	else:
+		ctx = GmlEditorContextScript.from_css(
+			code_edit.text,
+			code_edit.get_caret_line(),
+			code_edit.get_caret_column(),
+			other,
+		)
+
+	var candidates: Array = GmlAutocompleteSourceScript.get_candidates(ctx)
+	if candidates.is_empty():
+		return
+
+	# Clear stale options before re-populating so the popup reflects the
+	# current caret context exactly.
+	code_edit.cancel_code_completion()
+	for c in candidates:
+		var kind_const := _completion_kind(c["kind"])
+		code_edit.add_code_completion_option(
+			kind_const,
+			c["label"],
+			c["insert_text"],
+		)
+	code_edit.update_code_completion_options(true)
+
+
+static func _completion_kind(s: String) -> int:
+	match s:
+		"tag":
+			return CodeEdit.KIND_CLASS
+		"attr":
+			return CodeEdit.KIND_MEMBER
+		"value":
+			return CodeEdit.KIND_CONSTANT
+		"property":
+			return CodeEdit.KIND_VARIABLE
+		"var":
+			return CodeEdit.KIND_CONSTANT
+		"class":
+			return CodeEdit.KIND_MEMBER
+		_:
+			return CodeEdit.KIND_PLAIN_TEXT
 
 #endregion

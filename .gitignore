@@ -20,3 +20,6 @@ mono_crash.*.json
 
 # Test artifacts
 tests/snapshots/.actual/
+
+# Brainstorming session scratch
+.superpowers/
