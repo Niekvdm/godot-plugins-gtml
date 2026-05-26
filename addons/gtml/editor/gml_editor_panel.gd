@@ -9,6 +9,8 @@ const CssSyntaxHighlighter = preload("res://addons/gtml/editor/css_syntax_highli
 const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
 const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
 const GmlSearchEngineScript = preload("res://addons/gtml/src/editor/GmlSearchEngine.gd")
+const GmlJumpResolverScript = preload("res://addons/gtml/src/editor/GmlJumpResolver.gd")
+const GmlEditorContextScript = preload("res://addons/gtml/src/editor/GmlEditorContext.gd")
 
 #region Node References
 
@@ -75,6 +77,9 @@ var _pending_state_restore: Dictionary = {}  # Pending state to restore when tab
 var _search_matches: Array = []  # Array of {line, column, length}
 var _current_match_index: int = -1
 
+# Jump history (Ctrl+Click / F12 push, Alt+Left pops)
+var _jump_history: Array = []  # [{source: "html"|"css", line, col}, ...]
+
 #endregion
 
 
@@ -109,6 +114,11 @@ func _ready() -> void:
 	# Connect go to line dialog
 	goto_line_dialog.confirmed.connect(_on_goto_line_confirmed)
 	line_input.get_line_edit().text_submitted.connect(_on_goto_line_submitted)
+
+	# Wire Ctrl+Click on the CodeEdits to trigger jumps. F12/Alt+Left are
+	# handled by _unhandled_key_input alongside the other editor shortcuts.
+	html_code_edit.gui_input.connect(_on_code_edit_gui_input.bind(html_code_edit))
+	css_code_edit.gui_input.connect(_on_code_edit_gui_input.bind(css_code_edit))
 
 	# Configure CodeEdit settings
 	_configure_code_edit(html_code_edit)
@@ -174,6 +184,16 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				_on_search_prev()
 			else:
 				_on_search_next()
+			get_viewport().set_input_as_handled()
+
+		# F12 to jump to definition from the active CodeEdit
+		elif event.keycode == KEY_F12:
+			_trigger_jump_at_caret(_get_active_code_edit())
+			get_viewport().set_input_as_handled()
+
+		# Alt+Left to pop the jump history
+		elif event.keycode == KEY_LEFT and event.alt_pressed:
+			_pop_jump_history()
 			get_viewport().set_input_as_handled()
 
 
@@ -842,5 +862,89 @@ func _on_goto_line_confirmed() -> void:
 func _on_goto_line_submitted(_text: String) -> void:
 	_on_goto_line_confirmed()
 	goto_line_dialog.hide()
+
+#endregion
+
+
+#region Jumps (Ctrl+Click / F12 / Alt+Left)
+
+func _on_code_edit_gui_input(event: InputEvent, code_edit: CodeEdit) -> void:
+	# Handle key events here too — CodeEdit otherwise swallows them
+	# (Alt+Left = move-word-backward, etc.) before _unhandled_key_input.
+	if event is InputEventKey and event.pressed:
+		if event.keycode == KEY_F12:
+			_trigger_jump_at_caret(code_edit)
+			code_edit.accept_event()
+			return
+		if event.alt_pressed and event.keycode == KEY_LEFT:
+			_pop_jump_history()
+			code_edit.accept_event()
+			return
+		return
+
+	if not (event is InputEventMouseButton):
+		return
+	if not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+		return
+	if not event.ctrl_pressed:
+		return
+	# Caret update from the click happens after gui_input; defer one frame
+	# so get_caret_line/column reflect the clicked position.
+	await get_tree().process_frame
+	_trigger_jump_at_caret(code_edit)
+
+
+func _trigger_jump_at_caret(code_edit: CodeEdit) -> void:
+	if code_edit == null:
+		return
+	var kind: String = "html" if code_edit == html_code_edit else "css"
+	var other: String = css_code_edit.text if kind == "html" else html_code_edit.text
+	var ctx: GmlEditorContext
+	if kind == "html":
+		ctx = GmlEditorContextScript.from_html(
+			code_edit.text,
+			code_edit.get_caret_line(),
+			code_edit.get_caret_column(),
+			other,
+		)
+	else:
+		ctx = GmlEditorContextScript.from_css(
+			code_edit.text,
+			code_edit.get_caret_line(),
+			code_edit.get_caret_column(),
+			other,
+		)
+
+	var jump = GmlJumpResolverScript.resolve(ctx)
+	if jump == null:
+		return
+
+	# Push current position to history BEFORE jumping so Alt+Left returns here.
+	_jump_history.append({
+		"source": kind,
+		"line": code_edit.get_caret_line(),
+		"col": code_edit.get_caret_column(),
+	})
+
+	_go_to(jump["target_kind"], int(jump["line"]), int(jump.get("col", 0)))
+
+
+func _go_to(target_kind: String, line: int, col: int) -> void:
+	var target_edit: CodeEdit = html_code_edit if target_kind == "html" else css_code_edit
+	var target_tab: Control = html_tab if target_kind == "html" else css_tab
+	var idx: int = tab_container.get_tab_idx_from_control(target_tab)
+	if idx >= 0:
+		tab_container.current_tab = idx
+	target_edit.set_caret_line(line)
+	target_edit.set_caret_column(col)
+	target_edit.center_viewport_to_caret()
+	target_edit.grab_focus()
+
+
+func _pop_jump_history() -> void:
+	if _jump_history.is_empty():
+		return
+	var prev: Dictionary = _jump_history.pop_back()
+	_go_to(prev["source"], int(prev["line"]), int(prev["col"]))
 
 #endregion
