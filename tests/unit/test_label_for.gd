@@ -51,12 +51,10 @@ func test_radio_in_group_selects_never_deselects() -> void:
 func test_text_input_grabs_focus_on_label_click() -> void:
 	var line := LineEdit.new()
 	add_child_autofree(line)
-	# Give it a focusable parent path
+	await get_tree().process_frame  # let the Control enter the focus tree
 	assert_false(line.has_focus())
 	_activate(line)
-	# grab_focus is queued — we don't wait, but we can assert the focus mode
-	# allows it and that the call did not error.
-	assert_true(line.focus_mode != Control.FOCUS_NONE)
+	assert_true(line.has_focus(), "LineEdit should hold focus after label activation")
 
 
 func test_label_with_for_attribute_carries_meta() -> void:
@@ -65,3 +63,54 @@ func test_label_with_for_attribute_carries_meta() -> void:
 	var Parser = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
 	var dom = Parser.new().parse('<label for="x">click</label>')
 	assert_eq(dom.get_attr("for", ""), "x")
+
+
+func test_label_click_focuses_input_through_gml_view() -> void:
+	# Integration test for the gui_input wiring inside build_label_inner:
+	# build a real GmlView containing a <label for="x"> + <input id="x">,
+	# synthesize a left-click on the label, and assert the input receives focus.
+	var GmlViewScript = preload("res://addons/gtml/src/GmlView.gd")
+	var fixture_dir := "res://tests/snapshots/.actual/label_for_fixture"
+	var html_path := fixture_dir + "/index.html"
+	var css_path := fixture_dir + "/style.css"
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(fixture_dir))
+	var fh := FileAccess.open(html_path, FileAccess.WRITE)
+	fh.store_string('<div><label for="probe">click me</label><input id="probe" type="text"></div>')
+	fh.close()
+	var fc := FileAccess.open(css_path, FileAccess.WRITE)
+	fc.store_string("div { display: flex; flex-direction: column; }")
+	fc.close()
+
+	var view: GmlView = GmlViewScript.new()
+	view.html_path = html_path
+	view.css_path = css_path
+	view.size = Vector2(400, 200)
+	add_child_autofree(view)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var input = view.get_element_by_id("probe")
+	assert_not_null(input, "input control should be registered with the view")
+	assert_false(input.has_focus())
+
+	# Find the label by walking the built tree — it's the first Label
+	# control under the view whose meta "for" is set.
+	var label: Label = _find_label_with_for(view)
+	assert_not_null(label, "label with for-meta should exist in the built tree")
+
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	label.gui_input.emit(click)
+
+	assert_true(input.has_focus(), "input should be focused after synthesized label click")
+
+
+func _find_label_with_for(node: Node):
+	if node is Label and (node as Label).has_meta("for"):
+		return node
+	for child in node.get_children():
+		var found = _find_label_with_for(child)
+		if found != null:
+			return found
+	return null

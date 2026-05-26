@@ -64,3 +64,21 @@ func test_stray_closing_br_does_not_loop() -> void:
 	# Three children: text, br, text
 	assert_eq(dom.children.size(), 3)
 	assert_eq(dom.children[1].tag, "br")
+
+
+func test_trailing_stray_void_close_at_eof_terminates() -> void:
+	# Pathological input: a stray </input> immediately after the real DOM ends.
+	# Parser must consume it cleanly and return without spinning.
+	var dom = _parse("<div>hi</div></input>")
+	assert_not_null(dom)
+	assert_eq(dom.tag, "div")
+
+
+func test_malformed_empty_closing_tag_terminates() -> void:
+	# </> and </ > (closing tag with no name) — pathological but plausible
+	# author error. Must not hang. We assert termination + a sane root tag,
+	# not a specific child structure.
+	var dom1 = _parse("<p>a</></p>")
+	assert_not_null(dom1)
+	var dom2 = _parse("<p>a</  ></p>")
+	assert_not_null(dom2)
