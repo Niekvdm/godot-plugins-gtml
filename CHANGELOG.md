@@ -53,6 +53,16 @@
   snap instead of animating.
 - `calc()` does not yet handle mixed-unit subtraction (e.g.
   `calc(100% - 20px)`). Same-unit and unitless arithmetic only.
+- Custom-property declarations inside a state bucket (`p:hover { --x: red; }`)
+  are not yet added to the bucket-local scope. The bucket resolves against
+  the base scope only.
+- GTML has no `<form>` scoping: a bare `<input type="submit">` anywhere in
+  the view still fires `form_submitted` with the entire view's input
+  snapshot. Intentional given the embedded-UI use case but worth knowing
+  if multiple forms coexist in one GmlView.
+- Radio inputs without a `name` attribute have no `ButtonGroup` and are
+  silently collected by `get_form_data()` as bools under their `id`
+  (CheckBox semantics). Always set `name=` on radios.
 
 
 ## 0.3.1

@@ -12,8 +12,14 @@ extends RefCounted
 ## Substitute every var(--name) or var(--name, fallback) in ``raw`` with
 ## either the scope's value or the fallback. Returns the substituted string.
 ## Unknown vars without fallback resolve to the empty string and emit a
-## push_warning so authors notice.
+## push_warning so authors notice. Cycle detection is built in — a var
+## that references itself (directly or via a chain) breaks the chain on
+## re-entry with a warning, matching CSS's "invalid → initial" semantics.
 static func substitute_vars(raw: String, scope: Dictionary) -> String:
+	return _substitute_vars_internal(raw, scope, {})
+
+
+static func _substitute_vars_internal(raw: String, scope: Dictionary, visited: Dictionary) -> String:
 	if raw.find("var(") < 0:
 		return raw
 
@@ -21,14 +27,14 @@ static func substitute_vars(raw: String, scope: Dictionary) -> String:
 	var i := 0
 	var n := raw.length()
 	while i < n:
-		if i + 4 < n and raw.substr(i, 4) == "var(":
+		if i + 4 <= n and raw.substr(i, 4) == "var(":
 			var close := _find_paren_close(raw, i + 4)
 			if close < 0:
 				push_warning("GmlCssEval: unterminated var() in '%s'" % raw)
 				out += raw.substr(i)
 				break
 			var inner := raw.substr(i + 4, close - i - 4).strip_edges()
-			out += _resolve_var(inner, scope)
+			out += _resolve_var(inner, scope, visited)
 			i = close + 1
 		else:
 			out += raw[i]
@@ -36,7 +42,7 @@ static func substitute_vars(raw: String, scope: Dictionary) -> String:
 	return out
 
 
-static func _resolve_var(inner: String, scope: Dictionary) -> String:
+static func _resolve_var(inner: String, scope: Dictionary, visited: Dictionary) -> String:
 	# inner is "--name" or "--name, fallback"
 	var comma := _top_level_comma(inner)
 	var name: String
@@ -46,11 +52,17 @@ static func _resolve_var(inner: String, scope: Dictionary) -> String:
 	else:
 		name = inner.substr(0, comma).strip_edges()
 		fallback = inner.substr(comma + 1).strip_edges()
+
+	if visited.has(name):
+		push_warning("GmlCssEval: CSS variable cycle detected at '%s'" % name)
+		return ""
+
 	if scope.has(name):
-		# The scope value may itself contain var() — resolve recursively.
-		return substitute_vars(str(scope[name]), scope)
+		var next_visited := visited.duplicate()
+		next_visited[name] = true
+		return _substitute_vars_internal(str(scope[name]), scope, next_visited)
 	if not fallback.is_empty():
-		return substitute_vars(fallback, scope)
+		return _substitute_vars_internal(fallback, scope, visited)
 	push_warning("GmlCssEval: unknown CSS variable '%s' (no fallback)" % name)
 	return ""
 
@@ -70,7 +82,7 @@ static func evaluate_calc(raw: String) -> String:
 	var i := 0
 	var n := raw.length()
 	while i < n:
-		if i + 5 < n and raw.substr(i, 5) == "calc(":
+		if i + 5 <= n and raw.substr(i, 5) == "calc(":
 			var close := _find_paren_close(raw, i + 5)
 			if close < 0:
 				push_warning("GmlCssEval: unterminated calc() in '%s'" % raw)
