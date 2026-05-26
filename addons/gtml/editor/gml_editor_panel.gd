@@ -186,16 +186,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				_on_search_next()
 			get_viewport().set_input_as_handled()
 
-		# F12 to jump to definition from the active CodeEdit
-		elif event.keycode == KEY_F12:
-			_trigger_jump_at_caret(_get_active_code_edit())
-			get_viewport().set_input_as_handled()
-
-		# Alt+Left to pop the jump history
-		elif event.keycode == KEY_LEFT and event.alt_pressed:
-			_pop_jump_history()
-			get_viewport().set_input_as_handled()
-
 
 #region Public API
 
@@ -888,6 +878,7 @@ func _on_code_edit_gui_input(event: InputEvent, code_edit: CodeEdit) -> void:
 		return
 	if not event.ctrl_pressed:
 		return
+	code_edit.accept_event()
 	# Caret update from the click happens after gui_input; defer one frame
 	# so get_caret_line/column reflect the clicked position.
 	await get_tree().process_frame

@@ -70,39 +70,64 @@ static func _token_at(line: String, col: int, pattern: String) -> String:
 	return ""
 
 
-## Walk back from cursor on the same line; find the attribute name whose
-## value contains the cursor. Returns "" if cursor isn't inside an attr value.
+## Walk forward from line start; return the attribute name whose value
+## contains the cursor. Returns "" if cursor isn't inside an attr value.
+##
+## Tracks quote-pair state so text content AFTER a closed attribute value
+## doesn't get misclassified as being inside an attribute.
 static func _attr_around_cursor(line: String, col: int) -> String:
-	# Find the last quote before col that opens an attribute value
-	var i := col - 1
+	var i := 0
+	var n := line.length()
 	var in_value := false
-	while i >= 0:
+	var quote := ""
+	var attr_name := ""
+	var attr_name_end := -1
+	var value_start := -1
+	while i < n:
 		var ch := line[i]
-		if (ch == "\"" or ch == "'") and not in_value:
-			in_value = true
-			i -= 1
-			break
-		i -= 1
-	if not in_value:
-		return ""
-	# Now find the attribute name immediately before the = that precedes this quote
-	var j := i
-	while j >= 0 and line[j] != "=":
-		j -= 1
-	if j < 0:
-		return ""
-	# Walk back over the attribute name
-	var k := j - 1
-	while k >= 0 and (line[k].is_valid_identifier() or line[k] == "-" or line[k] == "@"):
-		k -= 1
-	return line.substr(k + 1, j - k - 1).strip_edges()
+		if in_value:
+			if ch == quote:
+				# Closing quote — check if cursor was inside this value.
+				if col > value_start and col <= i:
+					return attr_name
+				in_value = false
+				quote = ""
+				attr_name = ""
+			i += 1
+			continue
+		# Outside a value — look for `attr_name =` followed by a quote.
+		if ch == "=":
+			# Scan back for the attribute name preceding the `=`.
+			var j := i - 1
+			while j >= 0 and (line[j] == " " or line[j] == "\t"):
+				j -= 1
+			attr_name_end = j + 1
+			var k := j
+			while k >= 0 and (line[k].is_valid_identifier() or line[k] == "-" or line[k] == "_" or line[k] == "@"):
+				k -= 1
+			attr_name = line.substr(k + 1, attr_name_end - k - 1)
+			# Look forward past = and whitespace for the opening quote.
+			var m := i + 1
+			while m < n and (line[m] == " " or line[m] == "\t"):
+				m += 1
+			if m < n and (line[m] == "\"" or line[m] == "'"):
+				in_value = true
+				quote = line[m]
+				value_start = m
+				i = m + 1
+				continue
+		i += 1
+	# Unterminated value — cursor inside it counts.
+	if in_value and col > value_start:
+		return attr_name
+	return ""
 
 
 static func _var_name_around_cursor(line: String, col: int) -> String:
 	var re := RegEx.new()
 	re.compile("var\\(\\s*(--[\\w-]+)")
 	for m in re.search_all(line):
-		if col > m.get_start() and col <= m.get_end():
+		if col >= m.get_start() and col <= m.get_end():
 			return m.get_string(1)
 	return ""
 
@@ -125,7 +150,7 @@ static func _selector_token_around_cursor(line: String, col: int, prefix: String
 	var re := RegEx.new()
 	re.compile("\\%s([a-zA-Z_][\\w-]*)" % prefix)
 	for m in re.search_all(line):
-		if col > m.get_start() and col <= m.get_end():
+		if col >= m.get_start() and col <= m.get_end():
 			return m.get_string(1)
 	return ""
 

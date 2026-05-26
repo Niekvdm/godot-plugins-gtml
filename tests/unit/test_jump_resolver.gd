@@ -77,3 +77,23 @@ func test_html_class_with_no_matching_rule_returns_null() -> void:
 	var css := ".other {}"
 	var jump = _resolve("html", html, 0, 14, css)
 	assert_null(jump)
+
+
+func test_html_text_after_closed_attr_returns_null() -> void:
+	# Bug regression: cursor on text content AFTER a class="…" attribute
+	# previously misread the closing quote and jumped to a phantom CSS rule
+	# if the text happened to match a class name.
+	var html := '<div class="card">hello</div>'
+	var css := ".card {}\n.hello {}"
+	# Cursor on "hello" (col ~20)
+	var jump = _resolve("html", html, 0, 20, css)
+	assert_null(jump, "text content after a closed attr must not jump")
+
+
+func test_css_class_selector_jumps_when_cursor_on_dot() -> void:
+	# Cursor on the `.` of `.row` selector should jump just like cursor on `row`.
+	var html := "<div>\n<p class=\"row\">x</p>\n</div>"
+	var css := ".row { color: red; }"
+	var jump = _resolve("css", css, 0, 0, html)
+	assert_not_null(jump, "cursor on selector prefix should jump")
+	assert_eq(jump["target_kind"], "html")
