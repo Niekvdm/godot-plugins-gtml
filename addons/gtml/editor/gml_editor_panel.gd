@@ -12,6 +12,7 @@ const GmlSearchEngineScript = preload("res://addons/gtml/src/editor/GmlSearchEng
 const GmlJumpResolverScript = preload("res://addons/gtml/src/editor/GmlJumpResolver.gd")
 const GmlEditorContextScript = preload("res://addons/gtml/src/editor/GmlEditorContext.gd")
 const GmlColorTokensScript = preload("res://addons/gtml/src/editor/GmlColorTokens.gd")
+const GmlAutocompleteSourceScript = preload("res://addons/gtml/src/editor/GmlAutocompleteSource.gd")
 
 const COLOR_GUTTER_IDX := 0
 
@@ -146,6 +147,13 @@ func _ready() -> void:
 		ce.set_gutter_width(COLOR_GUTTER_IDX, 16)
 		ce.set_gutter_clickable(COLOR_GUTTER_IDX, true)
 		ce.gutter_clicked.connect(_on_gutter_clicked.bind(ce))
+
+	# Autocomplete (Task 6) — enable the native CodeEdit popup on both buffers
+	# and route every request through GmlAutocompleteSource.
+	for ce in [html_code_edit, css_code_edit]:
+		ce.code_completion_enabled = true
+		ce.code_completion_prefixes = ["<", " ", "\"", ":", ".", "#", "("]
+		ce.code_completion_requested.connect(_on_code_completion_requested.bind(ce))
 
 	# Debounced rescan on edits so the gutter stays in sync.
 	html_code_edit.text_changed.connect(_schedule_color_rescan.bind("html"))
@@ -1069,5 +1077,63 @@ func _write_back_color(code_edit: CodeEdit, token: Dictionary, new_color: Color)
 	token["length"] = new_literal.length()
 	token["color"] = new_color
 	# A debounced rescan will run via text_changed and refresh metadata.
+
+#endregion
+
+
+#region Autocomplete (CodeEdit native popup wired to GmlAutocompleteSource)
+
+func _on_code_completion_requested(code_edit: CodeEdit) -> void:
+	var kind: String = "html" if code_edit == html_code_edit else "css"
+	var other: String = css_code_edit.text if kind == "html" else html_code_edit.text
+	var ctx: GmlEditorContext
+	if kind == "html":
+		ctx = GmlEditorContextScript.from_html(
+			code_edit.text,
+			code_edit.get_caret_line(),
+			code_edit.get_caret_column(),
+			other,
+		)
+	else:
+		ctx = GmlEditorContextScript.from_css(
+			code_edit.text,
+			code_edit.get_caret_line(),
+			code_edit.get_caret_column(),
+			other,
+		)
+
+	var candidates: Array = GmlAutocompleteSourceScript.get_candidates(ctx)
+	if candidates.is_empty():
+		return
+
+	# Clear stale options before re-populating so the popup reflects the
+	# current caret context exactly.
+	code_edit.cancel_code_completion()
+	for c in candidates:
+		var kind_const := _completion_kind(c["kind"])
+		code_edit.add_code_completion_option(
+			kind_const,
+			c["label"],
+			c["insert_text"],
+		)
+	code_edit.update_code_completion_options(true)
+
+
+static func _completion_kind(s: String) -> int:
+	match s:
+		"tag":
+			return CodeEdit.KIND_CLASS
+		"attr":
+			return CodeEdit.KIND_MEMBER
+		"value":
+			return CodeEdit.KIND_CONSTANT
+		"property":
+			return CodeEdit.KIND_VARIABLE
+		"var":
+			return CodeEdit.KIND_CONSTANT
+		"class":
+			return CodeEdit.KIND_MEMBER
+		_:
+			return CodeEdit.KIND_PLAIN_TEXT
 
 #endregion
