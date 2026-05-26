@@ -110,7 +110,7 @@ static func _html_candidates(ctx: GmlEditorContext) -> Array:
 	var inside := prefix.substr(open + 1)
 
 	# Are we still in the tag-name part? (no whitespace yet)
-	if not inside.contains(" "):
+	if not _contains_whitespace(inside):
 		return _tag_candidates()
 
 	# Are we inside an attribute value? Look for an unclosed quote.
@@ -140,10 +140,18 @@ static func _tag_candidates() -> Array:
 
 
 static func _tag_at_start(inside_tag: String) -> String:
-	var space := inside_tag.find(" ")
-	if space < 0:
-		return inside_tag.to_lower()
-	return inside_tag.substr(0, space).to_lower()
+	for i in inside_tag.length():
+		var ch := inside_tag[i]
+		if ch == " " or ch == "\t" or ch == "\n":
+			return inside_tag.substr(0, i).to_lower()
+	return inside_tag.to_lower()
+
+
+static func _contains_whitespace(s: String) -> bool:
+	for ch in s:
+		if ch == " " or ch == "\t" or ch == "\n":
+			return true
+	return false
 
 
 ## Locate the position of the last quote that opened an attribute value but
@@ -289,11 +297,11 @@ static func _is_var_call_closed(prefix: String) -> bool:
 ## autocomplete candidates.
 static func _var_candidates(css: String) -> Array:
 	var regex := RegEx.new()
-	regex.compile("--[a-zA-Z_][\\w-]*")
+	regex.compile("(--[a-zA-Z_][\\w-]*)\\s*:")   # capture name, anchored on :
 	var seen: Dictionary = {}
 	var out: Array = []
 	for m in regex.search_all(css):
-		var name := m.get_string()
+		var name := m.get_string(1)   # group 1 = the --name only
 		if not seen.has(name):
 			seen[name] = true
 			out.append({"label": name, "kind": "var", "insert_text": name})

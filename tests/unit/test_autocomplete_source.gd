@@ -23,6 +23,11 @@ func _labels(candidates: Array) -> PackedStringArray:
 
 #region HTML tag completion
 
+func test_empty_buffer_returns_no_candidates() -> void:
+	assert_eq(GmlAutocompleteSource.get_candidates(_html_ctx("", 0, 0)).size(), 0)
+	assert_eq(GmlAutocompleteSource.get_candidates(_css_ctx("", 0, 0)).size(), 0)
+
+
 func test_html_tag_completion_after_open_bracket() -> void:
 	# Cursor just past the < — expect a list of element tag names.
 	var ctx = _html_ctx("<", 0, 1)
@@ -76,6 +81,13 @@ func test_html_attr_value_completion_for_type() -> void:
 	for v in ["text", "password", "checkbox", "radio", "range", "submit"]:
 		assert_true(v in labels)
 
+
+func test_html_attr_value_completion_with_single_quotes() -> void:
+	# _last_unclosed_quote handles both " and ' — pin it.
+	var ctx = _html_ctx("<input type='", 0, 13)
+	var labels = _labels(GmlAutocompleteSource.get_candidates(ctx))
+	assert_true("text" in labels, "single-quote attr value should still complete")
+
 #endregion
 
 
@@ -102,6 +114,14 @@ func test_css_value_completion_after_colon_for_cursor() -> void:
 		assert_true(v in labels)
 
 
+func test_css_property_completion_after_typed_prefix_before_colon() -> void:
+	# Inside a block, before the colon — should suggest properties not values.
+	var ctx = _css_ctx("div {\n  col\n}", 1, 5)
+	var labels = _labels(GmlAutocompleteSource.get_candidates(ctx))
+	assert_true("color" in labels)
+	assert_false("flex" in labels, "value keywords should not appear in property position")
+
+
 func test_css_no_completion_when_outside_block() -> void:
 	# At top-level (between rules), property completions are wrong context.
 	var ctx = _css_ctx("div { color: red; }\n", 1, 0)
@@ -121,6 +141,15 @@ func test_var_completion_lists_declared_custom_properties() -> void:
 	var labels = _labels(GmlAutocompleteSource.get_candidates(ctx))
 	assert_true("--brand" in labels)
 	assert_true("--gap" in labels)
+
+
+func test_var_completion_skips_undeclared_uses() -> void:
+	# Old regex matched any --name; the fix restricts to declarations only.
+	# Here --used appears only in a var() call, never declared.
+	var css := ".a { color: var(--used); }\n.b { padding: var( }"
+	var ctx = _css_ctx(css, 1, 19)
+	var labels = _labels(GmlAutocompleteSource.get_candidates(ctx))
+	assert_false("--used" in labels, "names only used in var() should not be suggested")
 
 
 func test_class_completion_lists_classes_declared_in_other_buffer() -> void:
