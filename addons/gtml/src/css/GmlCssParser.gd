@@ -229,21 +229,6 @@ static func _deep_clone_value(v: Variant) -> Variant:
 	return v
 
 
-## Parse a CSS selector (including pseudo-classes like :hover).
-func _parse_selector() -> String:
-	var start := _pos
-
-	while _pos < _length:
-		var ch := _peek()
-		# Include ":" to support pseudo-classes like :hover, :active, :focus
-		if ch.is_valid_identifier() or ch == "-" or ch == "_" or ch == "." or ch == "#" or ch == ":" or ch.is_valid_int():
-			_advance()
-		else:
-			break
-
-	return _css.substr(start, _pos - start)
-
-
 ## Parse CSS properties inside a rule block.
 func _parse_properties() -> Dictionary:
 	var properties := {}
