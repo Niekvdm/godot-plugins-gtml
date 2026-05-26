@@ -5,12 +5,24 @@
  */
 
 .page {
+    --bg: #f5f0e8;
+    --bg-sidebar: #ebe3d4;
+    --bg-deep: #e0d8c8;
+    --bg-hover: #ddd3c0;
+    --border-1: #d8cfc0;
+    --border-2: #c4b8a4;
+    --text-strong: #1a1612;
+    --text-body: #2a2218;
+    --text-2: #4a4035;
+    --text-muted: #6e6457;
+    --accent: #a8451f;
+
     display: flex;
     flex-direction: column;
     width: 100%;
     height: 100%;
-    background-color: #f5f0e8;
-    color: #1a1612;
+    background-color: var(--bg);
+    color: var(--text-strong);
 }
 
 /* ─── Masthead ──────────────────────────────────────── */
@@ -24,7 +36,7 @@
     padding-right: 48px;
     padding-top: 24px;
     padding-bottom: 24px;
-    border-bottom: 1px solid #d8cfc0;
+    border-bottom: 1px solid var(--border-1);
 }
 
 .masthead-left {
@@ -36,14 +48,14 @@
 
 .logo {
     font-size: 18px;
-    color: #1a1612;
+    color: var(--text-strong);
     font-weight: 700;
     letter-spacing: 6;
 }
 
 .tagline {
     font-size: 11px;
-    color: #6e6457;
+    color: var(--text-muted);
     letter-spacing: 2;
     text-transform: uppercase;
     font-weight: 500;
@@ -57,7 +69,7 @@
 
 .issue {
     font-size: 11px;
-    color: #a8451f;
+    color: var(--accent);
     letter-spacing: 3;
     font-weight: 600;
 }
@@ -95,26 +107,26 @@
 
 .essay-section {
     font-size: 11px;
-    color: #a8451f;
+    color: var(--accent);
     letter-spacing: 4;
     font-weight: 700;
 }
 
 .essay-dot {
-    color: #c4b8a4;
+    color: var(--border-2);
     font-size: 12px;
 }
 
 .essay-kind {
     font-size: 11px;
-    color: #6e6457;
+    color: var(--text-muted);
     letter-spacing: 4;
     font-weight: 600;
 }
 
 .essay-title {
     font-size: 48px;
-    color: #1a1612;
+    color: var(--text-strong);
     font-weight: 700;
     line-height: 4;
     margin-bottom: 8px;
@@ -122,7 +134,7 @@
 
 .essay-deck {
     font-size: 18px;
-    color: #4a4035;
+    color: var(--text-2);
     line-height: 8;
     font-weight: 400;
     margin-bottom: 16px;
@@ -134,31 +146,31 @@
     align-items: center;
     gap: 8px;
     padding-bottom: 24px;
-    border-bottom: 1px solid #d8cfc0;
+    border-bottom: 1px solid var(--border-1);
     margin-bottom: 16px;
 }
 
 .byline-name {
     font-size: 12px;
-    color: #1a1612;
+    color: var(--text-strong);
     font-weight: 600;
     letter-spacing: 1;
 }
 
 .byline-sep {
-    color: #c4b8a4;
+    color: var(--border-2);
     font-size: 11px;
 }
 
 .byline-time {
     font-size: 11px;
-    color: #6e6457;
+    color: var(--text-muted);
     letter-spacing: 1;
 }
 
 .byline-date {
     font-size: 11px;
-    color: #6e6457;
+    color: var(--text-muted);
     letter-spacing: 1;
 }
 
@@ -170,26 +182,26 @@
 
 .lead {
     font-size: 17px;
-    color: #2a2218;
+    color: var(--text-body);
     line-height: 9;
     font-weight: 500;
 }
 
 .essay-body p {
     font-size: 15px;
-    color: #2a2218;
+    color: var(--text-body);
     line-height: 10;
 }
 
 .callout {
     font-size: 20px;
-    color: #a8451f;
+    color: var(--accent);
     font-weight: 600;
     line-height: 6;
     padding-top: 16px;
     padding-bottom: 16px;
     padding-left: 24px;
-    border-left: 3px solid #a8451f;
+    border-left: 3px solid var(--accent);
     margin-top: 16px;
     margin-bottom: 16px;
 }
@@ -200,13 +212,13 @@
     display: flex;
     flex-direction: column;
     width: 280px;
-    background-color: #ebe3d4;
+    background-color: var(--bg-sidebar);
     padding-left: 32px;
     padding-right: 32px;
     padding-top: 56px;
     padding-bottom: 56px;
     gap: 40px;
-    border-left: 1px solid #d8cfc0;
+    border-left: 1px solid var(--border-1);
     /* Sidebar content can exceed viewport height — scroll independently of
        the essay column so neither falls off the bottom. */
     overflow-y: auto;
@@ -220,11 +232,11 @@
 
 .side-heading {
     font-size: 11px;
-    color: #6e6457;
+    color: var(--text-muted);
     letter-spacing: 4;
     font-weight: 700;
     padding-bottom: 8px;
-    border-bottom: 1px solid #c4b8a4;
+    border-bottom: 1px solid var(--border-2);
     margin-bottom: 4px;
 }
 
@@ -237,54 +249,57 @@
 
 .side-item {
     font-size: 13px;
-    color: #2a2218;
+    color: var(--text-body);
     padding-top: 8px;
     padding-bottom: 8px;
     padding-left: 12px;
     padding-right: 12px;
     border-radius: 2px;
     /* Opaque base matches the sidebar so hover interpolates clean. */
-    background-color: #ebe3d4;
+    background-color: var(--bg-sidebar);
     transition: background-color 180ms, color 180ms;
 }
 
 .side-item:hover {
-    background-color: #ddd3c0;
+    background-color: var(--bg-hover);
 }
 
 .side-active {
-    color: #a8451f;
+    color: var(--accent);
     font-weight: 600;
-    border-left: 2px solid #a8451f;
+    border-left: 2px solid var(--accent);
     padding-left: 10px;
 }
 
 .side-item-link {
     font-size: 13px;
-    color: #4a4035;
+    color: var(--text-2);
     padding-top: 8px;
     padding-bottom: 8px;
     padding-left: 12px;
     padding-right: 12px;
     border-radius: 2px;
-    background-color: #ebe3d4;
-    border-bottom: 1px solid #ddd3c0;
-    transition: color 180ms, border-bottom 180ms;
+    background-color: var(--bg-sidebar);
+    border-bottom: 1px solid var(--bg-hover);
+    transition: color 180ms, border-bottom 180ms, transform 220ms;
 }
 
 .side-item-link:hover {
-    color: #a8451f;
-    border-bottom: 1px solid #a8451f;
+    color: var(--accent);
+    border-bottom: 1px solid var(--accent);
+    /* Editorial flair: a 2px push on hover, like the cursor arrow next
+       to a print article. Subtle, intentional, not a bounce. */
+    transform: translate(2px, 0);
 }
 
 .side-block-quiet {
-    background-color: #e0d8c8;
+    background-color: var(--bg-deep);
     padding: 20px;
     border-radius: 2px;
 }
 
 .side-note {
     font-size: 12px;
-    color: #4a4035;
+    color: var(--text-2);
     line-height: 8;
 }
