@@ -6,6 +6,8 @@ extends Control
 
 const HtmlSyntaxHighlighter = preload("res://addons/gtml/editor/html_syntax_highlighter.gd")
 const CssSyntaxHighlighter = preload("res://addons/gtml/editor/css_syntax_highlighter.gd")
+const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
+const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
 
 #region Node References
 
@@ -51,6 +53,11 @@ var _original_html_content: String = ""
 var _original_css_content: String = ""
 var _html_highlighter: SyntaxHighlighter = null
 var _css_highlighter: SyntaxHighlighter = null
+
+# Inline warning panel built dynamically (so we don't have to touch the .tscn).
+var _warnings_panel: PanelContainer = null
+var _warnings_list: VBoxContainer = null
+var _warnings_header: Label = null
 
 # Editor state preservation (per GmlView node path)
 var _editor_states: Dictionary = {}  # node_path -> { html_caret, html_scroll, css_caret, css_scroll, active_tab }
@@ -519,6 +526,97 @@ func _save_files() -> void:
 		_update_tab_titles()
 		_update_save_button()
 		# GmlView will auto-detect file changes via modification time
+		_refresh_warnings()
+
+#endregion
+
+
+#region Parse warnings panel
+
+## Lazily build a PanelContainer at the bottom of MainContainer holding a
+## VBoxContainer of warning rows. Each warning is a Button that jumps the
+## relevant CodeEdit to the warning's line + column on click.
+func _ensure_warnings_panel() -> void:
+	if _warnings_panel != null and is_instance_valid(_warnings_panel):
+		return
+
+	_warnings_panel = PanelContainer.new()
+	_warnings_panel.name = "WarningsPanel"
+	_warnings_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_warnings_panel.visible = false
+
+	var inner := VBoxContainer.new()
+	inner.add_theme_constant_override("separation", 2)
+	_warnings_panel.add_child(inner)
+
+	_warnings_header = Label.new()
+	_warnings_header.text = "Parse warnings"
+	_warnings_header.add_theme_color_override("font_color", Color(0.9, 0.7, 0.3))
+	inner.add_child(_warnings_header)
+
+	_warnings_list = VBoxContainer.new()
+	_warnings_list.add_theme_constant_override("separation", 1)
+	inner.add_child(_warnings_list)
+
+	main_container.add_child(_warnings_panel)
+
+
+## Re-parse the current editor buffers, gather warnings from both parsers,
+## and rebuild the inline panel. Called after every save so authors get
+## fast feedback without leaving the editor.
+func _refresh_warnings() -> void:
+	_ensure_warnings_panel()
+
+	# Clear previous rows
+	for child in _warnings_list.get_children():
+		_warnings_list.remove_child(child)
+		child.queue_free()
+
+	var html_warnings: Array = []
+	var css_warnings: Array = []
+
+	if not html_code_edit.text.is_empty():
+		var html_parser = GmlHtmlParserScript.new()
+		html_parser.parse(html_code_edit.text)
+		html_warnings = html_parser.get_warnings()
+
+	if not css_code_edit.text.is_empty():
+		var css_parser = GmlCssParserScript.new()
+		css_parser.parse(css_code_edit.text)
+		css_warnings = css_parser.get_warnings()
+
+	var total: int = html_warnings.size() + css_warnings.size()
+	if total == 0:
+		_warnings_panel.visible = false
+		return
+
+	_warnings_panel.visible = true
+	_warnings_header.text = "Parse warnings (%d)" % total
+
+	for w in html_warnings:
+		_append_warning_row("HTML", w, html_code_edit, html_tab)
+	for w in css_warnings:
+		_append_warning_row("CSS", w, css_code_edit, css_tab)
+
+
+func _append_warning_row(kind: String, w: Dictionary, code_edit: CodeEdit, tab: Control) -> void:
+	var btn := Button.new()
+	btn.text = "[%s %d:%d] %s" % [kind, int(w.get("line", 0)), int(w.get("col", 0)), str(w.get("msg", ""))]
+	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	btn.flat = true
+	btn.add_theme_color_override("font_color", Color(0.85, 0.75, 0.55))
+	btn.pressed.connect(func():
+		# Activate the tab, then jump the caret to the warning's line.
+		var idx := tab_container.get_tab_idx_from_control(tab)
+		if idx >= 0:
+			tab_container.current_tab = idx
+		var line: int = maxi(int(w.get("line", 1)) - 1, 0)
+		var col: int = maxi(int(w.get("col", 1)) - 1, 0)
+		code_edit.set_caret_line(line)
+		code_edit.set_caret_column(col)
+		code_edit.grab_focus()
+	)
+	_warnings_list.add_child(btn)
 
 #endregion
 

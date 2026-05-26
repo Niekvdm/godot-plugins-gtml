@@ -47,6 +47,49 @@ static func apply(control: Control, style: Dictionary) -> void:
 	if style.has("cursor"):
 		control.mouse_default_cursor_shape = parse_cursor(style["cursor"])
 
+	if style.has("transform"):
+		_apply_transform(control, style["transform"])
+
+
+## Apply a parsed transform Dictionary to a Control. Maps:
+##   translate -> position offset (added to the layout-driven position)
+##   scale     -> Control.scale
+##   rotate    -> Control.rotation (radians)
+## pivot_offset is recomputed to the control's size center so scale/rotate
+## behave like CSS transform-origin: 50% 50%. Done deferred to a process
+## frame so we have a valid post-layout size to anchor on.
+static func _apply_transform(control: Control, t: Dictionary) -> void:
+	var translate: Vector2 = t.get("translate", Vector2.ZERO)
+	var scale_v: Vector2 = t.get("scale", Vector2.ONE)
+	var rotate_v: float = t.get("rotate", 0.0)
+
+	# Apply scalar transforms immediately — position offset waits for layout.
+	control.scale = scale_v
+	control.rotation = rotate_v
+
+	if translate != Vector2.ZERO or scale_v != Vector2.ONE or rotate_v != 0.0:
+		var ref := weakref(control)
+		control.set_meta("_transform_translate", translate)
+		# Recompute pivot + position once the Control has been sized by its
+		# Container. Re-applies on resize so dynamic layouts keep their
+		# transform-origin centered.
+		var update_pivot := func():
+			var c = ref.get_ref()
+			if c == null or not is_instance_valid(c):
+				return
+			c.pivot_offset = c.size * 0.5
+			var off: Vector2 = c.get_meta("_transform_translate", Vector2.ZERO)
+			c.position = c.get_meta("_transform_base_position", c.position) + off
+		control.tree_entered.connect(func():
+			var c = ref.get_ref()
+			if c == null or not is_instance_valid(c):
+				return
+			c.set_meta("_transform_base_position", c.position)
+			c.get_tree().process_frame.connect(update_pivot, CONNECT_ONE_SHOT)
+			if not c.resized.is_connected(update_pivot):
+				c.resized.connect(update_pivot)
+		, CONNECT_ONE_SHOT)
+
 
 ## Apply width or height. Returns the percent fraction if percent-based, else -1.
 static func _apply_axis(control: Control, dim: Variant, is_width: bool) -> float:

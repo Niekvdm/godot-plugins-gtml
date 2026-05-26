@@ -253,8 +253,17 @@ func _parse_properties() -> Dictionary:
 
 		var prop_value := _parse_property_value()
 
-		# Parse the value into appropriate type
-		properties[prop_name] = _convert_property_value(prop_name, prop_value)
+		# Custom properties (--name) are stored as raw strings; the resolver
+		# substitutes them into var() references at compute-style time and
+		# routes the substituted value back through convert_value.
+		# Values containing var() or calc() are also deferred — the resolver
+		# can't type-parse them until the scope is known.
+		if prop_name.begins_with("--"):
+			properties[prop_name] = prop_value
+		elif prop_value.contains("var(") or prop_value.contains("calc("):
+			properties[prop_name] = {"_lazy": true, "raw": prop_value, "prop": prop_name}
+		else:
+			properties[prop_name] = _convert_property_value(prop_name, prop_value)
 
 		_skip_whitespace_and_comments()
 
@@ -323,9 +332,20 @@ func _skip_string(quote: String) -> void:
 		_advance()
 
 
+## Public entrypoint for converting a string value into the typed
+## representation for ``prop_name`` (Color, Dictionary, int, ...). Used by
+## the resolver after var() and calc() are substituted out of a lazy value.
+static func convert_value(prop_name: String, value: String):
+	return _convert_property_value_static(prop_name, value)
+
+
 ## Convert a property value string to the appropriate type.
 ## Dispatches to the appropriate value parser module.
 func _convert_property_value(prop_name: String, value: String):
+	return _convert_property_value_static(prop_name, value)
+
+
+static func _convert_property_value_static(prop_name: String, value: String):
 	# Passthrough properties (return as string)
 	if prop_name in PASSTHROUGH_PROPS:
 		return value
@@ -379,6 +399,10 @@ func _convert_property_value(prop_name: String, value: String):
 	# Outline
 	if prop_name == "outline":
 		return GmlBorderValues.parse_outline(value)
+
+	# Transform: translate/scale/rotate composite
+	if prop_name == "transform":
+		return GmlTransformValues.parse_transform(value)
 
 	# Transition properties
 	if prop_name == "transition":

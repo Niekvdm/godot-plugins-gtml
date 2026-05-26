@@ -88,6 +88,11 @@ static func _build_text_input(node, input_type: String, style: Dictionary, gml_v
 				view.input_changed.emit(input_id, new_text)
 		)
 
+	# Optional @keydown="handler" — forwards key events to the GmlView's
+	# key_pressed signal so user scripts can implement search/autocomplete
+	# without touching the underlying LineEdit directly.
+	_wire_keydown(line_edit, node, gml_view)
+
 	line_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	return line_edit
@@ -124,6 +129,7 @@ static func _build_checkbox_input(node, style: Dictionary, gml_view, defaults: D
 		)
 
 	_apply_button_focus_stylebox(checkbox, style)
+	_apply_button_checked_stylebox(checkbox, style)
 	return checkbox
 
 
@@ -174,7 +180,60 @@ static func _build_radio_input(node, style: Dictionary, gml_view, defaults: Dict
 		)
 
 	_apply_button_focus_stylebox(radio, style)
+	_apply_button_checked_stylebox(radio, style)
 	return radio
+
+
+## Connect the input's gui_input signal to emit GmlView.key_pressed when an
+## ``@keydown="handler"`` attribute is present. Filters to actual key-down
+## events (skips key-up, mouse, and other input event types).
+static func _wire_keydown(control: Control, node, gml_view) -> void:
+	if gml_view == null:
+		return
+	var handler: String = node.get_attr("@keydown", "")
+	if handler.is_empty():
+		return
+	var view_ref = weakref(gml_view)
+	control.gui_input.connect(func(event: InputEvent):
+		if not (event is InputEventKey):
+			return
+		if not event.pressed:
+			return
+		var view = view_ref.get_ref()
+		if view == null:
+			return
+		view.key_pressed.emit(handler, event)
+	)
+
+
+## Apply a CSS-driven :checked stylebox to a CheckBox / radio. Godot draws
+## the "pressed" stylebox while button_pressed is true (toggle buttons treat
+## "pressed" as the checked state), so we install the :checked bucket's
+## visual onto that slot. Empty :checked rule still wins over default —
+## installs StyleBoxEmpty to silence Godot's pressed indicator.
+static func _apply_button_checked_stylebox(btn: CheckBox, style: Dictionary) -> void:
+	if not style.has("_checked"):
+		return
+	var checked_style: Dictionary = style["_checked"]
+	var has_visual := false
+	var box := StyleBoxFlat.new()
+	box.bg_color = Color.TRANSPARENT
+	if checked_style.has("background-color"):
+		box.bg_color = checked_style["background-color"]
+		has_visual = true
+	if checked_style.has("border") or checked_style.has("border-width") or checked_style.has("border-color"):
+		GmlStyles.apply_border_to_stylebox(box, checked_style)
+		has_visual = true
+	if checked_style.has("border-radius"):
+		box.corner_radius_top_left = checked_style["border-radius"]
+		box.corner_radius_top_right = checked_style["border-radius"]
+		box.corner_radius_bottom_left = checked_style["border-radius"]
+		box.corner_radius_bottom_right = checked_style["border-radius"]
+		has_visual = true
+	if not has_visual:
+		btn.add_theme_stylebox_override("pressed", StyleBoxEmpty.new())
+		return
+	btn.add_theme_stylebox_override("pressed", box)
 
 
 ## Apply a CSS-driven :focus stylebox to a CheckBox / radio so authors can
@@ -285,14 +344,18 @@ static func _build_submit_button(node, style: Dictionary, ctx: Dictionary) -> Co
 	button.text = value
 
 	if gml_view != null:
-		var click_handler = node.get_attr("@click", "")
-		if not click_handler.is_empty():
-			var view_ref = weakref(gml_view)
-			button.pressed.connect(func():
-				var view = view_ref.get_ref()
-				if view != null:
-					view.button_clicked.emit(click_handler)
-			)
+		var view_ref = weakref(gml_view)
+		var click_handler: String = node.get_attr("@click", "")
+		button.pressed.connect(func():
+			var view = view_ref.get_ref()
+			if view == null:
+				return
+			# Submit buttons always emit form_submitted with the current
+			# form snapshot, in addition to firing any optional @click.
+			view.form_submitted.emit(view.get_form_data())
+			if not click_handler.is_empty():
+				view.button_clicked.emit(click_handler)
+		)
 
 	return button
 
