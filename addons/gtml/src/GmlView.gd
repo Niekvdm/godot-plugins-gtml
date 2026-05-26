@@ -105,6 +105,21 @@ func _ready() -> void:
 		# At runtime, wait a frame for size to be set properly before building
 		await get_tree().process_frame
 	_rebuild()
+	_subscribe_to_filesystem_changes()
+
+
+## Hot reload via signal instead of per-frame mtime polling. Editor-only —
+## EditorInterface is not available at runtime. The polling fallback in
+## _process still runs so authors editing files outside Godot (the usual
+## case for HTML/CSS) get picked up even if the editor's filesystem scan
+## hasn't fired yet.
+func _subscribe_to_filesystem_changes() -> void:
+	if not Engine.is_editor_hint() or not auto_reload_in_editor:
+		return
+	var efs = EditorInterface.get_resource_filesystem() if Engine.is_editor_hint() else null
+	if efs != null and efs.has_signal("filesystem_changed"):
+		if not efs.filesystem_changed.is_connected(_check_files_changed):
+			efs.filesystem_changed.connect(_check_files_changed)
 
 
 func _process(_delta: float) -> void:

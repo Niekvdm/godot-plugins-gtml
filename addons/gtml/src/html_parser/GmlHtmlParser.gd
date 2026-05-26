@@ -27,6 +27,33 @@ var _pos: int = 0
 var _html: String = ""
 var _length: int = 0
 var _depth: int = 0
+var _warnings: Array = []  # [{line:int, col:int, msg:String}]
+
+
+## Get all warnings emitted during the last parse. Each entry: {line, col, msg}.
+## Mirrors GmlCssParser.get_warnings() so editor tooling can surface both
+## parsers' diagnostics through a single interface.
+func get_warnings() -> Array:
+	return _warnings
+
+
+func _line_col_for(p: int) -> Dictionary:
+	var line := 1
+	var col := 1
+	var limit: int = mini(p, _length)
+	for i in range(limit):
+		if _html[i] == "\n":
+			line += 1
+			col = 1
+		else:
+			col += 1
+	return {"line": line, "col": col}
+
+
+func _warn(msg: String) -> void:
+	var lc := _line_col_for(_pos)
+	_warnings.append({"line": lc["line"], "col": lc["col"], "msg": msg})
+	push_warning("GmlHtmlParser [%d:%d]: %s" % [lc["line"], lc["col"], msg])
 
 
 ## Parse HTML string and return the root node.
@@ -36,6 +63,7 @@ func parse(html: String):
 	_pos = 0
 	_length = html.length()
 	_depth = 0
+	_warnings.clear()
 
 	# Create a virtual root to hold multiple top-level elements
 	var root = GmlNodeScript.create_element("_root")
@@ -109,7 +137,7 @@ func _parse_element():
 	# Parse tag name
 	var tag_name := _parse_identifier()
 	if tag_name.is_empty():
-		push_warning("GmlHtmlParser: Expected tag name at position %d" % _pos)
+		_warn("Expected tag name")
 		_depth -= 1
 		return null
 
@@ -127,7 +155,7 @@ func _parse_element():
 		is_self_closing = true
 
 	if not _consume(">"):
-		push_warning("GmlHtmlParser: Expected '>' at position %d" % _pos)
+		_warn("Expected '>'")
 		# Try to recover by finding the next >
 		while _pos < _length and _peek() != ">":
 			_advance()
@@ -206,7 +234,7 @@ func _parse_closing_tag(expected_tag: String) -> bool:
 
 	var tag_name := _parse_identifier()
 	if tag_name.to_lower() != expected_tag:
-		push_warning("GmlHtmlParser: Expected closing tag </%s> but found </%s>" % [expected_tag, tag_name])
+		_warn("Expected closing tag </%s> but found </%s>" % [expected_tag, tag_name])
 
 	_skip_whitespace()
 	_consume(">")

@@ -82,3 +82,16 @@ func test_malformed_empty_closing_tag_terminates() -> void:
 	assert_not_null(dom1)
 	var dom2 = _parse("<p>a</  ></p>")
 	assert_not_null(dom2)
+
+
+func test_html_parser_records_warnings_with_line_col() -> void:
+	# get_warnings() mirrors the CSS parser's contract: each warning carries
+	# {line, col, msg} so the editor overlay can offer click-to-jump.
+	var parser = GmlHtmlParserScript.new()
+	parser.parse("<div>\n<p>a</q>\n</div>")
+	var warnings: Array = parser.get_warnings()
+	assert_true(warnings.size() > 0, "expected at least one warning for mismatched </q>")
+	var w = warnings[0]
+	assert_true(w.has("line"))
+	assert_true(w.has("col"))
+	assert_true(w.has("msg"))
