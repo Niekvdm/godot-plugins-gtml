@@ -93,15 +93,31 @@ const TRANSITION_PROPS = [
 
 
 ## Represents a CSS rule.
+##
+## v0.2: a rule carries a structured ``GmlSelector.Selector`` and the resolver
+## matches against the live DOM with full combinator + specificity support.
+## The legacy fields (``selector_type`` / ``selector_value`` / ``pseudo_class``)
+## are derived from the rightmost compound and kept around so older callers
+## and serializers continue to function.
 class CssRule:
-	var selector_type: String = ""  # "tag", "class", "id"
-	var selector_value: String = ""  # The actual selector (e.g., "div", "container", "main")
-	var pseudo_class: String = ""  # Pseudo-class (e.g., "hover", "active", "focus")
-	var properties: Dictionary = {}  # {"display": "flex", "gap": 10, etc.}
+	var selector = null              # GmlSelector.Selector
+	var properties: Dictionary = {}  # {"display": "flex", "gap": 10, ...}
+	var source_index: int = 0        # rule's position in source for tie-breaking
+
+	# Legacy mirror of the rightmost compound — used by code paths and
+	# snapshot serializers that haven't migrated to the new selector engine yet.
+	var selector_type: String = ""   # "tag" | "class" | "id"
+	var selector_value: String = ""
+	var pseudo_class: String = ""    # First pseudo (legacy single-pseudo callers)
 
 	func _to_string() -> String:
-		var pseudo_str = ":" + pseudo_class if not pseudo_class.is_empty() else ""
+		var pseudo_str: String = ":" + pseudo_class if not pseudo_class.is_empty() else ""
 		return "%s:%s%s { %s }" % [selector_type, selector_value, pseudo_str, properties]
+
+	func specificity() -> Vector3i:
+		if selector == null:
+			return Vector3i(0, 0, 0)
+		return selector.specificity()
 
 
 ## Parse CSS string and return an array of CssRule.
@@ -120,55 +136,35 @@ func parse(css: String) -> Array:
 
 		var parsed_rules := _parse_rules_group()
 		for rule in parsed_rules:
+			rule.source_index = rules.size()
 			rules.append(rule)
 
 	return rules
 
 
 ## Parse CSS rules, handling comma-separated selectors.
-## Returns an array of CssRule objects.
+## Delegates selector parsing to GmlSelector so combinators + attribute
+## selectors + compound selectors are all supported.
 func _parse_rules_group() -> Array:
 	_skip_whitespace_and_comments()
 
-	# Parse all selectors (comma-separated)
-	var selectors: Array = []
-	while _pos < _length:
-		var selector := _parse_selector()
-		if selector.is_empty():
-			break
-
-		selectors.append(selector)
-		_skip_whitespace_and_comments()
-
-		# Check for comma (more selectors) or opening brace (properties)
-		if _peek() == ",":
-			_advance()  # consume comma
-			_skip_whitespace_and_comments()
-		elif _peek() == "{":
-			break
-		else:
-			# Might be a space (descendant selector) - skip to brace
-			while _pos < _length and _peek() != "{" and _peek() != ",":
-				if _peek() == " " or _peek() == "\t" or _peek() == "\n":
-					_skip_whitespace_and_comments()
-					# If next char is a selector char, this is a descendant selector
-					# Just use the first selector and skip the rest
-					if _peek().is_valid_identifier() or _peek() == "." or _peek() == "#":
-						while _pos < _length and _peek() != "{" and _peek() != ",":
-							_advance()
-						break
-				else:
-					break
-
-	if selectors.is_empty():
-		return []
-
-	_skip_whitespace_and_comments()
-
-	# Expect opening brace
-	if not _consume("{"):
+	# Read the whole selector list up to the opening brace, then hand the
+	# string off to the selector parser. This avoids reimplementing tokenization
+	# in two places.
+	var selector_text_start := _pos
+	while _pos < _length and _peek() != "{":
+		_advance()
+	if _pos >= _length:
 		_warn("Expected '{' after selector(s)")
 		return []
+	var selector_text: String = _css.substr(selector_text_start, _pos - selector_text_start).strip_edges()
+	if selector_text.is_empty():
+		return []
+
+	var selectors: Array = GmlSelector.parse_group(selector_text)
+
+	# Consume the opening brace
+	_consume("{")
 
 	# Parse properties
 	var properties := _parse_properties()
@@ -182,39 +178,36 @@ func _parse_rules_group() -> Array:
 			_advance()
 		_advance()
 
-	# Create a rule for each selector
+	# Create one rule per selector. Deep-clone properties so mutations in one
+	# rule's nested dicts can never bleed into a sibling rule.
 	var rules: Array = []
-	for selector in selectors:
+	for sel in selectors:
 		var rule := CssRule.new()
-
-		# Extract pseudo-class if present (e.g., "button:hover" -> "button" + "hover")
-		var pseudo_class: String = ""
-		var base_selector: String = selector
-
-		# Find pseudo-class (but not at the start, which would be invalid)
-		var colon_pos: int = selector.find(":")
-		if colon_pos > 0:
-			base_selector = selector.substr(0, colon_pos)
-			pseudo_class = selector.substr(colon_pos + 1)
-
-		if base_selector.begins_with("#"):
-			rule.selector_type = "id"
-			rule.selector_value = base_selector.substr(1)
-		elif base_selector.begins_with("."):
-			rule.selector_type = "class"
-			rule.selector_value = base_selector.substr(1)
-		else:
-			rule.selector_type = "tag"
-			rule.selector_value = base_selector
-
-		rule.pseudo_class = pseudo_class
-		# Deep-clone properties: nested Dictionaries (border, transitions, gradients)
-		# must not be shared between rules emitted from a comma-separated selector,
-		# or a mutation in one rule will bleed into the others.
+		rule.selector = sel
 		rule.properties = _deep_clone_properties(properties)
+		_populate_legacy_fields(rule, sel)
 		rules.append(rule)
-
 	return rules
+
+
+## Mirror the rightmost compound + first pseudo onto the legacy fields so older
+## consumers (snapshot serializer, debug output) keep working until they migrate.
+static func _populate_legacy_fields(rule, sel) -> void:
+	if sel == null or sel.compounds.is_empty():
+		return
+	var last_idx: int = sel.compounds.size() - 1
+	var c = sel.compounds[last_idx]
+	if not c.id.is_empty():
+		rule.selector_type = "id"
+		rule.selector_value = c.id
+	elif not c.classes.is_empty():
+		rule.selector_type = "class"
+		rule.selector_value = c.classes[0]
+	elif not c.tag.is_empty():
+		rule.selector_type = "tag"
+		rule.selector_value = c.tag
+	if c.pseudos.size() > 0:
+		rule.pseudo_class = c.pseudos[0]
 
 
 ## Deep-clone a properties dictionary so nested Dictionaries / Arrays are independent.

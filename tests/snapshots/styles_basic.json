@@ -51,12 +51,9 @@
   {
     "path": "div.container > div.content",
     "style": {
-      "color": "Color(0.6667,0.6667,0.8000,1.0000)",
       "display": "flex",
       "flex-direction": "column",
-      "font-size": 15,
-      "gap": 20,
-      "text-align": "center"
+      "gap": 20
     }
   },
   {
@@ -80,10 +77,8 @@
     "path": "div.container > div.content > div.features > div.feature",
     "style": {
       "align-items": "center",
-      "color": "Color(0.5333,0.5333,0.6667,1.0000)",
       "display": "flex",
       "flex-direction": "column",
-      "font-size": 13,
       "gap": 8
     }
   },
@@ -117,10 +112,8 @@
     "path": "div.container > div.content > div.features > div.feature",
     "style": {
       "align-items": "center",
-      "color": "Color(0.5333,0.5333,0.6667,1.0000)",
       "display": "flex",
       "flex-direction": "column",
-      "font-size": 13,
       "gap": 8
     }
   },
@@ -154,10 +147,8 @@
     "path": "div.container > div.content > div.features > div.feature",
     "style": {
       "align-items": "center",
-      "color": "Color(0.5333,0.5333,0.6667,1.0000)",
       "display": "flex",
       "flex-direction": "column",
-      "font-size": 13,
       "gap": 8
     }
   },
