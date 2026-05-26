@@ -1,5 +1,48 @@
 # Changelog
 
+## 0.3.0
+
+### Features
+
+- **Selector engine extensions** (`GmlSelector`):
+  - Sibling combinators: `.a + .b` (adjacent), `.a ~ .b` (general)
+  - Substring attribute matchers: `[class~="bar"]`, `[href^="https://"]`,
+    `[src$=".png"]`, `[href*="example"]`
+  - Structural pseudo-classes: `:first-child`, `:last-child`, `:only-child`,
+    `:nth-child(n|odd|even|an+b)`, `:not(selector)`
+  - Specificity unchanged — structural pseudos count as class-level per spec
+- **Multi-pseudo combined states**: a selector like `button:hover:focus`
+  now resolves into a sorted combined bucket (`_focus+hover`) and the
+  renderer applies it only when ALL listed states are simultaneously active.
+  Single-pseudo rules continue to emit the legacy `_hover` / `_focus` /
+  `_active` / `_disabled` flat keys so existing consumers keep working.
+- **Button transitions honor combined buckets**: `GmlButtonBuilder` now
+  delegates to the shared `GmlTransitionSetup.setup_with_signals` engine,
+  so `button:hover:focus`, `button:hover:active`, etc. transition
+  correctly instead of being silently ignored.
+- **letter-spacing and word-spacing render natively** via `FontVariation`
+  (`spacing_glyph` and `spacing_space`). No more `label.text` mutation
+  and no more "metadata only" placeholder.
+
+### Behavior changes
+
+- Rules whose pseudo list contains any unknown state name (e.g. `:hovr`,
+  or a typo within `:hover:hovr`) are dropped with a warning instead of
+  being silently routed into a known bucket.
+- `GmlTransitionSetup` is rewritten around generic state-bucket discovery.
+  Same-size buckets now merge in lexicographic key order, making the
+  simultaneous-states case deterministic across runs.
+
+### Limitations / deferred
+
+- `text-indent` has no native Label support in Godot 4 and remains
+  metadata-only. A future release may route paragraphs through
+  `RichTextLabel` for `[indent]` BBCode support.
+- `_active` / `_disabled` state buckets resolve correctly for non-button
+  elements but the renderer does not yet emit input signals for them on
+  inputs/anchors — only buttons drive `active` (via button_down/up).
+
+
 ## 0.2.0
 
 ### Breaking changes

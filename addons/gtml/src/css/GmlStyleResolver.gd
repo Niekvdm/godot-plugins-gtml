@@ -37,22 +37,25 @@ func _resolve_node(node, ancestor_chain: Array, rules: Array, styles: Dictionary
 
 ## Walks all rules, gathers the matching ones for ``node``, sorts them by
 ## (specificity, source_index), and merges them into one final style dict.
+##
+## Single-pseudo rules land in legacy flat keys (``_hover``, ``_focus``,
+## ``_active``, ``_disabled``) so the existing transition path keeps working
+## unchanged. Multi-pseudo rules (e.g. ``a:hover:focus``) land in a combined
+## bucket keyed by ``_`` + sorted pseudos joined with ``+`` (so
+## ``a:hover:focus`` and ``a:focus:hover`` produce the same ``_focus+hover``
+## key). A rule whose pseudo set contains any unknown state pseudo is dropped
+## with a warning — see test_multi_pseudo.
 func _compute_style(node, ancestor_chain: Array, rules: Array) -> Dictionary:
-	var matches: Array = []  # Array of {rule, specificity, pseudo}
+	var matches: Array = []
 
 	for rule in rules:
 		if rule.selector == null:
 			continue
 		if not GmlSelector.matches(rule.selector, ancestor_chain):
 			continue
-		# Use the rightmost compound's pseudo to decide the style bucket.
-		# Multi-pseudo (a:hover:focus) is deferred to v0.3 — we currently route
-		# such rules to the first pseudo's bucket.
-		var pseudo := _primary_pseudo(rule.selector)
 		matches.append({
 			"rule": rule,
 			"specificity": rule.specificity(),
-			"pseudo": pseudo,
 			"source_index": rule.source_index,
 		})
 
@@ -62,49 +65,49 @@ func _compute_style(node, ancestor_chain: Array, rules: Array) -> Dictionary:
 	matches.sort_custom(_compare_matches)
 
 	var style: Dictionary = {}
-	var hover_style: Dictionary = {}
-	var active_style: Dictionary = {}
-	var focus_style: Dictionary = {}
-	var disabled_style: Dictionary = {}
+	var state_buckets: Dictionary = {}  # bucket_key -> Dict
 
 	for m in matches:
 		var props: Dictionary = m["rule"].properties
-		match m["pseudo"]:
-			"":
-				_merge_properties(style, props)
-			"hover":
-				_merge_properties(hover_style, props)
-			"active":
-				_merge_properties(active_style, props)
-			"focus":
-				_merge_properties(focus_style, props)
-			"disabled":
-				_merge_properties(disabled_style, props)
-			_:
-				# Drop unknown pseudo rules — merging them into the base style
-				# would let a typo like :hovr silently overwrite the un-hovered
-				# appearance. Warn the developer so the typo is visible.
-				push_warning("GmlStyleResolver: unknown pseudo-class ':%s' — rule dropped" % m["pseudo"])
+		var sps := _state_pseudos_of(m["rule"].selector)
 
-	if not hover_style.is_empty():
-		style["_hover"] = hover_style
-	if not active_style.is_empty():
-		style["_active"] = active_style
-	if not focus_style.is_empty():
-		style["_focus"] = focus_style
-	if not disabled_style.is_empty():
-		style["_disabled"] = disabled_style
+		if sps.is_empty():
+			_merge_properties(style, props)
+			continue
+
+		# Reject rules whose pseudo list contains any unknown name. Routing
+		# such a rule into a known bucket would silently change the visual
+		# behavior; dropping it surfaces the typo via push_warning.
+		var unknown_pseudo: String = ""
+		for p in sps:
+			if not (p in GmlSelector.STATE_PSEUDOS):
+				unknown_pseudo = p
+				break
+		if not unknown_pseudo.is_empty():
+			push_warning("GmlStyleResolver: unknown pseudo-class ':%s' — rule dropped" % unknown_pseudo)
+			continue
+
+		var sorted_pseudos := sps.duplicate()
+		sorted_pseudos.sort()
+		var bucket_key: String = "+".join(sorted_pseudos)
+		if not state_buckets.has(bucket_key):
+			state_buckets[bucket_key] = {}
+		_merge_properties(state_buckets[bucket_key], props)
+
+	for key in state_buckets:
+		style["_" + key] = state_buckets[key]
 
 	return style
 
 
-static func _primary_pseudo(sel) -> String:
+## All state pseudos on the selector's rightmost compound, in source order.
+## Anything not in STATE_PSEUDOS is returned as-is so the caller can detect
+## unknowns and drop the rule.
+static func _state_pseudos_of(sel) -> PackedStringArray:
 	if sel == null or sel.compounds.is_empty():
-		return ""
+		return PackedStringArray()
 	var last = sel.compounds[sel.compounds.size() - 1]
-	if last.pseudos.is_empty():
-		return ""
-	return last.pseudos[0]
+	return last.pseudos.duplicate()
 
 
 ## Order rules so the highest-priority is last (so the final merge wins).
