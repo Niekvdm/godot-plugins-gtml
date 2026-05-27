@@ -201,6 +201,7 @@ Check out the example files in `addons/gtml/examples/`:
 
 ## Next Steps
 
+- [Reactive bindings](bindings.md) - Vue-style `{{ }}`, `:attr`, `v-for`, `v-if`, `v-model`
 - [The Editor Pane](editor.md) - Autocomplete, jumps, color picker, multi-cursor
 - [HTML Elements](html-elements.md) - All supported tags and attributes
 - [CSS Selectors](css-selectors.md) - Combinators, attribute matchers, pseudo-classes
