@@ -253,3 +253,20 @@ func test_parse_or_lower_than_and() -> void:
 	var ast: Dictionary = GmlBindingExpr.parse("a || b && c")
 	assert_eq(ast["op"], "||")
 	assert_eq(ast["right"]["op"], "&&")
+
+
+# ─── Ternary (Task 8) ──────────────────────────────────────
+
+func test_parse_simple_ternary() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("cond ? a : b")
+	assert_eq(ast["type"], "ternary")
+	assert_eq(ast["cond"]["parts"], PackedStringArray(["cond"]))
+	assert_eq(ast["then"]["parts"], PackedStringArray(["a"]))
+	assert_eq(ast["else_"]["parts"], PackedStringArray(["b"]))
+
+
+func test_parse_ternary_right_associative() -> void:
+	# a ? b : c ? d : e → a ? b : (c ? d : e)
+	var ast: Dictionary = GmlBindingExpr.parse("a ? b : c ? d : e")
+	assert_eq(ast["type"], "ternary")
+	assert_eq(ast["else_"]["type"], "ternary")

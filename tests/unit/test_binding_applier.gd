@@ -300,3 +300,15 @@ func test_eval_or_returns_first_truthy() -> void:
 func test_eval_and_returns_right_when_left_truthy() -> void:
 	var s := _state({"a": 1, "b": "x"})
 	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("a && b"), s, {}), "x")
+
+
+# ─── Ternary eval (Task 8) ─────────────────────────────────
+
+func test_eval_ternary_true_branch() -> void:
+	var s := _state({"x": true})
+	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("x ? 'yes' : 'no'"), s, {}), "yes")
+
+
+func test_eval_ternary_false_branch() -> void:
+	var s := _state({"x": false})
+	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("x ? 'yes' : 'no'"), s, {}), "no")

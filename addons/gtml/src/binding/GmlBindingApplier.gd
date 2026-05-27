@@ -58,6 +58,10 @@ static func eval(expr: Dictionary, state: GmlState, scope: Dictionary) -> Varian
 			return _eval_unary(expr["op"], expr["inner"], state, scope)
 		"binop":
 			return _eval_binop(expr["op"], expr["left"], expr["right"], state, scope)
+		"ternary":
+			if _truthy(eval(expr["cond"], state, scope)):
+				return eval(expr["then"], state, scope)
+			return eval(expr["else_"], state, scope)
 		_:
 			return null
 
