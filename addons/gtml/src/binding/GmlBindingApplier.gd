@@ -26,8 +26,12 @@ static func eval(expr: Dictionary, state: GmlState, scope: Dictionary) -> Varian
 			return not _truthy(inner)
 		"string":
 			return expr["value"]
-		"object", "array", "call":
-			# Implemented in Task 5/8
+		"object":
+			return _eval_object(expr["entries"], state, scope)
+		"array":
+			return _eval_array(expr["items"], state, scope)
+		"call":
+			# Implemented in Task 8
 			return null
 		_:
 			return null
@@ -78,6 +82,27 @@ static func _truthy(v: Variant) -> bool:
 	if v is Dictionary:
 		return not (v as Dictionary).is_empty()
 	return true
+
+
+## Object literal evaluation returns the KEYS whose evaluated VALUES are
+## truthy. Used by :class for the { active: is_active } toggle syntax.
+static func _eval_object(entries: Array, state: GmlState, scope: Dictionary) -> PackedStringArray:
+	var out: PackedStringArray = PackedStringArray()
+	for e in entries:
+		if _truthy(eval(e["value"], state, scope)):
+			out.append(e["key"])
+	return out
+
+
+## Array literal evaluation returns each element coerced to String.
+## Path elements pull from state; string literals pass through.
+static func _eval_array(items: Array, state: GmlState, scope: Dictionary) -> PackedStringArray:
+	var out: PackedStringArray = PackedStringArray()
+	for item in items:
+		var v = eval(item, state, scope)
+		if v != null:
+			out.append(str(v))
+	return out
 
 
 # ─── Text interpolation registration ────────────────────────────
@@ -151,6 +176,43 @@ static func register_attr_binding(control: Control, target: String, expr: Dictio
 		if ctl == null:
 			return
 		_apply_attr(ctl, target, eval(expr, state, {}))
+	var deps: Array = []
+	_collect_expr_deps(expr, deps)
+	registry.register({
+		"deps": deps,
+		"apply": apply,
+		"control_ref": ref,
+	})
+	apply.call()
+
+
+## Wire :class="..." to a Control. The result is stored on the control's
+## "dynamic_classes" meta as a PackedStringArray. The view's renderer (and
+## any downstream code) can read this meta to know which dynamic classes
+## are currently active on this element.
+##
+## Note: v0.7 does NOT re-resolve CSS rules when dynamic classes change.
+## Dynamic class addition affects only the meta; the Control's existing
+## stylebox is not updated. Static styling (declared on classes present
+## at build time) still works. Document the limitation in docs/bindings.md.
+static func register_class_binding(control: Control, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState) -> void:
+	var ref: WeakRef = weakref(control)
+	var apply := func():
+		var ctl = ref.get_ref()
+		if ctl == null:
+			return
+		var resolved = eval(expr, state, {})
+		var classes: PackedStringArray = PackedStringArray()
+		if resolved is PackedStringArray:
+			classes = resolved
+		elif resolved is Array:
+			for x in resolved:
+				classes.append(str(x))
+		elif resolved is String:
+			# bare string path: treat as space-separated class list
+			for x in (resolved as String).split(" ", false):
+				classes.append(x)
+		ctl.set_meta("dynamic_classes", classes)
 	var deps: Array = []
 	_collect_expr_deps(expr, deps)
 	registry.register({

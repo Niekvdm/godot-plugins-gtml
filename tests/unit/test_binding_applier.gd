@@ -102,3 +102,52 @@ func test_register_attr_binding_unknown_target_is_noop() -> void:
 	GmlBindingApplier.register_attr_binding(ctrl, "unrecognized_attr", ast, r, s)
 	# Pass criterion: didn't crash
 	assert_true(true)
+
+
+# ─── Object/array eval (Task 5) ──────────────────────────────────
+
+func test_eval_object_returns_filtered_keys_by_truthy_values() -> void:
+	var s := _state({"is_active": true, "is_dim": false})
+	var ast: Dictionary = GmlBindingExpr.parse("{ active: is_active, dim: is_dim }")
+	var result = GmlBindingApplier.eval(ast, s, {})
+	# Object eval returns the keys whose values are truthy, as PackedStringArray
+	assert_true(result is PackedStringArray)
+	assert_eq(result.size(), 1)
+	assert_eq(result[0], "active")
+
+
+func test_eval_object_with_negation() -> void:
+	var s := _state({"is_loading": false})
+	var ast: Dictionary = GmlBindingExpr.parse("{ ready: !is_loading }")
+	var result = GmlBindingApplier.eval(ast, s, {})
+	assert_eq(result.size(), 1)
+	assert_eq(result[0], "ready")
+
+
+func test_eval_array_returns_concatenated_strings() -> void:
+	var s := _state({"dyn": "highlighted"})
+	var ast: Dictionary = GmlBindingExpr.parse("['static', dyn]")
+	var result = GmlBindingApplier.eval(ast, s, {})
+	assert_true(result is PackedStringArray)
+	assert_eq(result.size(), 2)
+	assert_eq(result[0], "static")
+	assert_eq(result[1], "highlighted")
+
+
+# ─── :class registration ─────────────────────────────────────────
+
+func test_register_class_binding_writes_meta_classes() -> void:
+	var s := _state({"is_on": true})
+	var r := GmlBindingRegistry.new()
+	var ctrl := Control.new()
+	add_child_autofree(ctrl)
+	var ast: Dictionary = GmlBindingExpr.parse("{ active: is_on }")
+	GmlBindingApplier.register_class_binding(ctrl, ast, r, s)
+	var classes: PackedStringArray = ctrl.get_meta("dynamic_classes", PackedStringArray())
+	assert_eq(classes.size(), 1)
+	assert_eq(classes[0], "active")
+
+	s.state_changed.connect(func(k, _n, _o): r.fire(k))
+	s.set("is_on", false)
+	classes = ctrl.get_meta("dynamic_classes", PackedStringArray())
+	assert_eq(classes.size(), 0)
