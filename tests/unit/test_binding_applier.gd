@@ -193,3 +193,19 @@ func test_eval_index_out_of_bounds_returns_null_no_warn() -> void:
 	assert_null(GmlBindingApplier.eval(ast, s, {}))
 	assert_eq(captured.size(), 0, "OOB index must NOT warn (transient v-for state)")
 	GmlBindingApplier._on_warning = Callable()
+
+
+# ─── Unary minus eval (Task 4) ─────────────────────────────
+
+func test_eval_unary_minus_number() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("-5")
+	assert_eq(GmlBindingApplier.eval(ast, _state(), {}), -5.0)
+
+
+func test_eval_unary_minus_string_warns_returns_null() -> void:
+	var captured: Array = []
+	GmlBindingApplier._on_warning = func(m): captured.append(m)
+	var ast: Dictionary = GmlBindingExpr.parse("-name")
+	assert_null(GmlBindingApplier.eval(ast, _state({"name": "Ada"}), {}))
+	assert_gt(captured.size(), 0)
+	GmlBindingApplier._on_warning = Callable()

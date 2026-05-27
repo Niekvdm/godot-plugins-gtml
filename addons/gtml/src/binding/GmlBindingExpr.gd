@@ -84,7 +84,11 @@ class _Parser:
 			if inner.get("type", "") == "path":
 				return {"type": "neg", "inner": inner}
 			return {"type": "unary", "op": "!", "inner": inner}
-		# Task 4 adds unary minus here.
+		if ch == "-":
+			_pos += 1
+			_skip_ws()
+			var inner_m: Dictionary = _parse_unary()
+			return {"type": "unary", "op": "-", "inner": inner_m}
 		return _parse_postfix()
 
 	func _parse_postfix() -> Dictionary:

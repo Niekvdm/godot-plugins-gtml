@@ -166,3 +166,19 @@ func test_parse_chained_indexes() -> void:
 	var ast: Dictionary = GmlBindingExpr.parse("items[i][0]")
 	assert_eq(ast["type"], "index")
 	assert_eq(ast["target"]["type"], "index")
+
+
+# ─── Unary minus (Task 4) ──────────────────────────────────
+
+func test_parse_unary_minus_number() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("-5")
+	assert_eq(ast["type"], "unary")
+	assert_eq(ast["op"], "-")
+	assert_eq(ast["inner"]["type"], "number")
+
+
+func test_parse_unary_minus_path() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("-score")
+	assert_eq(ast["type"], "unary")
+	assert_eq(ast["op"], "-")
+	assert_eq(ast["inner"]["type"], "path")

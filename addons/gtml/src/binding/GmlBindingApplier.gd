@@ -54,6 +54,8 @@ static func eval(expr: Dictionary, state: GmlState, scope: Dictionary) -> Varian
 			return {"_call": true, "name": expr["name"], "args": resolved_args}
 		"index":
 			return _eval_index(expr["target"], expr["index"], state, scope)
+		"unary":
+			return _eval_unary(expr["op"], expr["inner"], state, scope)
 		_:
 			return null
 
@@ -147,6 +149,22 @@ static func _eval_index(target: Dictionary, index: Dictionary, state: GmlState, 
 			return t[i]
 		return null
 	return null
+
+
+## Evaluate unary operators: ! (logical not) and - (numeric negation).
+static func _eval_unary(op: String, inner_expr: Dictionary, state: GmlState, scope: Dictionary) -> Variant:
+	var v = eval(inner_expr, state, scope)
+	match op:
+		"!":
+			return not _truthy(v)
+		"-":
+			if v is int or v is float:
+				return -v
+			_warn("unary '-' requires a number, got %s" % typeof(v))
+			return null
+		_:
+			_warn("unknown unary op '%s'" % op)
+			return null
 
 
 # ─── Text interpolation registration ────────────────────────────
