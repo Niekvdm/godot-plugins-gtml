@@ -211,3 +211,31 @@ func test_parse_left_associativity_subtraction() -> void:
 	assert_eq(ast["op"], "-")
 	assert_eq(ast["left"]["op"], "-")
 	assert_eq(ast["right"]["parts"], PackedStringArray(["c"]))
+
+
+# ─── Comparison + equality parsing (Task 6) ────────────────
+
+func test_parse_greater_than() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("a > b")
+	assert_eq(ast["type"], "binop")
+	assert_eq(ast["op"], ">")
+
+
+func test_parse_equality() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("a == b")
+	assert_eq(ast["type"], "binop")
+	assert_eq(ast["op"], "==")
+
+
+func test_parse_comparison_below_equality() -> void:
+	# a > b == c → binop{==, binop{>, a, b}, c} (comparison binds tighter)
+	var ast: Dictionary = GmlBindingExpr.parse("a > b == c")
+	assert_eq(ast["op"], "==")
+	assert_eq(ast["left"]["op"], ">")
+
+
+func test_parse_arithmetic_below_comparison() -> void:
+	# a + b > c → binop{>, binop{+, a, b}, c}
+	var ast: Dictionary = GmlBindingExpr.parse("a + b > c")
+	assert_eq(ast["op"], ">")
+	assert_eq(ast["left"]["op"], "+")

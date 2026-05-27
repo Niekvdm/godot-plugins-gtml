@@ -58,12 +58,36 @@ class _Parser:
 		return _parse_equality()
 
 	func _parse_equality() -> Dictionary:
-		# Task 7 fills this in; for now passthrough.
-		return _parse_comparison()
+		var left: Dictionary = _parse_comparison()
+		while true:
+			_skip_ws()
+			var op: String = _peek_op_2()
+			if op != "==" and op != "!=":
+				break
+			_pos += 2
+			var right: Dictionary = _parse_comparison()
+			left = {"type": "binop", "op": op, "left": left, "right": right}
+		return left
 
 	func _parse_comparison() -> Dictionary:
-		# Task 6 fills this in; for now passthrough.
-		return _parse_additive()
+		var left: Dictionary = _parse_additive()
+		while true:
+			_skip_ws()
+			# Two-char ops first: >= <=
+			var two: String = _peek_op_2()
+			if two == ">=" or two == "<=":
+				_pos += 2
+				var right2: Dictionary = _parse_additive()
+				left = {"type": "binop", "op": two, "left": left, "right": right2}
+				continue
+			var one: String = _peek()
+			if one == ">" or one == "<":
+				_pos += 1
+				var right1: Dictionary = _parse_additive()
+				left = {"type": "binop", "op": one, "left": left, "right": right1}
+				continue
+			break
+		return left
 
 	func _parse_additive() -> Dictionary:
 		var left: Dictionary = _parse_multiplicative()
@@ -314,3 +338,8 @@ class _Parser:
 		if _pos >= _source.length():
 			return ""
 		return _source[_pos]
+
+	func _peek_op_2() -> String:
+		if _pos + 1 < _source.length():
+			return _source.substr(_pos, 2)
+		return ""

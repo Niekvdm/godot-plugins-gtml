@@ -248,3 +248,36 @@ func test_eval_string_concat_num_string_warns() -> void:
 	assert_null(GmlBindingApplier.eval(GmlBindingExpr.parse("5 + name"), _state({"name": "x"}), {}))
 	assert_gt(captured.size(), 0)
 	GmlBindingApplier._on_warning = Callable()
+
+
+# ─── Comparison + equality eval (Task 6) ───────────────────────────────
+
+func test_eval_greater_than_numbers() -> void:
+	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("5 > 3"), _state(), {}), true)
+
+
+func test_eval_less_than_strings_lex() -> void:
+	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("'a' < 'b'"), _state(), {}), true)
+
+
+func test_eval_equality_same_value() -> void:
+	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("1 == 1"), _state(), {}), true)
+
+
+func test_eval_equality_cross_type_no_warn() -> void:
+	var captured: Array = []
+	GmlBindingApplier._on_warning = func(m): captured.append(m)
+	var s := _state({"selected_item": null})
+	# Common Vue pattern — should NOT warn even though types differ.
+	GmlBindingApplier.eval(GmlBindingExpr.parse("selected_item == null"), s, {})
+	assert_eq(captured.size(), 0)
+	GmlBindingApplier._on_warning = Callable()
+
+
+func test_eval_comparison_cross_type_warns() -> void:
+	var captured: Array = []
+	GmlBindingApplier._on_warning = func(m): captured.append(m)
+	var ast: Dictionary = GmlBindingExpr.parse("5 > 'a'")
+	assert_null(GmlBindingApplier.eval(ast, _state(), {}))
+	assert_gt(captured.size(), 0)
+	GmlBindingApplier._on_warning = Callable()
