@@ -312,3 +312,31 @@ func test_eval_ternary_true_branch() -> void:
 func test_eval_ternary_false_branch() -> void:
 	var s := _state({"x": false})
 	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("x ? 'yes' : 'no'"), s, {}), "no")
+
+
+# ─── Dep collection for new AST nodes (Task 9) ─────────────
+
+func test_collect_deps_binop() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("hp + max_hp")
+	var deps: Array = []
+	GmlBindingApplier._collect_expr_deps(ast, deps)
+	assert_true("hp" in deps)
+	assert_true("max_hp" in deps)
+
+
+func test_collect_deps_ternary_all_branches() -> void:
+	# Over-approximation: all three sub-exprs contribute deps.
+	var ast: Dictionary = GmlBindingExpr.parse("cond ? a : b")
+	var deps: Array = []
+	GmlBindingApplier._collect_expr_deps(ast, deps)
+	assert_true("cond" in deps)
+	assert_true("a" in deps)
+	assert_true("b" in deps)
+
+
+func test_collect_deps_index_walks_both_sides() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("items[i]")
+	var deps: Array = []
+	GmlBindingApplier._collect_expr_deps(ast, deps)
+	assert_true("items" in deps)
+	assert_true("i" in deps)

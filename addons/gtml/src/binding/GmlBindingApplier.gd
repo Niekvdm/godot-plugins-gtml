@@ -312,6 +312,19 @@ static func _collect_expr_deps(expr: Dictionary, out: Array) -> void:
 		"call":
 			for arg in expr.get("args", []):
 				_collect_expr_deps(arg, out)
+		"binop":
+			_collect_expr_deps(expr["left"], out)
+			_collect_expr_deps(expr["right"], out)
+		"unary":
+			_collect_expr_deps(expr["inner"], out)
+		"ternary":
+			_collect_expr_deps(expr["cond"], out)
+			_collect_expr_deps(expr["then"], out)
+			_collect_expr_deps(expr["else_"], out)
+		"index":
+			_collect_expr_deps(expr["target"], out)
+			_collect_expr_deps(expr["index"], out)
+		# "number" → no deps (intentionally fall through to default)
 		# string / error → no deps
 
 
