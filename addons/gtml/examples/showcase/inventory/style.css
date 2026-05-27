@@ -114,10 +114,6 @@
 }
 
 .item-card {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	gap: 12px;
 	padding: 10px;
 	background-color: var(--surface-1);
 	border: 1px solid var(--border-1);
@@ -128,6 +124,14 @@
 .item-card:hover {
 	background-color: var(--surface-2);
 	border: 1px solid var(--accent);
+}
+
+.item-row {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 12px;
+	flex-grow: 1;
 }
 
 .item-icon {

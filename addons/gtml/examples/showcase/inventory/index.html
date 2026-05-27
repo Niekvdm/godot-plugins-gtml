@@ -16,9 +16,11 @@
 
 			<ul class="item-grid">
 				<li v-for="item, i in filtered_items" @click="select(item)" class="item-card">
-					<span class="item-icon">{{ item.icon }}</span>
-					<span class="item-name">{{ item.name }}</span>
-					<span class="item-qty">x{{ item.qty }}</span>
+					<div class="item-row">
+						<span class="item-icon">{{ item.icon }}</span>
+						<span class="item-name">{{ item.name }}</span>
+						<span class="item-qty">x{{ item.qty }}</span>
+					</div>
 				</li>
 			</ul>
 
