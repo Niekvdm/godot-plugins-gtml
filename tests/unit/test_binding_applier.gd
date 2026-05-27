@@ -151,3 +151,21 @@ func test_register_class_binding_writes_meta_classes() -> void:
 	s.set("is_on", false)
 	classes = ctrl.get_meta("dynamic_classes", PackedStringArray())
 	assert_eq(classes.size(), 0)
+
+
+# ─── Warning logger (Task 1) ──────────────────────────────────
+
+func test_on_warning_callable_receives_message_when_set() -> void:
+	var captured: Array = []
+	GmlBindingApplier._on_warning = func(msg): captured.append(msg)
+	GmlBindingApplier._warn("test message")
+	assert_eq(captured.size(), 1)
+	assert_eq(captured[0], "test message")
+	GmlBindingApplier._on_warning = Callable()   # reset
+
+
+func test_warn_falls_back_to_push_warning_when_unset() -> void:
+	GmlBindingApplier._on_warning = Callable()
+	# Just assert it doesn't crash; push_warning's effect isn't asserted.
+	GmlBindingApplier._warn("hello")
+	assert_true(true)

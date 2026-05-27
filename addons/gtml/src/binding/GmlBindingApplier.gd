@@ -1,6 +1,19 @@
 class_name GmlBindingApplier
 extends RefCounted
 
+## Static logger injection point. Tests assign a Callable here to
+## capture warnings; production leaves it unset and the helper falls
+## back to push_warning.
+static var _on_warning: Callable = Callable()
+
+
+static func _warn(message: String) -> void:
+	if _on_warning.is_valid():
+		_on_warning.call(message)
+	else:
+		push_warning(message)
+
+
 ## Evaluates Expr ASTs against a state + scope, and writes resolved
 ## values into Controls via "register_*" helpers that build bindings and
 ## push them onto a GmlBindingRegistry.
@@ -341,7 +354,7 @@ static func register_v_model(control: Control, key: String, registry: GmlBinding
 ## Re-evaluates args at click time so latest state is used.
 static func register_event_with_args(control: Control, event: String, call_expr: Dictionary, state: GmlState, scope: Dictionary, view) -> void:
 	if event != "click":
-		push_warning("GmlBindingApplier: @event(args) currently supports only 'click', got '%s'" % event)
+		_warn("GmlBindingApplier: @event(args) currently supports only 'click', got '%s'" % event)
 		return
 	control.mouse_filter = Control.MOUSE_FILTER_STOP
 	control.set_meta("v_on_click", true)
@@ -382,4 +395,4 @@ static func _apply_attr(control: Control, target: String, value: Variant) -> voi
 		"href":
 			control.set_meta("href", str(value))
 		_:
-			push_warning("GmlBindingApplier: unknown :attr target '%s'" % target)
+			_warn("GmlBindingApplier: unknown :attr target '%s'" % target)
