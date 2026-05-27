@@ -17,15 +17,21 @@ extends RefCounted
 
 var _by_key: Dictionary = {}   # key → Array[binding]
 var _all: Array = []           # bookkeeping for clear() and binding_count()
+var _by_tag: Dictionary = {}   # tag → Array[binding]
 
 
-func register(binding: Dictionary) -> void:
+func register(binding: Dictionary, tag: String = "") -> void:
 	_all.append(binding)
 	var deps: Array = binding.get("deps", [])
 	for dep in deps:
 		if not _by_key.has(dep):
 			_by_key[dep] = []
 		_by_key[dep].append(binding)
+	if not tag.is_empty():
+		if not _by_tag.has(tag):
+			_by_tag[tag] = []
+		_by_tag[tag].append(binding)
+		binding["_tag"] = tag
 
 
 func fire(key: String) -> void:
@@ -63,8 +69,24 @@ func fire_batch(keys_to_fire: Array) -> void:
 	_all = _all.filter(_is_alive)
 
 
+## Remove every binding registered with the given tag. The bindings'
+## dep buckets in _by_key and the bookkeeping _all list are swept in
+## the same pass. No-op if the tag isn't tracked.
+func prune_tag(tag: String) -> void:
+	if not _by_tag.has(tag):
+		return
+	var doomed: Dictionary = {}
+	for b in _by_tag[tag]:
+		doomed[b.get("apply")] = true
+	for k in _by_key.keys():
+		_by_key[k] = (_by_key[k] as Array).filter(func(b): return not doomed.has(b.get("apply")))
+	_all = _all.filter(func(b): return not doomed.has(b.get("apply")))
+	_by_tag.erase(tag)
+
+
 func clear() -> void:
 	_by_key.clear()
+	_by_tag.clear()
 	_all.clear()
 
 

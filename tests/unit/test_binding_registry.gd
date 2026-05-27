@@ -79,3 +79,62 @@ func test_fire_batched_runs_each_binding_once() -> void:
 	})
 	r.fire_batch(["a", "b"])
 	assert_eq(fired.size(), 1)
+
+
+# ─── Tag-grouping (v0.8.1) ─────────────────────────────────
+
+func test_register_with_tag_still_fires_on_dep() -> void:
+	var r := GmlBindingRegistry.new()
+	var fired: Array = []
+	r.register({
+		"deps": ["x"],
+		"apply": func(): fired.append(true),
+		"control_ref": null,
+	}, "tag_a")
+	r.fire("x")
+	assert_eq(fired.size(), 1)
+
+
+func test_prune_tag_drops_bindings_under_that_tag() -> void:
+	var r := GmlBindingRegistry.new()
+	var fired: Array = []
+	r.register({
+		"deps": ["x"],
+		"apply": func(): fired.append(true),
+		"control_ref": null,
+	}, "tag_a")
+	r.prune_tag("tag_a")
+	r.fire("x")
+	assert_eq(fired.size(), 0)
+
+
+func test_prune_tag_isolation_other_tags_survive() -> void:
+	var r := GmlBindingRegistry.new()
+	var fired_a: Array = []
+	var fired_b: Array = []
+	r.register({
+		"deps": ["x"],
+		"apply": func(): fired_a.append(true),
+		"control_ref": null,
+	}, "tag_a")
+	r.register({
+		"deps": ["x"],
+		"apply": func(): fired_b.append(true),
+		"control_ref": null,
+	}, "tag_b")
+	r.prune_tag("tag_a")
+	r.fire("x")
+	assert_eq(fired_a.size(), 0, "tag_a pruned — should not fire")
+	assert_eq(fired_b.size(), 1, "tag_b still alive — must fire")
+
+
+func test_prune_nonexistent_tag_is_noop() -> void:
+	var r := GmlBindingRegistry.new()
+	r.register({
+		"deps": ["x"],
+		"apply": func(): pass,
+		"control_ref": null,
+	})  # no tag
+	r.prune_tag("never_registered")
+	# Pass if no crash; verify count unchanged.
+	assert_eq(r.binding_count(), 1)
