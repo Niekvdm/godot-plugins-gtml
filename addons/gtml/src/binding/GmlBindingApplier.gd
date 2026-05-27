@@ -223,6 +223,33 @@ static func register_class_binding(control: Control, expr: Dictionary, registry:
 	apply.call()
 
 
+## Wire v-show. Initial visibility set from expr; subsequent state
+## changes flip control.visible. Does NOT remove the control from the
+## tree (that's v-if's job at the renderer level).
+static func register_v_show(control: Control, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState) -> void:
+	var ref: WeakRef = weakref(control)
+	var apply := func():
+		var ctl = ref.get_ref()
+		if ctl == null:
+			return
+		ctl.visible = _truthy(eval(expr, state, {}))
+	var deps: Array = []
+	_collect_expr_deps(expr, deps)
+	registry.register({
+		"deps": deps,
+		"apply": apply,
+		"control_ref": ref,
+	})
+	apply.call()
+
+
+## Static helper used by the renderer's v-if check at build time.
+## Returns whether the v-if expression is currently truthy.
+static func eval_v_if(expr_source: String, state: GmlState, scope: Dictionary) -> bool:
+	var ast: Dictionary = GmlBindingExpr.parse(expr_source)
+	return _truthy(eval(ast, state, scope))
+
+
 ## Write a resolved value into the appropriate property/method on the
 ## control for the given attribute target. Unknown targets are silently
 ## ignored (logged via push_warning so authors notice typos in :foo).

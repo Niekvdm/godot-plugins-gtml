@@ -10,6 +10,8 @@ class_name GmlView
 const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
 const GmlNodeScript = preload("res://addons/gtml/src/html_parser/GmlNode.gd")
 const GmlRendererScript = preload("res://addons/gtml/src/html_renderer/GmlRenderer.gd")
+const GmlStateScript = preload("res://addons/gtml/src/binding/GmlState.gd")
+const GmlBindingRegistryScript = preload("res://addons/gtml/src/binding/GmlBindingRegistry.gd")
 # Note: GmlCssParser and GmlStyleResolver are accessed via their class_name directly
 # because they have inner classes that cause issues with preload().new()
 
@@ -80,6 +82,10 @@ signal form_submitted(form_data: Dictionary)
 ## raw InputEventKey so listeners can inspect keycode / modifiers.
 signal key_pressed(handler: String, event: InputEvent)
 
+## Emitted when an @event="handler(args...)" with arguments triggers.
+## Bare @event="handler" continues to fire button_clicked / link_clicked.
+signal item_clicked(handler: String, args: Array)
+
 #endregion
 
 
@@ -95,7 +101,20 @@ var _wrappers_by_id: Dictionary = {}
 ## Dictionary mapping radio group names to ButtonGroup instances
 var _radio_groups: Dictionary = {}
 
+## Per-view reactive state store. Set via state.set("key", value); reads
+## via state.get("key"). Listeners on state.state_changed are wired
+## through to the binding registry so DOM updates fire automatically.
+var state: GmlState
+## Reverse-index of state keys → registered bindings. Cleared each rebuild.
+var _binding_registry: GmlBindingRegistry
+
 #endregion
+
+
+func _init() -> void:
+	state = GmlStateScript.new()
+	_binding_registry = GmlBindingRegistryScript.new()
+	state.state_changed.connect(func(k, _n, _o): _binding_registry.fire(k))
 
 
 func _ready() -> void:
@@ -137,6 +156,8 @@ func _queue_rebuild() -> void:
 func _rebuild() -> void:
 	_rebuild_queued = false
 	_clear_children()
+	if _binding_registry != null:
+		_binding_registry.clear()
 
 	if html_path.is_empty():
 		_show_placeholder("No HTML file assigned")

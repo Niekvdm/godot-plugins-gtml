@@ -2,6 +2,12 @@
 class_name GmlRenderer
 extends RefCounted
 
+const GmlBindingParserScript = preload("res://addons/gtml/src/binding/GmlBindingParser.gd")
+const GmlBindingApplierScript = preload("res://addons/gtml/src/binding/GmlBindingApplier.gd")
+const GmlBindingExprScript = preload("res://addons/gtml/src/binding/GmlBindingExpr.gd")
+const GmlBindingRegistryScript = preload("res://addons/gtml/src/binding/GmlBindingRegistry.gd")
+const GmlStateScript = preload("res://addons/gtml/src/binding/GmlState.gd")
+
 ## Builds a Godot ``Control`` tree from a parsed DOM + resolved style map.
 ##
 ## The renderer is now a thin dispatcher: per-tag construction lives in the
@@ -45,6 +51,14 @@ func _build_node(node) -> Control:
 	if node.is_text_node:
 		return _build_text_node(node)
 
+	# v-if: omit element entirely when falsy. Scope (for v-for clones) is
+	# pulled from the node's meta — empty for the normal build path.
+	if node.attrs.has("v-if") and _gml_view != null and _gml_view.state != null:
+		var v_if_src: String = node.attrs["v-if"]
+		var v_if_scope: Dictionary = node.get_meta("_binding_scope", {})
+		if not GmlBindingApplierScript.eval_v_if(v_if_src, _gml_view.state, v_if_scope):
+			return null
+
 	var ctx := _build_context()
 	var result: Dictionary = _dispatch(node, ctx)
 
@@ -66,7 +80,51 @@ func _build_node(node) -> Control:
 			transition_target = inner
 		GmlTransitionSetup.setup(transition_target, _get_node_style(node), _transition_manager)
 
+	# Post-build: register Vue-style bindings on the resolved control.
+	_register_bindings_for_node(node, control)
+
 	return control
+
+
+## Walk the node's attributes + text children and register bindings on
+## the resolved control. Handles :attr, v-bind:attr, v-show, and text
+## interpolation in immediate text children. v-if was handled at dispatch
+## time; v-for + v-model + @event(args) live in later tasks.
+func _register_bindings_for_node(node, control: Control) -> void:
+	if _gml_view == null or control == null:
+		return
+	var registry = _gml_view._binding_registry
+	if registry == null:
+		return
+	var state = _gml_view.state
+	if state == null:
+		return
+
+	for attr_name in node.attrs:
+		var cls: Dictionary = GmlBindingParserScript.classify_attribute(attr_name)
+		match cls["kind"]:
+			"v-bind":
+				var expr: Dictionary = GmlBindingExprScript.parse(node.attrs[attr_name])
+				if cls["target"] == "class":
+					GmlBindingApplierScript.register_class_binding(control, expr, registry, state)
+				else:
+					GmlBindingApplierScript.register_attr_binding(control, cls["target"], expr, registry, state)
+			"v-show":
+				var v_show_expr: Dictionary = GmlBindingExprScript.parse(node.attrs[attr_name])
+				GmlBindingApplierScript.register_v_show(control, v_show_expr, registry, state)
+			_:
+				pass
+
+	# Text interpolation on direct text children — only meaningful for
+	# elements whose body is a single text node (e.g. <span>{{ name }}</span>).
+	if control is Label and node.children.size() > 0:
+		var combined: String = ""
+		for child in node.children:
+			if child.is_text_node:
+				combined += child.text
+		if "{{" in combined:
+			var spans: Array = GmlBindingParserScript.find_interpolations(combined)
+			GmlBindingApplierScript.register_text_interpolation(control as Label, spans, registry, state)
 
 
 ## Tag → element builder dispatch table.
