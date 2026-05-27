@@ -169,3 +169,27 @@ func test_warn_falls_back_to_push_warning_when_unset() -> void:
 	# Just assert it doesn't crash; push_warning's effect isn't asserted.
 	GmlBindingApplier._warn("hello")
 	assert_true(true)
+
+
+# ─── Indexing eval (Task 3) ────────────────────────────────
+
+func test_eval_array_index_returns_element() -> void:
+	var s := _state({"items": ["a", "b", "c"]})
+	var ast: Dictionary = GmlBindingExpr.parse("items[1]")
+	assert_eq(GmlBindingApplier.eval(ast, s, {}), "b")
+
+
+func test_eval_dict_index_returns_value() -> void:
+	var s := _state({"map": {"k": "v"}})
+	var ast: Dictionary = GmlBindingExpr.parse("map['k']")
+	assert_eq(GmlBindingApplier.eval(ast, s, {}), "v")
+
+
+func test_eval_index_out_of_bounds_returns_null_no_warn() -> void:
+	var captured: Array = []
+	GmlBindingApplier._on_warning = func(m): captured.append(m)
+	var s := _state({"items": ["a"]})
+	var ast: Dictionary = GmlBindingExpr.parse("items[5]")
+	assert_null(GmlBindingApplier.eval(ast, s, {}))
+	assert_eq(captured.size(), 0, "OOB index must NOT warn (transient v-for state)")
+	GmlBindingApplier._on_warning = Callable()

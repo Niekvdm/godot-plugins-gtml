@@ -37,6 +37,8 @@ static func eval(expr: Dictionary, state: GmlState, scope: Dictionary) -> Varian
 		"neg":
 			var inner = eval(expr["inner"], state, scope)
 			return not _truthy(inner)
+		"number":
+			return expr["value"]
 		"string":
 			return expr["value"]
 		"object":
@@ -50,6 +52,8 @@ static func eval(expr: Dictionary, state: GmlState, scope: Dictionary) -> Varian
 			for a in expr.get("args", []):
 				resolved_args.append(eval(a, state, scope))
 			return {"_call": true, "name": expr["name"], "args": resolved_args}
+		"index":
+			return _eval_index(expr["target"], expr["index"], state, scope)
 		_:
 			return null
 
@@ -120,6 +124,29 @@ static func _eval_array(items: Array, state: GmlState, scope: Dictionary) -> Pac
 		if v != null:
 			out.append(str(v))
 	return out
+
+
+## Resolve target[index]. Array+int gives element-or-null;
+## Dict+anything gives keyed lookup. OOB / missing key returns null
+## without warning — v-for clones routinely read stale indices during
+## reconciliation, warning each one would flood the log.
+static func _eval_index(target: Dictionary, index: Dictionary, state: GmlState, scope: Dictionary) -> Variant:
+	var t = eval(target, state, scope)
+	var i = eval(index, state, scope)
+	if t == null:
+		return null
+	if t is Array:
+		if not (i is int or i is float):
+			return null
+		var idx: int = int(i)
+		if idx < 0 or idx >= (t as Array).size():
+			return null
+		return t[idx]
+	if t is Dictionary:
+		if (t as Dictionary).has(i):
+			return t[i]
+		return null
+	return null
 
 
 # ─── Text interpolation registration ────────────────────────────

@@ -133,3 +133,36 @@ func test_parse_ident_hyphens_no_longer_accepted() -> void:
 	# Either treated as error OR parsed up to 'data' then trailing chars.
 	# Spec says "trailing chars at pos N" — either reading is acceptable.
 	assert_eq(ast["type"], "error")
+
+
+# ─── Indexing (Task 3) ──────────────────────────────────────
+
+func test_parse_array_index() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("items[0]")
+	assert_eq(ast["type"], "index")
+	assert_eq(ast["target"]["type"], "path")
+	assert_eq(ast["target"]["parts"], PackedStringArray(["items"]))
+	assert_eq(ast["index"]["type"], "number")
+
+
+func test_parse_index_with_path_inside() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("items[i]")
+	assert_eq(ast["type"], "index")
+	assert_eq(ast["index"]["type"], "path")
+	assert_eq(ast["index"]["parts"], PackedStringArray(["i"]))
+
+
+func test_parse_index_then_dot() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("items[0].name")
+	# items[0] is the index target; .name appends as a string-keyed
+	# index on top.
+	assert_eq(ast["type"], "index")
+	assert_eq(ast["index"]["type"], "string")
+	assert_eq(ast["index"]["value"], "name")
+	assert_eq(ast["target"]["type"], "index")
+
+
+func test_parse_chained_indexes() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("items[i][0]")
+	assert_eq(ast["type"], "index")
+	assert_eq(ast["target"]["type"], "index")

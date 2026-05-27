@@ -116,9 +116,14 @@ class _Parser:
 					_errors.append("'(' after non-identifier at pos %d" % _pos)
 					return {}
 			elif ch == "[":
-				# Task 3 adds indexing here.
-				_errors.append("indexing not yet implemented at pos %d" % _pos)
-				return {}
+				_pos += 1
+				var index_expr: Dictionary = _parse_ternary()
+				_skip_ws()
+				if _peek() != "]":
+					_errors.append("expected ']' at pos %d" % _pos)
+					return {}
+				_pos += 1
+				expr = {"type": "index", "target": expr, "index": index_expr}
 			else:
 				break
 		return expr
