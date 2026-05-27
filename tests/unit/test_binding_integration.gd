@@ -206,3 +206,80 @@ func _collect_v_for_clones(node: Node, out: Array) -> void:
 		out.append(node)
 	for c in node.get_children():
 		_collect_v_for_clones(c, out)
+
+
+# ─── Operators end-to-end (Task 10) ────────────────────────
+
+func test_v_if_with_comparison() -> void:
+	var view := _build_view('<div><span v-if="hp > 0">alive</span></div>')
+	view.state.set("hp", 10)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_not_null(_find_first_label(view), "should be alive when hp > 0")
+
+
+func test_text_interp_with_indexing() -> void:
+	var view := _build_view('<span>{{ items[selected_index].name }}</span>')
+	view.state.set("items", [{"name": "Sword"}, {"name": "Potion"}])
+	view.state.set("selected_index", 0)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var label := _find_first_label(view)
+	assert_eq(label.text, "Sword")
+
+	view.state.set("selected_index", 1)
+	await get_tree().process_frame
+	assert_eq(label.text, "Potion")
+
+
+func test_class_binding_with_comparison() -> void:
+	var view := _build_view('<div><span :class="{ low: hp < 25 }">x</span></div>')
+	view.state.set("hp", 50)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var label := _find_first_label(view)
+	var classes: PackedStringArray = label.get_meta("dynamic_classes", PackedStringArray())
+	assert_eq(classes.size(), 0, "hp=50 → no 'low' class")
+
+	view.state.set("hp", 10)
+	await get_tree().process_frame
+	classes = label.get_meta("dynamic_classes", PackedStringArray())
+	assert_true("low" in classes, "hp=10 → 'low' class active")
+
+
+func test_event_handler_with_indexing() -> void:
+	var view := _build_view('<ul><li v-for="item, i in items" @click="select(items[i])">{{ item }}</li></ul>')
+	view.state.set("items", ["a", "b"])
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var captured: Array = []
+	view.item_clicked.connect(func(handler, args): captured.append([handler, args]))
+
+	var li_controls: Array = []
+	_collect_v_for_clones(view, li_controls)
+	assert_eq(li_controls.size(), 2)
+	# Click the first one; index arg should resolve to items[0] = "a".
+	for ctl in li_controls:
+		if ctl.has_meta("v_on_click"):
+			var click := InputEventMouseButton.new()
+			click.button_index = MOUSE_BUTTON_LEFT
+			click.pressed = true
+			ctl.gui_input.emit(click)
+			break
+	assert_gt(captured.size(), 0)
+
+
+func test_class_binding_with_ternary() -> void:
+	var view := _build_view('<div><span :class="[\'badge\', is_rare ? \'rare\' : \'common\']">x</span></div>')
+	view.state.set("is_rare", false)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var label := _find_first_label(view)
+	var classes: PackedStringArray = label.get_meta("dynamic_classes", PackedStringArray())
+	assert_true("common" in classes)
+
+	view.state.set("is_rare", true)
+	await get_tree().process_frame
+	classes = label.get_meta("dynamic_classes", PackedStringArray())
+	assert_true("rare" in classes)

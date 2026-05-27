@@ -97,3 +97,176 @@ func test_parse_malformed_returns_error() -> void:
 	var ast: Dictionary = GmlBindingExpr.parse("{ unclosed")
 	assert_eq(ast["type"], "error")
 	assert_true("message" in ast)
+
+
+# ─── Number literals + parens + ident hyphen drop (Task 2) ───
+
+func test_parse_integer_literal() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("42")
+	assert_eq(ast["type"], "number")
+	assert_eq(ast["value"], 42.0)
+
+
+func test_parse_float_literal() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("3.14")
+	assert_eq(ast["type"], "number")
+	assert_eq(ast["value"], 3.14)
+
+
+func test_parse_zero() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("0")
+	assert_eq(ast["type"], "number")
+	assert_eq(ast["value"], 0.0)
+
+
+func test_parse_parenthesized_path() -> void:
+	# Parens are transparent — must collapse back to the inner AST.
+	var ast: Dictionary = GmlBindingExpr.parse("(score)")
+	assert_eq(ast["type"], "path")
+	assert_eq(ast["parts"], PackedStringArray(["score"]))
+
+
+func test_parse_ident_hyphens_no_longer_accepted() -> void:
+	# v0.7 accepted "data-n" as one ident; v0.8 stops there and errors
+	# (since the next token is unexpected).
+	# After Task 5 (arithmetic), "data-n" is a valid subtraction expression:
+	# binop{-, data, n}. The hyphen-as-ident rule is still gone; now "-" is
+	# simply a binary minus. Verify the binop shape rather than an error.
+	var ast: Dictionary = GmlBindingExpr.parse("data-n")
+	assert_eq(ast["type"], "binop")
+	assert_eq(ast["op"], "-")
+	assert_eq(ast["left"]["parts"], PackedStringArray(["data"]))
+	assert_eq(ast["right"]["parts"], PackedStringArray(["n"]))
+
+
+# ─── Indexing (Task 3) ──────────────────────────────────────
+
+func test_parse_array_index() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("items[0]")
+	assert_eq(ast["type"], "index")
+	assert_eq(ast["target"]["type"], "path")
+	assert_eq(ast["target"]["parts"], PackedStringArray(["items"]))
+	assert_eq(ast["index"]["type"], "number")
+
+
+func test_parse_index_with_path_inside() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("items[i]")
+	assert_eq(ast["type"], "index")
+	assert_eq(ast["index"]["type"], "path")
+	assert_eq(ast["index"]["parts"], PackedStringArray(["i"]))
+
+
+func test_parse_index_then_dot() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("items[0].name")
+	# items[0] is the index target; .name appends as a string-keyed
+	# index on top.
+	assert_eq(ast["type"], "index")
+	assert_eq(ast["index"]["type"], "string")
+	assert_eq(ast["index"]["value"], "name")
+	assert_eq(ast["target"]["type"], "index")
+
+
+func test_parse_chained_indexes() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("items[i][0]")
+	assert_eq(ast["type"], "index")
+	assert_eq(ast["target"]["type"], "index")
+
+
+# ─── Unary minus (Task 4) ──────────────────────────────────
+
+func test_parse_unary_minus_number() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("-5")
+	assert_eq(ast["type"], "unary")
+	assert_eq(ast["op"], "-")
+	assert_eq(ast["inner"]["type"], "number")
+
+
+func test_parse_unary_minus_path() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("-score")
+	assert_eq(ast["type"], "unary")
+	assert_eq(ast["op"], "-")
+	assert_eq(ast["inner"]["type"], "path")
+
+
+# ─── Arithmetic (Task 5) ───────────────────────────────────
+
+func test_parse_addition() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("a + b")
+	assert_eq(ast["type"], "binop")
+	assert_eq(ast["op"], "+")
+	assert_eq(ast["left"]["parts"], PackedStringArray(["a"]))
+	assert_eq(ast["right"]["parts"], PackedStringArray(["b"]))
+
+
+func test_parse_precedence_mul_over_add() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("a + b * c")
+	# Expected: binop{+, a, binop{*, b, c}}
+	assert_eq(ast["op"], "+")
+	assert_eq(ast["right"]["op"], "*")
+
+
+func test_parse_left_associativity_subtraction() -> void:
+	# a - b - c → binop{-, binop{-, a, b}, c}
+	var ast: Dictionary = GmlBindingExpr.parse("a - b - c")
+	assert_eq(ast["op"], "-")
+	assert_eq(ast["left"]["op"], "-")
+	assert_eq(ast["right"]["parts"], PackedStringArray(["c"]))
+
+
+# ─── Comparison + equality parsing (Task 6) ────────────────
+
+func test_parse_greater_than() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("a > b")
+	assert_eq(ast["type"], "binop")
+	assert_eq(ast["op"], ">")
+
+
+func test_parse_equality() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("a == b")
+	assert_eq(ast["type"], "binop")
+	assert_eq(ast["op"], "==")
+
+
+func test_parse_comparison_below_equality() -> void:
+	# a > b == c → binop{==, binop{>, a, b}, c} (comparison binds tighter)
+	var ast: Dictionary = GmlBindingExpr.parse("a > b == c")
+	assert_eq(ast["op"], "==")
+	assert_eq(ast["left"]["op"], ">")
+
+
+func test_parse_arithmetic_below_comparison() -> void:
+	# a + b > c → binop{>, binop{+, a, b}, c}
+	var ast: Dictionary = GmlBindingExpr.parse("a + b > c")
+	assert_eq(ast["op"], ">")
+	assert_eq(ast["left"]["op"], "+")
+
+
+# ─── Logical && / || (Task 7) ──────────────────────────────
+
+func test_parse_logical_and() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("a && b")
+	assert_eq(ast["op"], "&&")
+
+
+func test_parse_or_lower_than_and() -> void:
+	# a || b && c → binop{||, a, binop{&&, b, c}}
+	var ast: Dictionary = GmlBindingExpr.parse("a || b && c")
+	assert_eq(ast["op"], "||")
+	assert_eq(ast["right"]["op"], "&&")
+
+
+# ─── Ternary (Task 8) ──────────────────────────────────────
+
+func test_parse_simple_ternary() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("cond ? a : b")
+	assert_eq(ast["type"], "ternary")
+	assert_eq(ast["cond"]["parts"], PackedStringArray(["cond"]))
+	assert_eq(ast["then"]["parts"], PackedStringArray(["a"]))
+	assert_eq(ast["else_"]["parts"], PackedStringArray(["b"]))
+
+
+func test_parse_ternary_right_associative() -> void:
+	# a ? b : c ? d : e → a ? b : (c ? d : e)
+	var ast: Dictionary = GmlBindingExpr.parse("a ? b : c ? d : e")
+	assert_eq(ast["type"], "ternary")
+	assert_eq(ast["else_"]["type"], "ternary")

@@ -9,9 +9,9 @@
 		<div class="left-pane">
 			<div class="filter-row">
 				<input v-model="search" type="text" placeholder="Search items..." class="search-input">
-				<button @click="set_filter('all')" :class="{ active: is_filter_all }" class="filter-btn">All</button>
-				<button @click="set_filter('weapon')" :class="{ active: is_filter_weapon }" class="filter-btn">Weapon</button>
-				<button @click="set_filter('potion')" :class="{ active: is_filter_potion }" class="filter-btn">Potion</button>
+				<button @click="set_filter('all')" :class="{ active: filter == 'all' }" class="filter-btn">All</button>
+				<button @click="set_filter('weapon')" :class="{ active: filter == 'weapon' }" class="filter-btn">Weapon</button>
+				<button @click="set_filter('potion')" :class="{ active: filter == 'potion' }" class="filter-btn">Potion</button>
 			</div>
 
 			<ul class="item-grid">

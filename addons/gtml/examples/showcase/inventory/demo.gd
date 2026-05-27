@@ -34,9 +34,7 @@ func _ready() -> void:
 		"selected_desc": "",
 		"has_selection": false,
 		"empty": false,
-		"is_filter_all": true,
-		"is_filter_weapon": false,
-		"is_filter_potion": false,
+		"filter": "all",
 		"hotbar": HOTBAR,
 	})
 	view.state.state_changed.connect(_on_state_changed)
@@ -63,11 +61,7 @@ func _on_item_clicked(handler: String, args: Array) -> void:
 			})
 		"set_filter":
 			_current_filter = str(args[0]) if args.size() > 0 else "all"
-			view.state.set_state({
-				"is_filter_all": _current_filter == "all",
-				"is_filter_weapon": _current_filter == "weapon",
-				"is_filter_potion": _current_filter == "potion",
-			})
+			view.state.set("filter", _current_filter)
 			_apply_filter()
 		"use_item":
 			# Demo only — would consume the selected item in a real game.

@@ -1,6 +1,19 @@
 class_name GmlBindingApplier
 extends RefCounted
 
+## Static logger injection point. Tests assign a Callable here to
+## capture warnings; production leaves it unset and the helper falls
+## back to push_warning.
+static var _on_warning: Callable = Callable()
+
+
+static func _warn(message: String) -> void:
+	if _on_warning.is_valid():
+		_on_warning.call(message)
+	else:
+		push_warning(message)
+
+
 ## Evaluates Expr ASTs against a state + scope, and writes resolved
 ## values into Controls via "register_*" helpers that build bindings and
 ## push them onto a GmlBindingRegistry.
@@ -24,6 +37,8 @@ static func eval(expr: Dictionary, state: GmlState, scope: Dictionary) -> Varian
 		"neg":
 			var inner = eval(expr["inner"], state, scope)
 			return not _truthy(inner)
+		"number":
+			return expr["value"]
 		"string":
 			return expr["value"]
 		"object":
@@ -37,6 +52,16 @@ static func eval(expr: Dictionary, state: GmlState, scope: Dictionary) -> Varian
 			for a in expr.get("args", []):
 				resolved_args.append(eval(a, state, scope))
 			return {"_call": true, "name": expr["name"], "args": resolved_args}
+		"index":
+			return _eval_index(expr["target"], expr["index"], state, scope)
+		"unary":
+			return _eval_unary(expr["op"], expr["inner"], state, scope)
+		"binop":
+			return _eval_binop(expr["op"], expr["left"], expr["right"], state, scope)
+		"ternary":
+			if _truthy(eval(expr["cond"], state, scope)):
+				return eval(expr["then"], state, scope)
+			return eval(expr["else_"], state, scope)
 		_:
 			return null
 
@@ -109,6 +134,141 @@ static func _eval_array(items: Array, state: GmlState, scope: Dictionary) -> Pac
 	return out
 
 
+## Resolve target[index]. Array+int gives element-or-null;
+## Dict+anything gives keyed lookup. OOB / missing key returns null
+## without warning — v-for clones routinely read stale indices during
+## reconciliation, warning each one would flood the log.
+static func _eval_index(target: Dictionary, index: Dictionary, state: GmlState, scope: Dictionary) -> Variant:
+	var t = eval(target, state, scope)
+	var i = eval(index, state, scope)
+	if t == null:
+		return null
+	if t is Array:
+		if not (i is int or i is float):
+			return null
+		var idx: int = int(i)
+		if idx < 0 or idx >= (t as Array).size():
+			return null
+		return t[idx]
+	if t is Dictionary:
+		if (t as Dictionary).has(i):
+			return t[i]
+		return null
+	return null
+
+
+## Evaluate unary operators: ! (logical not) and - (numeric negation).
+static func _eval_unary(op: String, inner_expr: Dictionary, state: GmlState, scope: Dictionary) -> Variant:
+	var v = eval(inner_expr, state, scope)
+	match op:
+		"!":
+			return not _truthy(v)
+		"-":
+			if v is int or v is float:
+				return -v
+			_warn("unary '-' requires a number, got %s" % typeof(v))
+			return null
+		_:
+			_warn("unknown unary op '%s'" % op)
+			return null
+
+
+## Evaluate binary operators. Strict GDScript-style: type mismatches
+## return null + warn. == and != allow cross-type comparison (the
+## "x == null" pattern) without warning — see spec §3.
+static func _eval_binop(op: String, left: Dictionary, right: Dictionary, state: GmlState, scope: Dictionary) -> Variant:
+	# Short-circuit ops evaluate right lazily.
+	if op == "&&":
+		var lv = eval(left, state, scope)
+		if not _truthy(lv):
+			return lv
+		return eval(right, state, scope)
+	if op == "||":
+		var lv2 = eval(left, state, scope)
+		if _truthy(lv2):
+			return lv2
+		return eval(right, state, scope)
+
+	var l = eval(left, state, scope)
+	var r = eval(right, state, scope)
+
+	match op:
+		"+":
+			if (l is int or l is float) and (r is int or r is float):
+				return l + r
+			if l is String and r is String:
+				return (l as String) + (r as String)
+			_warn("'+' type mismatch: %s + %s" % [typeof(l), typeof(r)])
+			return null
+		"-":
+			if (l is int or l is float) and (r is int or r is float):
+				return l - r
+			_warn("'-' requires numbers")
+			return null
+		"*":
+			if (l is int or l is float) and (r is int or r is float):
+				return l * r
+			_warn("'*' requires numbers")
+			return null
+		"/":
+			if not ((l is int or l is float) and (r is int or r is float)):
+				_warn("'/' requires numbers")
+				return null
+			if float(r) == 0.0:
+				_warn("division by zero")
+				return null
+			# Always return a float so binding division doesn't silently
+			# truncate when both operands happen to be GDScript ints (state
+			# values are often ints, number literals are always floats).
+			# Authors who want int truncation can use `%` or floor in GDScript.
+			return float(l) / float(r)
+		"%":
+			if not ((l is int or l is float) and (r is int or r is float)):
+				_warn("'%' requires numbers")
+				return null
+			if int(r) == 0:
+				_warn("modulo by zero")
+				return null
+			return posmod(int(l), int(r))
+		">":
+			return _compare_ordered(l, r, ">")
+		"<":
+			return _compare_ordered(l, r, "<")
+		">=":
+			return _compare_ordered(l, r, ">=")
+		"<=":
+			return _compare_ordered(l, r, "<=")
+		"==":
+			return _values_equal(l, r)
+		"!=":
+			return not _values_equal(l, r)
+		_:
+			_warn("unknown binary op '%s'" % op)
+			return null
+
+
+static func _compare_ordered(l: Variant, r: Variant, op: String) -> Variant:
+	var both_num: bool = (l is int or l is float) and (r is int or r is float)
+	var both_str: bool = l is String and r is String
+	if not (both_num or both_str):
+		_warn("'%s' requires same-type comparable operands" % op)
+		return null
+	match op:
+		">": return l > r
+		"<": return l < r
+		">=": return l >= r
+		"<=": return l <= r
+	return null
+
+
+static func _values_equal(a: Variant, b: Variant) -> bool:
+	# Mirrors GmlState's equality semantics. Cross-type comparison is
+	# permitted without warning — the common 'x == null' pattern.
+	if typeof(a) != typeof(b):
+		return a == b
+	return a == b
+
+
 # ─── Text interpolation registration ────────────────────────────
 
 ## Given a Label whose intended text is the result of joining literal +
@@ -156,6 +316,19 @@ static func _collect_expr_deps(expr: Dictionary, out: Array) -> void:
 		"call":
 			for arg in expr.get("args", []):
 				_collect_expr_deps(arg, out)
+		"binop":
+			_collect_expr_deps(expr["left"], out)
+			_collect_expr_deps(expr["right"], out)
+		"unary":
+			_collect_expr_deps(expr["inner"], out)
+		"ternary":
+			_collect_expr_deps(expr["cond"], out)
+			_collect_expr_deps(expr["then"], out)
+			_collect_expr_deps(expr["else_"], out)
+		"index":
+			_collect_expr_deps(expr["target"], out)
+			_collect_expr_deps(expr["index"], out)
+		# "number" → no deps (intentionally fall through to default)
 		# string / error → no deps
 
 
@@ -341,7 +514,7 @@ static func register_v_model(control: Control, key: String, registry: GmlBinding
 ## Re-evaluates args at click time so latest state is used.
 static func register_event_with_args(control: Control, event: String, call_expr: Dictionary, state: GmlState, scope: Dictionary, view) -> void:
 	if event != "click":
-		push_warning("GmlBindingApplier: @event(args) currently supports only 'click', got '%s'" % event)
+		_warn("GmlBindingApplier: @event(args) currently supports only 'click', got '%s'" % event)
 		return
 	control.mouse_filter = Control.MOUSE_FILTER_STOP
 	control.set_meta("v_on_click", true)
@@ -382,4 +555,4 @@ static func _apply_attr(control: Control, target: String, value: Variant) -> voi
 		"href":
 			control.set_meta("href", str(value))
 		_:
-			push_warning("GmlBindingApplier: unknown :attr target '%s'" % target)
+			_warn("GmlBindingApplier: unknown :attr target '%s'" % target)
