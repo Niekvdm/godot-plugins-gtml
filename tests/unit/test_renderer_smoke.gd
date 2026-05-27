@@ -21,6 +21,7 @@ const SHOWCASES := [
 	{"name": "atelier", "dir": "showcase/atelier"},
 	{"name": "forge", "dir": "showcase/forge"},
 	{"name": "kitchen", "dir": "showcase/kitchen"},
+	{"name": "inventory", "dir": "showcase/inventory"},
 ]
 
 
@@ -96,6 +97,12 @@ func test_showcase_kitchen_renders() -> void:
 	# will fail this build.
 	var v := _build_showcase(SHOWCASES[3])
 	await _assert_built(v, "kitchen")
+
+
+func test_showcase_inventory_renders() -> void:
+	# v0.7 binding showcase — exercises every directive end-to-end.
+	var v := _build_showcase(SHOWCASES[4])
+	await _assert_built(v, "inventory")
 
 
 func test_get_element_by_id_returns_control() -> void:
