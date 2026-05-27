@@ -160,30 +160,37 @@ as in earlier versions.
 
 ## Expression grammar
 
-`{{ ... }}`, `:attr="..."`, `v-if="..."`, `v-show="..."`, `v-model="..."`
-accept a path (with optional `!` negation):
-
-- `key`
-- `nested.key.path`
-- `!key`
-- `!nested.key`
-
-`:class` and `@event` additionally accept object literals, array
-literals, and call expressions. Full grammar:
+v0.8 adds arithmetic, comparison, logical, ternary, and array
+indexing on top of the v0.7 path / literal grammar.
 
 ```
-Expr     := Path | NegPath | ObjectLit | ArrayLit | CallExpr | StringLit
-Path     := Ident ('.' Ident)*
-NegPath  := '!' Path
-ObjectLit:= '{' (Ident ':' Expr (',' Ident ':' Expr)*)? '}'
-ArrayLit := '[' (Expr (',' Expr)*)? ']'
-CallExpr := Ident '(' (Expr (',' Expr)*)? ')'
-StringLit:= "'…'" | '"…"'
+Expr        := Ternary
+Ternary     := LogicalOr ('?' Expr ':' Expr)?
+LogicalOr   := LogicalAnd ('||' LogicalAnd)*
+LogicalAnd  := Equality   ('&&' Equality)*
+Equality    := Comparison (('==' | '!=') Comparison)*
+Comparison  := Additive   (('>' | '<' | '>=' | '<=') Additive)*
+Additive    := Multiplicative (('+' | '-') Multiplicative)*
+Multiplicative := Unary (('*' | '/' | '%') Unary)*
+Unary       := ('!' | '-') Unary | Postfix
+Postfix     := Primary ('.' Ident | '[' Expr ']' | '(' ArgList ')')*
+Primary     := NumberLit | StringLit | ObjectLit | ArrayLit | Ident | '(' Expr ')'
 ```
 
-**Not supported**: arithmetic, comparison, string concat, ternaries. If
-you need a computed value, compute it in GDScript and
-`view.state.set("is_complex", ...)`.
+**Type rules** — strict GDScript-style: `+ - * / % > < >= <=` require
+both operands to be the same numeric / string type. Mismatches return
+null and emit a warning. The exceptions are `==` and `!=`, which
+permit cross-type comparison silently so the common
+`selected_item == null` pattern stays warning-free.
+
+**Operators NOT supported** (deferred): free function calls (`floor`,
+`str`), method calls / property reads (`name.length()`,
+`items.size()`), bitwise (`& | ^`), optional chaining (`?.`), nullish
+coalescing (`??`).
+
+**Identifier syntax change from v0.7**: hyphens are no longer
+allowed in identifiers (state keys, loop vars). All existing
+GTML samples already use snake_case or camelCase.
 
 ## Loop scope
 

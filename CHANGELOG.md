@@ -1,5 +1,48 @@
 # Changelog
 
+## 0.8.0
+
+### Features — Expression operators
+
+v0.7 banned every operator inside binding expressions, forcing
+authors to precompute booleans in GDScript and re-`set` them as
+state. v0.8 lifts that tax with a full Vue-compatible operator set
+in the expression mini-language:
+
+- **Arithmetic**: `+ - * / %` (strict types; cross-type returns null + warns)
+- **Comparison**: `> < >= <=` (num+num or str+str only)
+- **Equality**: `== !=` (cross-type permitted — `x == null` etc.)
+- **Logical**: `&& ||` (short-circuit, returns LAST operand not coerced bool)
+- **Unary**: `! -`
+- **Ternary**: `cond ? then : else`
+- **Indexing**: `items[i]`, `dict['k']`, `items[i].name`
+
+Type mismatches return null and emit warnings through a new
+injectable `_on_warning` logger (testable from GUT).
+
+### Backward-incompatible
+
+- **Identifier syntax**: hyphens dropped from identifiers in
+  binding expressions. State keys themselves still accept any
+  string via `state.set("key-with-hyphen", ...)`; only the parser
+  rejects them. All in-repo samples already use snake_case.
+
+### Tests
+
+54 new tests across parser, applier, and integration; 286 → 340.
+
+### Inventory sample
+
+Filter buttons now read `:class="{ active: filter == 'all' }"`
+directly instead of three precomputed booleans. Demonstrates the
+operator payoff.
+
+### Deferred to v0.8.1+
+
+- v-for :key keyed reconciliation
+- Dynamic :class CSS re-resolution
+- Focus traversal + perf benchmarks
+
 ## 0.7.0
 
 ### Features — Reactive bindings
