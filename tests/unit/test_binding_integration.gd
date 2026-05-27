@@ -68,3 +68,51 @@ func test_v_show_initially_hides_then_shows() -> void:
 	view.state.set("visible", true)
 	await get_tree().process_frame
 	assert_true(label.visible)
+
+
+# ─── v-for tests (Task 7) ──────────────────────────────────────
+
+func test_v_for_renders_one_child_per_array_element() -> void:
+	var view := _build_view('<ul><li v-for="item in items">{{ item.name }}</li></ul>')
+	view.state.set("items", [{"name": "Sword"}, {"name": "Potion"}])
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var texts: Array = []
+	_collect_label_texts(view, texts)
+	assert_true("Sword" in texts, "Sword not found in %s" % str(texts))
+	assert_true("Potion" in texts, "Potion not found in %s" % str(texts))
+
+
+func test_v_for_rebuilds_on_array_change() -> void:
+	var view := _build_view('<ul><li v-for="item in items">{{ item }}</li></ul>')
+	view.state.set("items", ["a", "b"])
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var texts1: Array = []
+	_collect_label_texts(view, texts1)
+	assert_true("a" in texts1 and "b" in texts1)
+
+	view.state.set("items", ["x", "y", "z"])
+	await get_tree().process_frame
+	var texts2: Array = []
+	_collect_label_texts(view, texts2)
+	assert_true("x" in texts2 and "y" in texts2 and "z" in texts2)
+	assert_false("a" in texts2, "old item 'a' should be torn down")
+
+
+func test_v_for_indexed_form_exposes_index() -> void:
+	var view := _build_view('<ul><li v-for="item, i in items">{{ i }}: {{ item }}</li></ul>')
+	view.state.set("items", ["alpha", "beta"])
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var texts: Array = []
+	_collect_label_texts(view, texts)
+	assert_true("0: alpha" in texts)
+	assert_true("1: beta" in texts)
+
+
+func _collect_label_texts(node: Node, out: Array) -> void:
+	if node is Label:
+		out.append((node as Label).text)
+	for c in node.get_children():
+		_collect_label_texts(c, out)

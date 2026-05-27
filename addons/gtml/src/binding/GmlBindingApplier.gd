@@ -109,15 +109,16 @@ static func _eval_array(items: Array, state: GmlState, scope: Dictionary) -> Pac
 
 ## Given a Label whose intended text is the result of joining literal +
 ## interpolated spans, register a binding so the label.text refreshes
-## whenever any dep changes.
-static func register_text_interpolation(label: Label, spans: Array, registry: GmlBindingRegistry, state: GmlState) -> void:
+## whenever any dep changes. Scope (from v-for) is captured at register
+## time so loop variables resolve against the right element.
+static func register_text_interpolation(label: Label, spans: Array, registry: GmlBindingRegistry, state: GmlState, scope: Dictionary = {}) -> void:
 	var deps: Array = _collect_text_deps(spans)
 	var ref: WeakRef = weakref(label)
 	var apply := func():
 		var ctl = ref.get_ref()
 		if ctl == null:
 			return
-		(ctl as Label).text = _render_spans(spans, state, {})
+		(ctl as Label).text = _render_spans(spans, state, scope)
 	registry.register({
 		"deps": deps,
 		"apply": apply,
@@ -169,13 +170,13 @@ static func _render_spans(spans: Array, state: GmlState, scope: Dictionary) -> S
 
 ## Wire a single :attr="expr" binding on the control. Initial apply runs
 ## synchronously; subsequent state changes re-apply via the registry.
-static func register_attr_binding(control: Control, target: String, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState) -> void:
+static func register_attr_binding(control: Control, target: String, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState, scope: Dictionary = {}) -> void:
 	var ref: WeakRef = weakref(control)
 	var apply := func():
 		var ctl = ref.get_ref()
 		if ctl == null:
 			return
-		_apply_attr(ctl, target, eval(expr, state, {}))
+		_apply_attr(ctl, target, eval(expr, state, scope))
 	var deps: Array = []
 	_collect_expr_deps(expr, deps)
 	registry.register({
@@ -195,13 +196,13 @@ static func register_attr_binding(control: Control, target: String, expr: Dictio
 ## Dynamic class addition affects only the meta; the Control's existing
 ## stylebox is not updated. Static styling (declared on classes present
 ## at build time) still works. Document the limitation in docs/bindings.md.
-static func register_class_binding(control: Control, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState) -> void:
+static func register_class_binding(control: Control, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState, scope: Dictionary = {}) -> void:
 	var ref: WeakRef = weakref(control)
 	var apply := func():
 		var ctl = ref.get_ref()
 		if ctl == null:
 			return
-		var resolved = eval(expr, state, {})
+		var resolved = eval(expr, state, scope)
 		var classes: PackedStringArray = PackedStringArray()
 		if resolved is PackedStringArray:
 			classes = resolved
@@ -226,13 +227,13 @@ static func register_class_binding(control: Control, expr: Dictionary, registry:
 ## Wire v-show. Initial visibility set from expr; subsequent state
 ## changes flip control.visible. Does NOT remove the control from the
 ## tree (that's v-if's job at the renderer level).
-static func register_v_show(control: Control, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState) -> void:
+static func register_v_show(control: Control, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState, scope: Dictionary = {}) -> void:
 	var ref: WeakRef = weakref(control)
 	var apply := func():
 		var ctl = ref.get_ref()
 		if ctl == null:
 			return
-		ctl.visible = _truthy(eval(expr, state, {}))
+		ctl.visible = _truthy(eval(expr, state, scope))
 	var deps: Array = []
 	_collect_expr_deps(expr, deps)
 	registry.register({
@@ -245,9 +246,32 @@ static func register_v_show(control: Control, expr: Dictionary, registry: GmlBin
 
 ## Static helper used by the renderer's v-if check at build time.
 ## Returns whether the v-if expression is currently truthy.
-static func eval_v_if(expr_source: String, state: GmlState, scope: Dictionary) -> bool:
+static func eval_v_if(expr_source: String, state: GmlState, scope: Dictionary = {}) -> bool:
 	var ast: Dictionary = GmlBindingExpr.parse(expr_source)
 	return _truthy(eval(ast, state, scope))
+
+
+## Parse a v-for expression source into its components.
+## Supports both forms:
+##   "item in items"
+##   "item, index in items"
+## Returns {loop_var, index_var (may be ''), array_key} or null on parse failure.
+static func parse_v_for(source: String) -> Variant:
+	var parts := source.split(" in ", false, 1)
+	if parts.size() != 2:
+		return null
+	var left := (parts[0] as String).strip_edges()
+	var array_key := (parts[1] as String).strip_edges()
+	if left.is_empty() or array_key.is_empty():
+		return null
+	var loop_var: String = left
+	var index_var: String = ""
+	if "," in left:
+		var lparts := left.split(",", false)
+		if lparts.size() == 2:
+			loop_var = (lparts[0] as String).strip_edges()
+			index_var = (lparts[1] as String).strip_edges()
+	return {"loop_var": loop_var, "index_var": index_var, "array_key": array_key}
 
 
 ## Write a resolved value into the appropriate property/method on the
