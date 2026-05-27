@@ -186,6 +186,11 @@ class _Parser:
 			while _pos < _source.length() and _source[_pos].is_valid_int():
 				_pos += 1
 		var text: String = _source.substr(start, _pos - start)
+		# Reject bare '.' and other digit-less inputs that slipped through
+		# the _parse_primary dispatch (which routes both '0'-'9' and '.' here).
+		if text == "" or text == ".":
+			_errors.append("expected digits in number at pos %d" % start)
+			return {}
 		return {"type": "number", "value": text.to_float()}
 
 	func _parse_string() -> Dictionary:
