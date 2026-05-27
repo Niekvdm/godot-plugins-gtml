@@ -129,10 +129,14 @@ func test_parse_parenthesized_path() -> void:
 func test_parse_ident_hyphens_no_longer_accepted() -> void:
 	# v0.7 accepted "data-n" as one ident; v0.8 stops there and errors
 	# (since the next token is unexpected).
+	# After Task 5 (arithmetic), "data-n" is a valid subtraction expression:
+	# binop{-, data, n}. The hyphen-as-ident rule is still gone; now "-" is
+	# simply a binary minus. Verify the binop shape rather than an error.
 	var ast: Dictionary = GmlBindingExpr.parse("data-n")
-	# Either treated as error OR parsed up to 'data' then trailing chars.
-	# Spec says "trailing chars at pos N" — either reading is acceptable.
-	assert_eq(ast["type"], "error")
+	assert_eq(ast["type"], "binop")
+	assert_eq(ast["op"], "-")
+	assert_eq(ast["left"]["parts"], PackedStringArray(["data"]))
+	assert_eq(ast["right"]["parts"], PackedStringArray(["n"]))
 
 
 # ─── Indexing (Task 3) ──────────────────────────────────────
@@ -182,3 +186,28 @@ func test_parse_unary_minus_path() -> void:
 	assert_eq(ast["type"], "unary")
 	assert_eq(ast["op"], "-")
 	assert_eq(ast["inner"]["type"], "path")
+
+
+# ─── Arithmetic (Task 5) ───────────────────────────────────
+
+func test_parse_addition() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("a + b")
+	assert_eq(ast["type"], "binop")
+	assert_eq(ast["op"], "+")
+	assert_eq(ast["left"]["parts"], PackedStringArray(["a"]))
+	assert_eq(ast["right"]["parts"], PackedStringArray(["b"]))
+
+
+func test_parse_precedence_mul_over_add() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("a + b * c")
+	# Expected: binop{+, a, binop{*, b, c}}
+	assert_eq(ast["op"], "+")
+	assert_eq(ast["right"]["op"], "*")
+
+
+func test_parse_left_associativity_subtraction() -> void:
+	# a - b - c → binop{-, binop{-, a, b}, c}
+	var ast: Dictionary = GmlBindingExpr.parse("a - b - c")
+	assert_eq(ast["op"], "-")
+	assert_eq(ast["left"]["op"], "-")
+	assert_eq(ast["right"]["parts"], PackedStringArray(["c"]))

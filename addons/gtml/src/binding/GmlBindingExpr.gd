@@ -66,12 +66,28 @@ class _Parser:
 		return _parse_additive()
 
 	func _parse_additive() -> Dictionary:
-		# Task 5 fills this in; for now passthrough.
-		return _parse_multiplicative()
+		var left: Dictionary = _parse_multiplicative()
+		while true:
+			_skip_ws()
+			var op: String = _peek()
+			if op != "+" and op != "-":
+				break
+			_pos += 1
+			var right: Dictionary = _parse_multiplicative()
+			left = {"type": "binop", "op": op, "left": left, "right": right}
+		return left
 
 	func _parse_multiplicative() -> Dictionary:
-		# Task 5 fills this in; for now passthrough.
-		return _parse_unary()
+		var left: Dictionary = _parse_unary()
+		while true:
+			_skip_ws()
+			var op: String = _peek()
+			if op != "*" and op != "/" and op != "%":
+				break
+			_pos += 1
+			var right: Dictionary = _parse_unary()
+			left = {"type": "binop", "op": op, "left": left, "right": right}
+		return left
 
 	func _parse_unary() -> Dictionary:
 		_skip_ws()

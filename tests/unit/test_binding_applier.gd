@@ -209,3 +209,42 @@ func test_eval_unary_minus_string_warns_returns_null() -> void:
 	assert_null(GmlBindingApplier.eval(ast, _state({"name": "Ada"}), {}))
 	assert_gt(captured.size(), 0)
 	GmlBindingApplier._on_warning = Callable()
+
+
+# ─── Arithmetic eval (Task 5) ──────────────────────────────
+
+func test_eval_add_numbers() -> void:
+	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("2 + 3"), _state(), {}), 5.0)
+
+
+func test_eval_subtract() -> void:
+	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("10 - 4"), _state(), {}), 6.0)
+
+
+func test_eval_multiply() -> void:
+	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("4 * 5"), _state(), {}), 20.0)
+
+
+func test_eval_divide() -> void:
+	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("20 / 4"), _state(), {}), 5.0)
+
+
+func test_eval_modulo() -> void:
+	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("10 % 3"), _state(), {}), 1)
+
+
+func test_eval_divide_by_zero_warns_returns_null() -> void:
+	var captured: Array = []
+	GmlBindingApplier._on_warning = func(m): captured.append(m)
+	assert_null(GmlBindingApplier.eval(GmlBindingExpr.parse("5 / 0"), _state(), {}))
+	assert_gt(captured.size(), 0)
+	GmlBindingApplier._on_warning = Callable()
+
+
+func test_eval_string_concat_num_string_warns() -> void:
+	var captured: Array = []
+	GmlBindingApplier._on_warning = func(m): captured.append(m)
+	# strict: number + string → null + warn
+	assert_null(GmlBindingApplier.eval(GmlBindingExpr.parse("5 + name"), _state({"name": "x"}), {}))
+	assert_gt(captured.size(), 0)
+	GmlBindingApplier._on_warning = Callable()
