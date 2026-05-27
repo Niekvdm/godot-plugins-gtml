@@ -239,3 +239,17 @@ func test_parse_arithmetic_below_comparison() -> void:
 	var ast: Dictionary = GmlBindingExpr.parse("a + b > c")
 	assert_eq(ast["op"], ">")
 	assert_eq(ast["left"]["op"], "+")
+
+
+# ─── Logical && / || (Task 7) ──────────────────────────────
+
+func test_parse_logical_and() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("a && b")
+	assert_eq(ast["op"], "&&")
+
+
+func test_parse_or_lower_than_and() -> void:
+	# a || b && c → binop{||, a, binop{&&, b, c}}
+	var ast: Dictionary = GmlBindingExpr.parse("a || b && c")
+	assert_eq(ast["op"], "||")
+	assert_eq(ast["right"]["op"], "&&")

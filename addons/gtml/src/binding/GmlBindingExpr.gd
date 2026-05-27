@@ -50,12 +50,26 @@ class _Parser:
 		return cond
 
 	func _parse_logical_or() -> Dictionary:
-		# Task 8 fills this in; for now passthrough.
-		return _parse_logical_and()
+		var left: Dictionary = _parse_logical_and()
+		while true:
+			_skip_ws()
+			if _peek_op_2() != "||":
+				break
+			_pos += 2
+			var right: Dictionary = _parse_logical_and()
+			left = {"type": "binop", "op": "||", "left": left, "right": right}
+		return left
 
 	func _parse_logical_and() -> Dictionary:
-		# Task 8 fills this in; for now passthrough.
-		return _parse_equality()
+		var left: Dictionary = _parse_equality()
+		while true:
+			_skip_ws()
+			if _peek_op_2() != "&&":
+				break
+			_pos += 2
+			var right: Dictionary = _parse_equality()
+			left = {"type": "binop", "op": "&&", "left": left, "right": right}
+		return left
 
 	func _parse_equality() -> Dictionary:
 		var left: Dictionary = _parse_comparison()

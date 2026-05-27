@@ -281,3 +281,22 @@ func test_eval_comparison_cross_type_warns() -> void:
 	assert_null(GmlBindingApplier.eval(ast, _state(), {}))
 	assert_gt(captured.size(), 0)
 	GmlBindingApplier._on_warning = Callable()
+
+
+# ─── Logical eval (Task 7) ─────────────────────────────────
+
+func test_eval_and_short_circuits_on_falsy_left() -> void:
+	# Right side references a missing key; if evaluated it'd be null.
+	# But short-circuit returns the falsy left value (0) without reading right.
+	var s := _state({"a": 0})
+	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("a && missing"), s, {}), 0)
+
+
+func test_eval_or_returns_first_truthy() -> void:
+	var s := _state({"a": 0, "b": "found"})
+	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("a || b"), s, {}), "found")
+
+
+func test_eval_and_returns_right_when_left_truthy() -> void:
+	var s := _state({"a": 1, "b": "x"})
+	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("a && b"), s, {}), "x")
