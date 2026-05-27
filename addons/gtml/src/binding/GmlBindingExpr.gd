@@ -1,34 +1,21 @@
 class_name GmlBindingExpr
 extends RefCounted
 
-## Mini-expression parser for binding directives.
+## Mini-expression parser for binding directives. v0.8 — layered
+## recursive descent with the precedence cascade:
+##   Ternary > LogicalOr > LogicalAnd > Equality > Comparison
+##   > Additive > Multiplicative > Unary > Postfix > Primary
 ##
-## Grammar:
-##   Expr     := Path | NegPath | ObjectLit | ArrayLit | CallExpr | StringLit
-##   Path     := Ident ('.' Ident)*
-##   NegPath  := '!' Path
-##   ObjectLit:= '{' (Ident ':' Expr (',' Ident ':' Expr)*)? '}'
-##   ArrayLit := '[' (Expr (',' Expr)*)? ']'
-##   CallExpr := Ident '(' (Expr (',' Expr)*)? ')'
-##   StringLit:= "'…'" | '"…"'
-##   Ident    := [a-zA-Z_][\w-]*
+## See docs/superpowers/specs/2026-05-27-expression-operators-design.md
 ##
-## No arithmetic, comparison, string concat, or ternary. Authors who need
-## computed values do them in GDScript and state.set() them in.
-##
-## Return shape:
-##   {type: "path",   parts: PackedStringArray}
-##   {type: "neg",    inner: Dictionary}
-##   {type: "object", entries: [{key: String, value: Dictionary}, ...]}
-##   {type: "array",  items: [Dictionary, ...]}
-##   {type: "call",   name: String, args: [Dictionary, ...]}
-##   {type: "string", value: String}
-##   {type: "error",  message: String}
+## v0.7 AST shapes (path, neg, call, object, array, string) are preserved
+## for inputs that match v0.7 grammar exactly. New AST nodes: number,
+## binop, unary, ternary, index.
 
 
 static func parse(source: String) -> Dictionary:
 	var parser := _Parser.new(source)
-	var expr: Dictionary = parser.parse_expr()
+	var expr: Dictionary = parser._parse_ternary()
 	if not parser._errors.is_empty():
 		return {"type": "error", "message": parser._errors[0]}
 	parser._skip_ws()
@@ -45,33 +32,161 @@ class _Parser:
 	func _init(source: String) -> void:
 		_source = source
 
-	func parse_expr() -> Dictionary:
+	# ─── Precedence cascade ───────────────────────────────────
+
+	func _parse_ternary() -> Dictionary:
+		var cond: Dictionary = _parse_logical_or()
+		_skip_ws()
+		if _peek() == "?":
+			_pos += 1
+			var then_branch: Dictionary = _parse_ternary()
+			_skip_ws()
+			if _peek() != ":":
+				_errors.append("expected ':' in ternary at pos %d" % _pos)
+				return {}
+			_pos += 1
+			var else_branch: Dictionary = _parse_ternary()
+			return {"type": "ternary", "cond": cond, "then": then_branch, "else_": else_branch}
+		return cond
+
+	func _parse_logical_or() -> Dictionary:
+		# Task 8 fills this in; for now passthrough.
+		return _parse_logical_and()
+
+	func _parse_logical_and() -> Dictionary:
+		# Task 8 fills this in; for now passthrough.
+		return _parse_equality()
+
+	func _parse_equality() -> Dictionary:
+		# Task 7 fills this in; for now passthrough.
+		return _parse_comparison()
+
+	func _parse_comparison() -> Dictionary:
+		# Task 6 fills this in; for now passthrough.
+		return _parse_additive()
+
+	func _parse_additive() -> Dictionary:
+		# Task 5 fills this in; for now passthrough.
+		return _parse_multiplicative()
+
+	func _parse_multiplicative() -> Dictionary:
+		# Task 5 fills this in; for now passthrough.
+		return _parse_unary()
+
+	func _parse_unary() -> Dictionary:
+		_skip_ws()
+		var ch: String = _peek()
+		if ch == "!":
+			_pos += 1
+			_skip_ws()
+			var inner: Dictionary = _parse_unary()
+			# Back-compat: emit "neg" when inner is exactly a path (v0.7 test fixtures).
+			if inner.get("type", "") == "path":
+				return {"type": "neg", "inner": inner}
+			return {"type": "unary", "op": "!", "inner": inner}
+		# Task 4 adds unary minus here.
+		return _parse_postfix()
+
+	func _parse_postfix() -> Dictionary:
+		var expr: Dictionary = _parse_primary()
+		# Path/index/call postfixes layered here:
+		while true:
+			_skip_ws()
+			var ch: String = _peek()
+			if ch == ".":
+				_pos += 1
+				var ident: String = _parse_ident()
+				if ident.is_empty():
+					_errors.append("expected identifier after '.' at pos %d" % _pos)
+					return {}
+				# Fold contiguous .ident chains into a single path node so
+				# v0.7 fixtures see {type:"path", parts:[a,b,c]} not nested
+				# {index:..} for dotted reads.
+				if expr.get("type", "") == "path":
+					expr["parts"].append(ident)
+				else:
+					# Wrap non-path target in an index-with-string-key shape.
+					expr = {"type": "index", "target": expr, "index": {"type": "string", "value": ident}}
+			elif ch == "(":
+				# Call form — only valid when expr is exactly a top-level Ident path.
+				if expr.get("type", "") == "path" and expr["parts"].size() == 1:
+					var name_str: String = expr["parts"][0]
+					expr = _parse_call_args(name_str)
+				else:
+					_errors.append("'(' after non-identifier at pos %d" % _pos)
+					return {}
+			elif ch == "[":
+				# Task 3 adds indexing here.
+				_errors.append("indexing not yet implemented at pos %d" % _pos)
+				return {}
+			else:
+				break
+		return expr
+
+	func _parse_call_args(name_str: String) -> Dictionary:
+		_pos += 1   # opening (
+		var args: Array = []
+		_skip_ws()
+		if _peek() == ")":
+			_pos += 1
+			return {"type": "call", "name": name_str, "args": args}
+		while _pos < _source.length():
+			args.append(_parse_ternary())
+			_skip_ws()
+			if _peek() == ",":
+				_pos += 1
+				continue
+			if _peek() == ")":
+				_pos += 1
+				return {"type": "call", "name": name_str, "args": args}
+			_errors.append("expected ',' or ')' in call at pos %d" % _pos)
+			return {}
+		_errors.append("unterminated call")
+		return {}
+
+	func _parse_primary() -> Dictionary:
 		_skip_ws()
 		if _pos >= _source.length():
 			_errors.append("empty expression")
 			return {}
 		var ch: String = _source[_pos]
 
+		if ch == "(":
+			_pos += 1
+			var inner: Dictionary = _parse_ternary()
+			_skip_ws()
+			if _peek() != ")":
+				_errors.append("expected ')' at pos %d" % _pos)
+				return {}
+			_pos += 1
+			return inner
 		if ch == "'" or ch == "\"":
 			return _parse_string()
 		if ch == "{":
 			return _parse_object()
 		if ch == "[":
 			return _parse_array()
-		if ch == "!":
-			_pos += 1
-			_skip_ws()
-			var inner: Dictionary = _parse_path()
-			return {"type": "neg", "inner": inner}
-		# Ident → Path | CallExpr (peek for '(')
+		if ch.is_valid_int() or ch == ".":
+			return _parse_number()
+		# Identifier → path[1]
 		var ident: String = _parse_ident()
 		if ident.is_empty():
 			_errors.append("expected identifier at pos %d" % _pos)
 			return {}
-		_skip_ws()
-		if _pos < _source.length() and _source[_pos] == "(":
-			return _parse_call_after_ident(ident)
-		return _parse_path_after_ident(ident)
+		return {"type": "path", "parts": PackedStringArray([ident])}
+
+	# ─── Literals ─────────────────────────────────────────────
+
+	func _parse_number() -> Dictionary:
+		var start: int = _pos
+		while _pos < _source.length() and _source[_pos].is_valid_int():
+			_pos += 1
+		if _pos < _source.length() and _source[_pos] == ".":
+			_pos += 1
+			while _pos < _source.length() and _source[_pos].is_valid_int():
+				_pos += 1
+		var text: String = _source.substr(start, _pos - start)
+		return {"type": "number", "value": text.to_float()}
 
 	func _parse_string() -> Dictionary:
 		var quote: String = _source[_pos]
@@ -83,14 +198,14 @@ class _Parser:
 			_errors.append("unterminated string starting at pos %d" % (start - 1))
 			return {}
 		var value: String = _source.substr(start, _pos - start)
-		_pos += 1   # closing quote
+		_pos += 1
 		return {"type": "string", "value": value}
 
 	func _parse_object() -> Dictionary:
-		_pos += 1   # opening {
+		_pos += 1
 		var entries: Array = []
 		_skip_ws()
-		if _pos < _source.length() and _source[_pos] == "}":
+		if _peek() == "}":
 			_pos += 1
 			return {"type": "object", "entries": entries}
 		while _pos < _source.length():
@@ -100,17 +215,16 @@ class _Parser:
 				_errors.append("expected key at pos %d" % _pos)
 				return {}
 			_skip_ws()
-			if _pos >= _source.length() or _source[_pos] != ":":
+			if _peek() != ":":
 				_errors.append("expected ':' after key at pos %d" % _pos)
 				return {}
 			_pos += 1
-			var value: Dictionary = parse_expr()
-			entries.append({"key": key, "value": value})
+			entries.append({"key": key, "value": _parse_ternary()})
 			_skip_ws()
-			if _pos < _source.length() and _source[_pos] == ",":
+			if _peek() == ",":
 				_pos += 1
 				continue
-			if _pos < _source.length() and _source[_pos] == "}":
+			if _peek() == "}":
 				_pos += 1
 				return {"type": "object", "entries": entries}
 			_errors.append("expected ',' or '}' at pos %d" % _pos)
@@ -119,20 +233,19 @@ class _Parser:
 		return {}
 
 	func _parse_array() -> Dictionary:
-		_pos += 1   # opening [
+		_pos += 1
 		var items: Array = []
 		_skip_ws()
-		if _pos < _source.length() and _source[_pos] == "]":
+		if _peek() == "]":
 			_pos += 1
 			return {"type": "array", "items": items}
 		while _pos < _source.length():
-			var item: Dictionary = parse_expr()
-			items.append(item)
+			items.append(_parse_ternary())
 			_skip_ws()
-			if _pos < _source.length() and _source[_pos] == ",":
+			if _peek() == ",":
 				_pos += 1
 				continue
-			if _pos < _source.length() and _source[_pos] == "]":
+			if _peek() == "]":
 				_pos += 1
 				return {"type": "array", "items": items}
 			_errors.append("expected ',' or ']' at pos %d" % _pos)
@@ -140,51 +253,20 @@ class _Parser:
 		_errors.append("unterminated array")
 		return {}
 
-	func _parse_path() -> Dictionary:
-		var ident: String = _parse_ident()
-		if ident.is_empty():
-			_errors.append("expected identifier at pos %d" % _pos)
-			return {}
-		return _parse_path_after_ident(ident)
-
-	func _parse_path_after_ident(first: String) -> Dictionary:
-		var parts: PackedStringArray = PackedStringArray([first])
-		while _pos < _source.length() and _source[_pos] == ".":
-			_pos += 1
-			var next: String = _parse_ident()
-			if next.is_empty():
-				_errors.append("expected identifier after '.' at pos %d" % _pos)
-				return {}
-			parts.append(next)
-		return {"type": "path", "parts": parts}
-
-	func _parse_call_after_ident(name: String) -> Dictionary:
-		_pos += 1   # opening (
-		var args: Array = []
-		_skip_ws()
-		if _pos < _source.length() and _source[_pos] == ")":
-			_pos += 1
-			return {"type": "call", "name": name, "args": args}
-		while _pos < _source.length():
-			var arg: Dictionary = parse_expr()
-			args.append(arg)
-			_skip_ws()
-			if _pos < _source.length() and _source[_pos] == ",":
-				_pos += 1
-				continue
-			if _pos < _source.length() and _source[_pos] == ")":
-				_pos += 1
-				return {"type": "call", "name": name, "args": args}
-			_errors.append("expected ',' or ')' in call at pos %d" % _pos)
-			return {}
-		_errors.append("unterminated call")
-		return {}
+	# ─── Lexer helpers ────────────────────────────────────────
 
 	func _parse_ident() -> String:
+		# v0.8: NO hyphens. Identifiers are [a-zA-Z_][a-zA-Z0-9_]*.
 		var start: int = _pos
+		if _pos >= _source.length():
+			return ""
+		var ch: String = _source[_pos]
+		if not (ch.is_valid_identifier() and not ch.is_valid_int()):
+			return ""
+		_pos += 1
 		while _pos < _source.length():
-			var ch: String = _source[_pos]
-			if ch.is_valid_identifier() or ch == "-" or ch == "_" or ch.is_valid_int():
+			var c: String = _source[_pos]
+			if c.is_valid_identifier() or c.is_valid_int() or c == "_":
 				_pos += 1
 			else:
 				break
@@ -197,3 +279,8 @@ class _Parser:
 				_pos += 1
 			else:
 				break
+
+	func _peek() -> String:
+		if _pos >= _source.length():
+			return ""
+		return _source[_pos]

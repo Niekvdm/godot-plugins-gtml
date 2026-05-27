@@ -97,3 +97,39 @@ func test_parse_malformed_returns_error() -> void:
 	var ast: Dictionary = GmlBindingExpr.parse("{ unclosed")
 	assert_eq(ast["type"], "error")
 	assert_true("message" in ast)
+
+
+# ─── Number literals + parens + ident hyphen drop (Task 2) ───
+
+func test_parse_integer_literal() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("42")
+	assert_eq(ast["type"], "number")
+	assert_eq(ast["value"], 42.0)
+
+
+func test_parse_float_literal() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("3.14")
+	assert_eq(ast["type"], "number")
+	assert_eq(ast["value"], 3.14)
+
+
+func test_parse_zero() -> void:
+	var ast: Dictionary = GmlBindingExpr.parse("0")
+	assert_eq(ast["type"], "number")
+	assert_eq(ast["value"], 0.0)
+
+
+func test_parse_parenthesized_path() -> void:
+	# Parens are transparent — must collapse back to the inner AST.
+	var ast: Dictionary = GmlBindingExpr.parse("(score)")
+	assert_eq(ast["type"], "path")
+	assert_eq(ast["parts"], PackedStringArray(["score"]))
+
+
+func test_parse_ident_hyphens_no_longer_accepted() -> void:
+	# v0.7 accepted "data-n" as one ident; v0.8 stops there and errors
+	# (since the next token is unexpected).
+	var ast: Dictionary = GmlBindingExpr.parse("data-n")
+	# Either treated as error OR parsed up to 'data' then trailing chars.
+	# Spec says "trailing chars at pos N" — either reading is acceptable.
+	assert_eq(ast["type"], "error")
