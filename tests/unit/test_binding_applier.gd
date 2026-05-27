@@ -233,6 +233,14 @@ func test_eval_modulo() -> void:
 	assert_eq(GmlBindingApplier.eval(GmlBindingExpr.parse("10 % 3"), _state(), {}), 1)
 
 
+func test_eval_divide_int_int_returns_float_no_truncation() -> void:
+	# State-stored ints divided through '/' must NOT silently truncate.
+	# Authors expect 10/4 = 2.5 regardless of operand type.
+	var s := _state({"hp": 10, "max": 4})
+	var ast: Dictionary = GmlBindingExpr.parse("hp / max")
+	assert_eq(GmlBindingApplier.eval(ast, s, {}), 2.5)
+
+
 func test_eval_divide_by_zero_warns_returns_null() -> void:
 	var captured: Array = []
 	GmlBindingApplier._on_warning = func(m): captured.append(m)

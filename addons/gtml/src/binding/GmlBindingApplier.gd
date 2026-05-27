@@ -217,7 +217,11 @@ static func _eval_binop(op: String, left: Dictionary, right: Dictionary, state: 
 			if float(r) == 0.0:
 				_warn("division by zero")
 				return null
-			return l / r
+			# Always return a float so binding division doesn't silently
+			# truncate when both operands happen to be GDScript ints (state
+			# values are often ints, number literals are always floats).
+			# Authors who want int truncation can use `%` or floor in GDScript.
+			return float(l) / float(r)
 		"%":
 			if not ((l is int or l is float) and (r is int or r is float)):
 				_warn("'%' requires numbers")
