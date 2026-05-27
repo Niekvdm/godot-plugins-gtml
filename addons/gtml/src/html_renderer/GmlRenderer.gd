@@ -86,7 +86,7 @@ func _build_node(node) -> Control:
 		GmlTransitionSetup.setup(transition_target, _get_node_style(node), _transition_manager)
 
 	# Post-build: register Vue-style bindings on the resolved control.
-	_register_bindings_for_node(node, control)
+	_register_bindings_for_node(node, control, inner)
 
 	return control
 
@@ -95,7 +95,7 @@ func _build_node(node) -> Control:
 ## the resolved control. Handles :attr, v-bind:attr, v-show, and text
 ## interpolation in immediate text children. v-if was handled at dispatch
 ## time; v-for + v-model + @event(args) live in later tasks.
-func _register_bindings_for_node(node, control: Control) -> void:
+func _register_bindings_for_node(node, control: Control, inner: Control = null) -> void:
 	if _gml_view == null or control == null:
 		return
 	var registry = _gml_view._binding_registry
@@ -118,6 +118,20 @@ func _register_bindings_for_node(node, control: Control) -> void:
 			"v-show":
 				var v_show_expr: Dictionary = GmlBindingExprScript.parse(node.attrs[attr_name])
 				GmlBindingApplierScript.register_v_show(control, v_show_expr, registry, state, scope)
+			"v-model":
+				# The directive's VALUE is the state key (no expression parsing).
+				# Use the inner control (LineEdit, CheckBox, ...) not the wrapper.
+				var v_model_key: String = node.attrs[attr_name]
+				var target_ctl: Control = inner if inner != null else control
+				GmlBindingApplierScript.register_v_model(target_ctl, v_model_key, registry, state, scope)
+			"v-on":
+				# Bare @click="handler" continues through existing element
+				# builders (they emit button_clicked). Only @click="handler(args)"
+				# routes here — detected by parsing the value as a call.
+				var raw_value: String = node.attrs[attr_name]
+				var raw_ast: Dictionary = GmlBindingExprScript.parse(raw_value)
+				if raw_ast.get("type") == "call":
+					GmlBindingApplierScript.register_event_with_args(control, cls["target"], raw_ast, state, scope, _gml_view)
 			_:
 				pass
 

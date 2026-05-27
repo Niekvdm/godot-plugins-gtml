@@ -116,3 +116,93 @@ func _collect_label_texts(node: Node, out: Array) -> void:
 		out.append((node as Label).text)
 	for c in node.get_children():
 		_collect_label_texts(c, out)
+
+
+# ─── v-model + @event(args) (Task 8) ───────────────────────────
+
+func test_v_model_text_input_state_to_control() -> void:
+	var view := _build_view('<input v-model="email">')
+	view.state.set("email", "ada@example.com")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var line := _find_first_line_edit(view)
+	assert_not_null(line)
+	assert_eq(line.text, "ada@example.com")
+
+
+func test_v_model_text_input_control_to_state() -> void:
+	var view := _build_view('<input v-model="search">')
+	view.state.set("search", "")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var line := _find_first_line_edit(view)
+	line.text = "sword"
+	line.text_changed.emit("sword")
+	assert_eq(view.state.get("search"), "sword")
+
+
+func test_v_model_checkbox_two_way() -> void:
+	var view := _build_view('<input type="checkbox" v-model="opt">')
+	view.state.set("opt", true)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var cb := _find_first_check_box(view)
+	assert_not_null(cb)
+	assert_true(cb.button_pressed)
+
+	cb.button_pressed = false
+	cb.toggled.emit(false)
+	assert_false(view.state.get("opt"))
+
+
+func test_event_handler_with_args_fires_item_clicked() -> void:
+	var view := _build_view('<ul><li v-for="item, i in items" @click="select(item, i)">{{ item }}</li></ul>')
+	view.state.set("items", ["a", "b", "c"])
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var captured: Array = []
+	view.item_clicked.connect(func(handler, args):
+		captured.append([handler, args])
+	)
+	var li_controls: Array = []
+	_collect_v_for_clones(view, li_controls)
+	assert_eq(li_controls.size(), 3)
+	for ctl in li_controls:
+		if ctl.has_meta("v_on_click"):
+			var click := InputEventMouseButton.new()
+			click.button_index = MOUSE_BUTTON_LEFT
+			click.pressed = true
+			ctl.gui_input.emit(click)
+			break
+
+	assert_gt(captured.size(), 0, "item_clicked should have fired")
+	assert_eq(captured[0][0], "select", "handler name should be 'select'")
+	assert_eq(captured[0][1].size(), 2, "args should be [item, index]")
+
+
+func _find_first_line_edit(node: Node) -> LineEdit:
+	if node is LineEdit:
+		return node
+	for c in node.get_children():
+		var le = _find_first_line_edit(c)
+		if le != null:
+			return le
+	return null
+
+
+func _find_first_check_box(node: Node) -> CheckBox:
+	if node is CheckBox:
+		return node
+	for c in node.get_children():
+		var cb = _find_first_check_box(c)
+		if cb != null:
+			return cb
+	return null
+
+
+func _collect_v_for_clones(node: Node, out: Array) -> void:
+	if node is Control and (node as Control).has_meta("v_on_click"):
+		out.append(node)
+	for c in node.get_children():
+		_collect_v_for_clones(c, out)

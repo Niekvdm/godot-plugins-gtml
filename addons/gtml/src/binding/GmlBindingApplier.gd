@@ -31,8 +31,12 @@ static func eval(expr: Dictionary, state: GmlState, scope: Dictionary) -> Varian
 		"array":
 			return _eval_array(expr["items"], state, scope)
 		"call":
-			# Implemented in Task 8
-			return null
+			# Resolve the call's args; the call name itself doesn't evaluate
+			# (call invocation is the renderer's job for @event handlers).
+			var resolved_args: Array = []
+			for a in expr.get("args", []):
+				resolved_args.append(eval(a, state, scope))
+			return {"_call": true, "name": expr["name"], "args": resolved_args}
 		_:
 			return null
 
@@ -272,6 +276,90 @@ static func parse_v_for(source: String) -> Variant:
 			loop_var = (lparts[0] as String).strip_edges()
 			index_var = (lparts[1] as String).strip_edges()
 	return {"loop_var": loop_var, "index_var": index_var, "array_key": array_key}
+
+
+## Wire v-model two-way binding on an input control. The state-key is the
+## v-model's source; the appropriate property on the control is bound.
+## Supports LineEdit, TextEdit, CheckBox, HSlider, OptionButton.
+##
+## Reentry guard: state→control writes compare-then-write so the
+## control's *_changed signal doesn't fire back into state.
+static func register_v_model(control: Control, key: String, registry: GmlBindingRegistry, state: GmlState, _scope: Dictionary = {}) -> void:
+	var ref: WeakRef = weakref(control)
+	var apply_state_to_control := func():
+		var ctl = ref.get_ref()
+		if ctl == null:
+			return
+		var v = state.get(key)
+		if ctl is LineEdit:
+			var le := ctl as LineEdit
+			if le.text != str(v):
+				le.text = str(v)
+		elif ctl is TextEdit:
+			var te := ctl as TextEdit
+			if te.text != str(v):
+				te.text = str(v)
+		elif ctl is CheckBox:
+			var cb := ctl as CheckBox
+			if cb.button_pressed != bool(v):
+				cb.button_pressed = bool(v)
+		elif ctl is HSlider:
+			var sl := ctl as HSlider
+			if sl.value != float(v):
+				sl.value = float(v)
+		elif ctl is OptionButton:
+			var ob := ctl as OptionButton
+			for i in ob.item_count:
+				if ob.get_item_text(i) == str(v):
+					if ob.selected != i:
+						ob.select(i)
+					break
+	registry.register({
+		"deps": [key],
+		"apply": apply_state_to_control,
+		"control_ref": ref,
+	})
+	apply_state_to_control.call()
+
+	# Control → state (event-driven)
+	if control is LineEdit:
+		(control as LineEdit).text_changed.connect(func(t): state.set(key, t))
+	elif control is TextEdit:
+		(control as TextEdit).text_changed.connect(func(): state.set(key, (control as TextEdit).text))
+	elif control is CheckBox:
+		(control as CheckBox).toggled.connect(func(pressed): state.set(key, pressed))
+	elif control is HSlider:
+		(control as HSlider).value_changed.connect(func(v): state.set(key, v))
+	elif control is OptionButton:
+		(control as OptionButton).item_selected.connect(func(idx):
+			state.set(key, (control as OptionButton).get_item_text(idx))
+		)
+
+
+## Wire @event with args. Captures the parsed call AST + current scope
+## on the control and connects gui_input → view.item_clicked(handler, args).
+## Re-evaluates args at click time so latest state is used.
+static func register_event_with_args(control: Control, event: String, call_expr: Dictionary, state: GmlState, scope: Dictionary, view) -> void:
+	if event != "click":
+		push_warning("GmlBindingApplier: @event(args) currently supports only 'click', got '%s'" % event)
+		return
+	control.mouse_filter = Control.MOUSE_FILTER_STOP
+	control.set_meta("v_on_click", true)
+	var view_ref: WeakRef = weakref(view)
+	control.gui_input.connect(func(event_obj: InputEvent):
+		if not (event_obj is InputEventMouseButton):
+			return
+		var mb := event_obj as InputEventMouseButton
+		if not mb.pressed or mb.button_index != MOUSE_BUTTON_LEFT:
+			return
+		var v = view_ref.get_ref()
+		if v == null:
+			return
+		var resolved_args: Array = []
+		for a in call_expr.get("args", []):
+			resolved_args.append(eval(a, state, scope))
+		v.item_clicked.emit(call_expr["name"], resolved_args)
+	)
 
 
 ## Write a resolved value into the appropriate property/method on the
