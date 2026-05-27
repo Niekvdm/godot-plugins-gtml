@@ -1,0 +1,45 @@
+<div class="page">
+	<header class="topbar">
+		<span class="title">Inventory</span>
+		<span class="gold">Gold: {{ gold }}</span>
+	</header>
+
+	<div class="content">
+
+		<div class="left-pane">
+			<div class="filter-row">
+				<input v-model="search" type="text" placeholder="Search items..." class="search-input">
+				<button @click="set_filter('all')" :class="{ active: is_filter_all }" class="filter-btn">All</button>
+				<button @click="set_filter('weapon')" :class="{ active: is_filter_weapon }" class="filter-btn">Weapon</button>
+				<button @click="set_filter('potion')" :class="{ active: is_filter_potion }" class="filter-btn">Potion</button>
+			</div>
+
+			<ul class="item-grid">
+				<li v-for="item, i in filtered_items" @click="select(item)" class="item-card">
+					<div class="item-row">
+						<span class="item-icon">{{ item.icon }}</span>
+						<span class="item-name">{{ item.name }}</span>
+						<span class="item-qty">x{{ item.qty }}</span>
+					</div>
+				</li>
+			</ul>
+
+			<p v-if="empty" class="empty-msg">No items match.</p>
+		</div>
+
+		<div class="right-pane" v-show="has_selection">
+			<h2 class="detail-name">{{ selected_name }}</h2>
+			<p class="detail-rarity">{{ selected_rarity }}</p>
+			<p class="detail-desc">{{ selected_desc }}</p>
+			<button @click="use_item" :disabled="!has_selection" class="use-btn">Use</button>
+		</div>
+
+	</div>
+
+	<div class="hotbar">
+		<div v-for="slot, i in hotbar" class="slot">
+			<span class="slot-num">{{ i }}</span>
+			<span class="slot-icon">{{ slot }}</span>
+		</div>
+	</div>
+</div>

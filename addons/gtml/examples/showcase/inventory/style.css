@@ -1,0 +1,235 @@
+/* Inventory — parchment palette, warm cream + ink + gold accent.
+ * v0.7 showcase: exercises every binding directive end-to-end.
+ */
+
+.page {
+	--bg: #f5ecd9;
+	--surface-1: #ebe0c4;
+	--surface-2: #e3d4ae;
+	--border-1: #c7b289;
+	--border-2: #a89673;
+	--text-1: #2a1f12;
+	--text-2: #5a4a32;
+	--text-muted: #8a7858;
+	--accent: #b8860b;
+	--accent-hot: #d4a017;
+	--rare: #6b3e9b;
+	--common: #5a5a5a;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 100%;
+	background-color: var(--bg);
+	color: var(--text-1);
+}
+
+.topbar {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	padding-left: 24px;
+	padding-right: 24px;
+	padding-top: 14px;
+	padding-bottom: 14px;
+	border-bottom: 1px solid var(--border-1);
+	background-color: var(--surface-1);
+}
+
+.title {
+	font-size: 16px;
+	font-weight: 700;
+	letter-spacing: 4;
+	text-transform: uppercase;
+	color: var(--text-1);
+}
+
+.gold {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--accent);
+}
+
+.content {
+	display: flex;
+	flex-direction: row;
+	flex-grow: 1;
+	gap: 16px;
+	padding: 16px;
+}
+
+.left-pane {
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+	gap: 12px;
+}
+
+.filter-row {
+	display: flex;
+	flex-direction: row;
+	gap: 8px;
+}
+
+.search-input {
+	flex-grow: 1;
+	background-color: var(--surface-1);
+	color: var(--text-1);
+	border: 1px solid var(--border-1);
+	border-radius: 3px;
+	padding: 8px;
+	font-size: 13px;
+}
+
+.filter-btn {
+	background-color: var(--surface-1);
+	color: var(--text-2);
+	border: 1px solid var(--border-1);
+	border-radius: 3px;
+	padding-left: 12px;
+	padding-right: 12px;
+	padding-top: 6px;
+	padding-bottom: 6px;
+	font-size: 12px;
+	font-weight: 600;
+	transition: background-color 150ms, color 150ms;
+}
+
+.filter-btn:hover {
+	background-color: var(--surface-2);
+}
+
+.filter-btn.active {
+	background-color: var(--accent);
+	color: var(--bg);
+	border: 1px solid var(--accent-hot);
+}
+
+.item-grid {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	list-style-type: none;
+	overflow-y: auto;
+}
+
+.item-card {
+	padding: 10px;
+	background-color: var(--surface-1);
+	border: 1px solid var(--border-1);
+	border-radius: 3px;
+	transition: border 150ms, background-color 150ms;
+}
+
+.item-card:hover {
+	background-color: var(--surface-2);
+	border: 1px solid var(--accent);
+}
+
+.item-row {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 12px;
+	flex-grow: 1;
+}
+
+.item-icon {
+	font-size: 20px;
+	min-width: 28px;
+}
+
+.item-name {
+	flex-grow: 1;
+	font-size: 14px;
+	color: var(--text-1);
+}
+
+.item-qty {
+	font-size: 12px;
+	color: var(--text-muted);
+}
+
+.empty-msg {
+	color: var(--text-muted);
+	font-size: 13px;
+	text-align: center;
+	padding-top: 24px;
+}
+
+.right-pane {
+	display: flex;
+	flex-direction: column;
+	width: 240px;
+	gap: 10px;
+	padding: 16px;
+	background-color: var(--surface-1);
+	border: 1px solid var(--border-1);
+	border-radius: 3px;
+}
+
+.detail-name {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--text-1);
+}
+
+.detail-rarity {
+	font-size: 11px;
+	color: var(--accent);
+	letter-spacing: 2;
+	text-transform: uppercase;
+}
+
+.detail-desc {
+	font-size: 13px;
+	color: var(--text-2);
+	line-height: 5;
+}
+
+.use-btn {
+	background-color: var(--accent);
+	color: var(--bg);
+	border: 1px solid var(--accent-hot);
+	border-radius: 3px;
+	padding: 8px;
+	font-size: 13px;
+	font-weight: 700;
+	margin-top: 12px;
+	transition: background-color 150ms;
+}
+
+.use-btn:hover {
+	background-color: var(--accent-hot);
+}
+
+.hotbar {
+	display: flex;
+	flex-direction: row;
+	gap: 6px;
+	padding: 10px;
+	background-color: var(--surface-2);
+	border-top: 1px solid var(--border-1);
+	justify-content: center;
+}
+
+.slot {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 56px;
+	height: 56px;
+	background-color: var(--surface-1);
+	border: 1px solid var(--border-1);
+	border-radius: 3px;
+}
+
+.slot-num {
+	font-size: 9px;
+	color: var(--text-muted);
+}
+
+.slot-icon {
+	font-size: 18px;
+}

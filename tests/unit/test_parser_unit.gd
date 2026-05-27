@@ -81,3 +81,13 @@ func test_css_comma_selectors() -> void:
 	assert_eq(rules.size(), 2)
 	assert_eq(rules[0].selector_value, "a")
 	assert_eq(rules[1].selector_value, "b")
+
+
+func test_parser_accepts_colon_prefix_attribute() -> void:
+	var dom = _parse_html('<div :class="x">y</div>')
+	assert_eq(dom.attrs.get(":class", ""), "x")
+
+
+func test_parser_accepts_v_directive_attribute() -> void:
+	var dom = _parse_html('<div v-if="cond"></div>')
+	assert_eq(dom.attrs.get("v-if", ""), "cond")

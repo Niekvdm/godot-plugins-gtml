@@ -277,8 +277,8 @@ func _parse_attributes() -> Dictionary:
 func _parse_attribute_name() -> String:
 	var start := _pos
 
-	# Allow @ as first character for @click etc.
-	if _peek() == "@":
+	# Allow @ (event shorthand) and : (v-bind shorthand) as first char.
+	if _peek() == "@" or _peek() == ":":
 		_advance()
 
 	while _pos < _length:

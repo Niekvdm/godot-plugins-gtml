@@ -1,5 +1,80 @@
 # Changelog
 
+## 0.7.0
+
+### Features — Reactive bindings
+
+GTML graduates from "menu builder" to "real UI framework" with Vue-style
+reactive bindings. Dynamic content (HUDs, inventories, leaderboards,
+dialog trees) is now feasible without per-element GDScript glue.
+
+- **`GmlView.state`** — a `GmlState` instance per view. `state.set(key,
+  value)` writes; `state.get(key)` reads; `state.set_state({...})`
+  batches. `state_changed(key, new, old)` signal fires per changed key.
+- **`{{ expr }}` text interpolation** — substitutes at render and on
+  every change to a referenced state key.
+- **`:attr="expr"` one-way attribute binding** — supported targets:
+  `disabled`, `value`, `src`, `href`. (Shorthand for `v-bind:attr`.)
+- **`:class="..."` class binding** — bare key, object syntax
+  `{ name: cond_key }`, and array syntax `['static', dyn_key]`.
+  Limitation: stores classes on `dynamic_classes` meta but does NOT
+  re-resolve CSS; declare possible classes at build time.
+- **`v-if="expr"` / `v-show="expr"`** — conditional rendering /
+  visibility.
+- **`v-for="item in items"` list rendering** — also `v-for="item, i in
+  items"` for indexed form. Rebuilds on collection change (no keyed
+  reconciliation in v0.7).
+- **`v-model="key"` two-way input binding** — `LineEdit`, `TextEdit`,
+  `CheckBox`, `HSlider`, `OptionButton`. Equality-guarded so state ↔
+  control updates don't feedback-loop.
+- **`@event="handler(args)"` events with arguments** — fires new
+  `view.item_clicked(handler: String, args: Array)` signal. Args
+  re-evaluated at click time. Bare `@event="handler"` keeps firing
+  `button_clicked`.
+
+### Architecture
+
+Five new pure-data engines under `addons/gtml/src/binding/`:
+
+- `GmlState.gd` — reactive key→value store via `_set`/`_get` virtuals,
+  no-op skip on equal writes
+- `GmlBindingExpr.gd` — mini-expression parser (paths, `!`, object/array
+  literals, call exprs, string literals; no arithmetic / comparison)
+- `GmlBindingParser.gd` — scans HTML for `{{ }}` + classifies attrs
+- `GmlBindingRegistry.gd` — per-view `{key → [bindings]}` reverse index,
+  prunes freed-control bindings
+- `GmlBindingApplier.gd` — evaluates AST + writes to controls
+
+`GmlRenderer._build_node` gained three hooks: v-for (highest priority,
+takes over and clones), v-if (short-circuit return null), and post-build
+binding registration. `GmlHtmlParser` now accepts `:` as a first
+character of attribute names so `<div :class="x">` parses.
+
+### Showcase
+
+New 5th sample: `addons/gtml/examples/showcase/inventory/` — pause-menu
+inventory overlay with filterable item grid, detail panel, search, and
+hotbar. **First sample with a real `demo.gd` companion script** —
+demonstrates the actual game-integration pattern (`state.set_state` for
+initial state, `state_changed` for derived state, `item_clicked` for
+per-element actions).
+
+### Tests
+
+63 new tests covering state, expression parser, binding parser,
+registry, applier, and end-to-end integration through `GmlView`. Test
+count: 223 → 286.
+
+### Deferred / not yet supported
+
+- Arithmetic / comparison / ternary in expressions (compute in GDScript)
+- Keyed reconciliation (`:key`) for `v-for`
+- Cross-view shared state / global store
+- Watchers / lifecycle hooks beyond `state_changed`
+- Computed properties / refs
+- Dynamic CSS re-resolution when `:class` changes
+- `v-bind:[dynamic-attr]` (dynamic attr name binding)
+
 ## 0.6.0
 
 ### Features — Editor pane "professional upgrade"
