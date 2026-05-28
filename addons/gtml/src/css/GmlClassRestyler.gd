@@ -12,14 +12,15 @@ extends RefCounted
 
 ## Visual properties this module re-resolves. Anything else (layout /
 ## structural) is ignored — see _warn_layout_props.
+## NOTE: outline-* is intentionally NOT here — GTML's outline isn't a
+## StyleBoxFlat field we can mutate in place; outline re-resolution is
+## deferred. Declaring it without an apply branch would silently fail.
 const VISUAL_KEYS: Array = [
 	"color",
 	"background-color",
 	"border-color",
 	"border-width",
 	"border-radius",
-	"outline-color",
-	"outline-width",
 	"opacity",
 	"font-size",
 ]
@@ -109,11 +110,19 @@ static func restyle(control: Control, node, ancestor_chain: Array, dynamic_class
 ## font_color propagates to all descendant Labels — matching CSS `color`
 ## inheritance so `:class` on a container re-colors its text children.
 static func _apply_visual(control: Control, target: Dictionary, full_style: Dictionary, transition_manager) -> void:
-	# Opacity → modulate.a
+	# Keys applied on the previous restyle (so we can CLEAR overrides that
+	# no longer apply — e.g. a dynamic class removed and no static rule
+	# supplies that property, so base_snapshot lacks it too). Without this,
+	# theme overrides from a prior cycle would stick forever.
+	var prev_keys: Array = control.get_meta("_restyle_keys", [])
+
+	# Opacity → modulate.a (revert to 1.0 when no longer applied).
 	if target.has("opacity"):
 		var a = target["opacity"]
 		if a is float or a is int:
 			control.modulate.a = float(a)
+	elif "opacity" in prev_keys:
+		control.modulate.a = 1.0
 
 	# Font color → theme override (Label / RichTextLabel / Button / Button descendants).
 	# For container controls (e.g. HBoxContainer wrapping a <li>), propagate the
@@ -122,12 +131,23 @@ static func _apply_visual(control: Control, target: Dictionary, full_style: Dict
 		var col = target["color"]
 		if col is Color:
 			_apply_font_color(control, col)
+	elif "color" in prev_keys:
+		_clear_font_color(control)
 
-	# Font size
+	# Font size (clear the override when no longer applied).
 	if target.has("font-size"):
 		var fs = target["font-size"]
 		if fs is int or fs is float:
 			control.add_theme_font_size_override("font_size", int(fs))
+	elif "font-size" in prev_keys:
+		_clear_font_size(control)
+
+	# Record which keys we applied this pass for next-time clearing.
+	var applied: Array = []
+	for k in VISUAL_KEYS:
+		if target.has(k):
+			applied.append(k)
+	control.set_meta("_restyle_keys", applied)
 
 	# Stylebox-borne props: bg / border / outline / radius.
 	var box: StyleBoxFlat = _get_stylebox(control)
@@ -164,6 +184,25 @@ static func _apply_font_color(control: Control, col: Color) -> void:
 		for child in control.get_children():
 			if child is Control:
 				_apply_font_color(child as Control, col)
+
+
+## Remove the font-color override applied by _apply_font_color, recursing
+## into containers the same way. Used on revert when no rule supplies color.
+static func _clear_font_color(control: Control) -> void:
+	if control is RichTextLabel:
+		control.remove_theme_color_override("default_color")
+	elif control is Label or control is Button:
+		control.remove_theme_color_override("font_color")
+	else:
+		for child in control.get_children():
+			if child is Control:
+				_clear_font_color(child as Control)
+
+
+## Remove the font-size override (revert path).
+static func _clear_font_size(control: Control) -> void:
+	if control.has_theme_font_size_override("font_size"):
+		control.remove_theme_font_size_override("font_size")
 
 
 ## Return the StyleBoxFlat a control renders its background through, or

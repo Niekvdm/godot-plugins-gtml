@@ -119,6 +119,24 @@ func test_restyle_removing_class_reverts_to_base_snapshot() -> void:
 	assert_almost_eq(c.b, 1.0, 0.02)
 
 
+func test_restyle_revert_clears_override_when_no_static_rule() -> void:
+	# No static class rule supplies `color`, so base_snapshot lacks it.
+	# Adding `.rare` applies purple; removing it must CLEAR the override
+	# (revert to theme default), not leave the element stuck purple.
+	var rules := _rules(".rare { color: #b59aff; }")
+	var n = _node("span", "plain")   # 'plain' has no CSS rule
+	var label := Label.new()
+	add_child_autofree(label)
+	var base: Dictionary = GmlClassRestyler.resolve_visual_props(n, [n], PackedStringArray(["plain"]), rules)
+	assert_false(base.has("color"), "no static rule → base lacks color")
+	# Add rare → purple override applied.
+	GmlClassRestyler.restyle(label, n, [n], PackedStringArray(["plain", "rare"]), rules, base, null)
+	assert_true(label.has_theme_color_override("font_color"), "rare applies an override")
+	# Remove rare → override must be cleared.
+	GmlClassRestyler.restyle(label, n, [n], PackedStringArray(["plain"]), rules, base, null)
+	assert_false(label.has_theme_color_override("font_color"), "revert must clear the stale override")
+
+
 func test_restyle_layout_prop_in_dynamic_class_warns() -> void:
 	var captured: Array = []
 	GmlBindingApplier._on_warning = func(m): captured.append(m)

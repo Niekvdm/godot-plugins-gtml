@@ -7,7 +7,7 @@
 Since v0.7, `:class` only wrote a `dynamic_classes` meta — adding a class
 at runtime pulled in no styles. v0.8.2 makes dynamic `:class` actually
 restyle the element: on change, the bound element's **visual** properties
-(color, background, border, outline, opacity, font-size) are recomputed
+(color, background, border, opacity, font-size) are recomputed
 from the merged class list and applied in place. Control identity
 (focus / scroll / animation) is preserved — no structural rebuild.
 

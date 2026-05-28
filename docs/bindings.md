@@ -91,7 +91,7 @@ Three forms:
 
 **Runtime re-resolution (v0.8.2+)**: changing a dynamic class re-resolves
 the element's **visual** properties — `color`, `background-color`,
-`border-color`, `border-width`, `border-radius`, `outline`, `opacity`,
+`border-color`, `border-width`, `border-radius`, `opacity`,
 `font-size` — from the merged class list and applies them in place. The
 element's identity (focus, scroll, animations) is preserved.
 
