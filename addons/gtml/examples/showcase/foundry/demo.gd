@@ -106,3 +106,47 @@ func buy_generator(id: String) -> bool:
 	commits -= c
 	gen_owned[id] = _owned(id) + 1
 	return true
+
+
+func _upg_def(id: String) -> Dictionary:
+	for u in UPGRADES:
+		if u.id == id:
+			return u
+	return {}
+
+func upgrade_cost(id: String) -> int:
+	return int(_upg_def(id).get("cost", 0))
+
+func upgrade_unlocked(u: Dictionary) -> bool:
+	if u.is_empty() or purchased.has(u.id):
+		return false
+	if u.has("gate_gen") and _owned(u.gate_gen) < int(u.gate_n):
+		return false
+	if u.has("gate_commits") and total_this_run < float(u.gate_commits):
+		return false
+	return true
+
+func buy_upgrade(id: String) -> bool:
+	if purchased.has(id):
+		return false
+	var c := upgrade_cost(id)
+	if not can_afford(c):
+		return false
+	commits -= c
+	purchased[id] = true
+	var u := _upg_def(id)
+	if u.get("kind", "") == "click":
+		per_click *= float(u.factor)
+	return true
+
+func build_upgrades_view() -> Array:
+	var out := []
+	for u in UPGRADES:
+		if not upgrade_unlocked(u):
+			continue
+		var c := upgrade_cost(u.id)
+		out.append({
+			"id": u.id, "name": u.name, "desc": u.desc,
+			"cost_display": fmt(c), "affordable": can_afford(c),
+		})
+	return out

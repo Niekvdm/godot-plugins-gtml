@@ -59,3 +59,51 @@ func test_buy_generator_uses_scaled_cost() -> void:
 	d.commits = 11.0
 	assert_true(d.buy_generator("intern"))
 	assert_eq(d._owned("intern"), 2)
+
+func test_upgrade_gate_by_commits() -> void:
+	var d = _new_demo()
+	d.total_this_run = 49.0
+	assert_false(d.upgrade_unlocked(d._upg_def("keyboard")))
+	d.total_this_run = 50.0
+	assert_true(d.upgrade_unlocked(d._upg_def("keyboard")))
+
+func test_upgrade_gate_by_generator_count() -> void:
+	var d = _new_demo()
+	d.gen_owned["intern"] = 4
+	assert_false(d.upgrade_unlocked(d._upg_def("hotreload")))
+	d.gen_owned["intern"] = 5
+	assert_true(d.upgrade_unlocked(d._upg_def("hotreload")))
+
+func test_buy_click_upgrade_multiplies_per_click() -> void:
+	var d = _new_demo()
+	d.commits = 100.0
+	assert_true(d.buy_upgrade("keyboard"))
+	assert_almost_eq(d.per_click, 2.0, 0.0001)
+	assert_true(d.purchased.has("keyboard"))
+
+func test_buy_gen_upgrade_multiplies_generator_output() -> void:
+	var d = _new_demo()
+	d.gen_owned["intern"] = 10        # base rate 5.0
+	d.commits = 500.0
+	assert_true(d.buy_upgrade("hotreload"))
+	assert_almost_eq(d.effective_rate("intern"), 10.0, 0.0001)  # 5.0 * 2.0
+
+func test_buy_upgrade_twice_fails() -> void:
+	var d = _new_demo()
+	d.commits = 1000.0
+	assert_true(d.buy_upgrade("keyboard"))
+	assert_false(d.buy_upgrade("keyboard"))
+
+func test_upgrades_view_excludes_purchased_and_locked() -> void:
+	var d = _new_demo()
+	d.total_this_run = 50.0          # only "keyboard" gate met
+	var ids := []
+	for u in d.build_upgrades_view():
+		ids.append(u.id)
+	assert_eq(ids, ["keyboard"])
+	d.commits = 100.0
+	d.buy_upgrade("keyboard")
+	var ids2 := []
+	for u in d.build_upgrades_view():
+		ids2.append(u.id)
+	assert_false(ids2.has("keyboard"))
