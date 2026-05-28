@@ -499,3 +499,12 @@ func _collect_label_nodes(node: Node, out: Array) -> void:
 		out.append(node)
 	for c in node.get_children():
 		_collect_label_nodes(c, out)
+
+
+# ─── v0.8.2: css_rules retention ───────────────────────────
+
+func test_view_retains_css_rules_after_build() -> void:
+	var view := _build_view('<div class="box">x</div>', '.box { color: #ff0000; }')
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_gt(view._css_rules.size(), 0, "view must retain parsed css_rules for runtime re-resolution")
