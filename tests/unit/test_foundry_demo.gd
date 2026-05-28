@@ -171,3 +171,15 @@ func test_generators_view_marks_affordability() -> void:
 	assert_eq(first.cost_display, "10")
 	assert_true(first.affordable)        # 10 >= 10
 	assert_false(rows[1].affordable)     # compiler costs 120
+
+func test_scene_builds_and_ticks() -> void:
+	var scene = load("res://addons/gtml/examples/showcase/foundry/demo.tscn")
+	var inst = add_child_autofree(scene.instantiate())
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var view = inst.get_node("GtmlView")
+	assert_gt(view.get_child_count(), 0, "GtmlView built a control tree")
+	assert_true(view.state.has("commits_display"), "state seeded in _ready")
+	var before: float = inst.commits
+	inst._on_button("tap")
+	assert_gt(inst.commits, before, "tap adds commits")
