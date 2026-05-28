@@ -634,6 +634,13 @@ func _reconcile_v_for_region(parent_node, container: Control) -> void:
 
 	parent_node.set_meta("_vfor_state", state_map)
 
+	# Re-wire focus so inserted clones join the chain and removed clones
+	# drop out. wire_focus is idempotent + does not move focus, so a
+	# surviving focused control keeps focus.
+	if _gml_view != null and _gml_view._content_root != null:
+		var GmlFocusManagerScript = preload("res://addons/gtml/src/focus/GmlFocusManager.gd")
+		GmlFocusManagerScript.wire_focus(_gml_view._content_root)
+
 
 ## Apply a reconciler ops list to the rendered children of container.
 ## Updates entry["controls"] and entry["binding_tags"] in place.
