@@ -70,6 +70,18 @@ func _all_label_texts(node: Node, out: Array = []) -> Array:
 	return out
 
 
+func test_click_handler_makes_children_click_through() -> void:
+	# A label inside an @click element defaults to MOUSE_FILTER_STOP and would
+	# eat clicks on the text; it must be set to PASS so the handler fires across
+	# the whole element.
+	var view := _build_view('<div @click="act(1)"><span>hi</span></div>')
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var lbl := _find_first_label(view)
+	assert_not_null(lbl)
+	assert_eq(lbl.mouse_filter, Control.MOUSE_FILTER_PASS, "text under @click must pass clicks to the handler")
+
+
 func test_text_shadow_copies_track_reactive_text() -> void:
 	# A reactive label with text-shadow is wrapped with shadow-copy Labels.
 	# Same-width updates ("AAA" -> "BBB") don't fire resize, so the copies must

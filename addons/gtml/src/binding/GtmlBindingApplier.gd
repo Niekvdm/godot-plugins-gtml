@@ -522,6 +522,11 @@ static func register_event_with_args(control: Control, event: String, call_expr:
 		return
 	control.mouse_filter = Control.MOUSE_FILTER_STOP
 	control.set_meta("v_on_click", true)
+	# Non-interactive descendants (Labels, containers) default to MOUSE_FILTER_STOP
+	# and would eat clicks on the element's text/children, so the @click handler
+	# would only fire on empty margin. Make them pass clicks up to this control
+	# so the whole element is clickable. Interactive children keep their own input.
+	_make_children_click_through(control)
 	var view_ref: WeakRef = weakref(view)
 	control.gui_input.connect(func(event_obj: InputEvent):
 		if not (event_obj is InputEventMouseButton):
@@ -537,6 +542,17 @@ static func register_event_with_args(control: Control, event: String, call_expr:
 			resolved_args.append(eval(a, state, scope))
 		v.item_clicked.emit(call_expr["name"], resolved_args)
 	)
+
+
+## Recursively set non-interactive descendants to MOUSE_FILTER_PASS so clicks
+## on an element's text/children reach the ancestor's @click handler. Buttons,
+## links, and text/number inputs keep their own mouse handling.
+static func _make_children_click_through(control: Control) -> void:
+	for child in control.get_children():
+		if child is Control:
+			if not (child is BaseButton or child is LineEdit or child is TextEdit or child is Range):
+				(child as Control).mouse_filter = Control.MOUSE_FILTER_PASS
+			_make_children_click_through(child)
 
 
 ## Write a resolved value into the appropriate property/method on the
