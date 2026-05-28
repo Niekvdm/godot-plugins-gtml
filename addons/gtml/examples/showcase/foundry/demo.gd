@@ -97,3 +97,12 @@ func click_value() -> float:
 
 func can_afford(amount: float) -> bool:
 	return commits >= amount
+
+
+func buy_generator(id: String) -> bool:
+	var c := cost_of(id)
+	if not can_afford(c):
+		return false
+	commits -= c
+	gen_owned[id] = _owned(id) + 1
+	return true
