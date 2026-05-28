@@ -17,10 +17,15 @@
 	</header>
 
 	<div class="body" v-show="!show_refactor">
-		<section class="panel">
-			<div class="panel-title">&#9472;&#9472; GENERATORS &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
+		<div class="tabs">
+			<button class="tab" :class="{ active: active_tab == 'generators' }" @click="tab('generators')">GENERATORS</button>
+			<button class="tab" :class="{ active: active_tab == 'upgrades' }" @click="tab('upgrades')">UPGRADES&nbsp;({{ upgrades_count }})</button>
+			<button class="tab" :class="{ active: active_tab == 'achievements' }" @click="tab('achievements')">ACHIEVEMENTS&nbsp;{{ ach_progress }}</button>
+		</div>
+
+		<section class="panel" v-show="active_tab == 'generators'">
 			<ul class="rows">
-				<li v-for="g in generators" :key="g.id" class="row">
+				<li v-for="g in generators" :key="g.id" class="row" :class="{ affordable: g.affordable }">
 					<div class="row-info">
 						<span class="row-name">{{ g.name }}</span>
 						<span class="row-desc">{{ g.desc }}</span>
@@ -31,10 +36,9 @@
 			</ul>
 		</section>
 
-		<section class="panel">
-			<div class="panel-title">&#9472;&#9472; UPGRADES &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
+		<section class="panel" v-show="active_tab == 'upgrades'">
 			<ul class="rows">
-				<li v-for="u in upgrades" :key="u.id" class="row">
+				<li v-for="u in upgrades" :key="u.id" class="row" :class="{ affordable: u.affordable }">
 					<div class="row-info">
 						<span class="row-name">{{ u.name }}</span>
 						<span class="row-desc">{{ u.desc }}</span>
@@ -42,11 +46,10 @@
 					<button class="buy-btn" :class="{ affordable: u.affordable }" :disabled="!u.affordable" @click="buy_upgrade(u.id)">[ {{ u.cost_display }} ]</button>
 				</li>
 			</ul>
-			<p v-if="no_upgrades" class="empty">// no upgrades available yet</p>
+			<p v-if="no_upgrades" class="empty">// unlock more generators to reveal upgrades</p>
 		</section>
 
-		<section class="panel">
-			<div class="panel-title">&#9472;&#9472; ACHIEVEMENTS &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
+		<section class="panel" v-show="active_tab == 'achievements'">
 			<ul class="badges">
 				<li v-for="a in achievements" :key="a.id" class="badge" :class="{ earned: a.earned }">
 					<span class="badge-mark">{{ a.mark }}</span>

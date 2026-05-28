@@ -236,7 +236,10 @@ func _ready() -> void:
 		"generators": _last_gens,
 		"upgrades": _last_ups,
 		"no_upgrades": _last_ups.is_empty(),
+		"upgrades_count": _last_ups.size(),
 		"achievements": build_achievements_view(),
+		"ach_progress": "%d/%d" % [earned.size(), ACHIEVEMENTS.size()],
+		"active_tab": "generators",
 		"toast": "",
 		"show_toast": false,
 		"show_refactor": false,
@@ -276,11 +279,13 @@ func _derive() -> void:
 		_last_ups = ups
 		view.state.set("upgrades", ups)
 		view.state.set("no_upgrades", ups.is_empty())
+		view.state.set("upgrades_count", ups.size())
 	view.state.set("per_click_display", fmt(click_value()))
 	view.state.set("refactor_gain", str(refactor_gain()))
 	var newly := _check_achievements()
 	if not newly.is_empty():
 		view.state.set("achievements", build_achievements_view())
+		view.state.set("ach_progress", "%d/%d" % [earned.size(), ACHIEVEMENTS.size()])
 		_show_toast(_ach_name(newly[0]))
 
 
@@ -319,6 +324,8 @@ func _on_item(handler: String, args: Array) -> void:
 		"buy_upgrade":
 			if buy_upgrade(id):
 				_derive()
+		"tab":
+			view.state.set("active_tab", id)
 
 
 func _refresh_all() -> void:
