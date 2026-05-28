@@ -472,6 +472,23 @@ func test_vfor_key_duplicate_warns_and_aborts() -> void:
 	GmlBindingApplier._on_warning = Callable()
 
 
+func test_vfor_key_null_falls_back_to_index_not_blank() -> void:
+	# When :key evaluates to null for every item (missing field), the
+	# list must NOT collapse to blank via duplicate-empty-key detection.
+	# Null keys fall back to the index.
+	var view := _build_view('<ul><li v-for="item in items" :key="item.id">{{ item.name }}</li></ul>')
+	view.state.set("items", [
+		{"name": "Alpha"},   # no id field → :key resolves null
+		{"name": "Beta"},
+	])
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var texts: Array = []
+	_collect_label_texts(view, texts)
+	assert_true("Alpha" in texts, "null-key list must still render (index fallback); got %s" % str(texts))
+	assert_true("Beta" in texts)
+
+
 # Helper: collect Label NODES (not just their text).
 # Excludes list-marker Labels — markers are direct children of an HBoxContainer
 # (the list-item row) while content Labels live inside a VBoxContainer child.

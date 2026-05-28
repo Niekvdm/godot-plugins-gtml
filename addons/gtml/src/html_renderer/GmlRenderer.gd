@@ -469,12 +469,27 @@ func _compute_vfor_key(key_expr: Variant, item: Variant, index: int, spec: Dicti
 		item_scope[spec["index_var"]] = index
 	var v = GmlBindingApplierScript.eval(key_expr, state, item_scope)
 	if v == null:
-		return ""   # empty string → anonymous (never-reused) key
+		# A null :key result for EVERY item would collapse to the same
+		# empty string and trip the duplicate-key detector, blanking the
+		# whole list. Fall back to the index so a missing key degrades to
+		# default-index reconciliation rather than rendering nothing.
+		GmlBindingApplierScript._warn("v-for :key resolved to null at index %d; falling back to index" % index)
+		return str(index)
 	return str(v)
 
 
 ## Initialize per-template-node state on the parent DOM node so the
 ## reconciler has a baseline to diff against.
+##
+## LIMITATION (v0.8.1): first_child_index is captured once and assumed
+## stable. If a parent holds MULTIPLE v-for regions as siblings
+## (<div><li v-for="a in arr1"/><li v-for="b in arr2"/></div>) and an
+## earlier region changes size, the later region's first_child_index
+## goes stale and its move/insert offsets drift. Single v-for per parent
+## (the common case — the inventory sample's grid and hotbar live in
+## separate parents) is unaffected. Multiple sibling v-fors in one parent
+## are not fully supported until a future release reworks region tracking
+## around sentinel marker nodes.
 func _init_vfor_state(parent_node, template_node, spec: Dictionary, parent_scope: Dictionary, first_child_index: int, key_expr: Variant = null, initial_keys: PackedStringArray = PackedStringArray()) -> void:
 	var state_map: Dictionary = parent_node.get_meta("_vfor_state", {})
 	state_map[template_node.get_instance_id()] = {
@@ -549,14 +564,21 @@ func _reconcile_v_for_region(parent_node, container: Control) -> void:
 		# Compute new keys + detect duplicates.
 		var new_keys: PackedStringArray = PackedStringArray()
 		var seen_keys: Dictionary = {}
+		var has_dup: bool = false
 		for i in (arr as Array).size():
 			var item = arr[i]
 			var k: String = _compute_vfor_key(key_expr, item, i, spec, state, parent_scope)
 			if seen_keys.has(k):
 				GmlBindingApplierScript._warn("v-for duplicate key during reconcile: %s" % k)
-				return  # abort: leave DOM untouched
+				has_dup = true
+				break
 			seen_keys[k] = true
 			new_keys.append(k)
+		if has_dup:
+			# Abort only THIS template's reconcile, leaving its DOM
+			# untouched; other v-for regions in the same parent still
+			# reconcile.
+			continue
 
 		var old_keys: PackedStringArray = entry["current_keys"]
 		if _packed_strings_equal(old_keys, new_keys):
