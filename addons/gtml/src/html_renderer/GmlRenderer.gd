@@ -569,9 +569,11 @@ func _reconcile_v_for_region(parent_node, container: Control) -> void:
 
 			_apply_vfor_ops(entry, ops, arr, container, registry, spec, parent_scope, state, template_id)
 
-		# Re-fire reused clones whose item reference changed (state mutated
-		# array values in place at same key). This is the "item value
-		# changed without key change" case.
+		# Re-fire reused clones whose item value OR index changed. Covers two
+		# cases:
+		#   1. Array values mutated in-place at the same key (item != stored).
+		#   2. Item stayed at the same key but moved to a new index position
+		#      via LIS (no move op was emitted, so index_var must be patched here).
 		for i in new_keys.size():
 			var k: String = new_keys[i]
 			var ctl_check: Control = entry["controls"].get(k)
@@ -580,7 +582,9 @@ func _reconcile_v_for_region(parent_node, container: Control) -> void:
 			var scope_check: Dictionary = ctl_check.get_meta("_vfor_scope", {})
 			var stored_item = scope_check.get(spec["loop_var"], null)
 			var new_item = (arr as Array)[i]
-			if stored_item != new_item:
+			var item_changed: bool = stored_item != new_item
+			var index_changed: bool = spec["index_var"] != "" and scope_check.get(spec["index_var"], i) != i
+			if item_changed or index_changed:
 				scope_check[spec["loop_var"]] = new_item
 				if spec["index_var"] != "":
 					scope_check[spec["index_var"]] = i
