@@ -235,6 +235,9 @@ func _ready() -> void:
 # builds deferred, so the LineEdit isn't registered during _ready — wire it on
 # the first tick once it exists.
 var _caret_inited := false
+var _screen_scroll: ScrollContainer = null
+var _scroll_frames := 0
+
 func _init_caret() -> void:
 	var le := view.get_element_by_id("cmdline")
 	if le is LineEdit:
@@ -242,7 +245,17 @@ func _init_caret() -> void:
 		le.caret_blink_interval = 0.6
 		le.add_theme_color_override("caret_color", Color("#9ece6a"))
 		le.grab_focus()
+		_screen_scroll = _find_scroll(view)
 		_caret_inited = true
+
+func _find_scroll(n: Node) -> ScrollContainer:
+	for c in n.get_children():
+		if c is ScrollContainer:
+			return c
+		var r := _find_scroll(c)
+		if r != null:
+			return r
+	return null
 
 
 func _process(delta: float) -> void:
@@ -250,6 +263,11 @@ func _process(delta: float) -> void:
 		return
 	if not _caret_inited:
 		_init_caret()
+	# Auto-scroll the scrollback to the newest line. Done over a few frames
+	# after new content so the layout has settled before we pin to the bottom.
+	if _screen_scroll != null and _scroll_frames > 0:
+		_screen_scroll.scroll_vertical = 1000000
+		_scroll_frames -= 1
 	var rate := per_sec()
 	var earnings := rate * delta
 	commits += earnings
@@ -279,6 +297,7 @@ func _log(kind: String, text: String, actionable: bool = false, ref: String = ""
 func _push_log() -> void:
 	if view != null:
 		view.state.set("log", _log_lines.duplicate())
+		_scroll_frames = 3  # follow to the newest line once layout settles
 
 func _seed_log() -> void:
 	_log("sys", "foundry v0.8 — idle commit console")
