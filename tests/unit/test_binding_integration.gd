@@ -638,3 +638,23 @@ func test_dynamic_class_descendant_from_ancestor_NOT_reresolved() -> void:
 	var c: Color = label.get_theme_color("font_color")
 	assert_almost_eq(c.r, 1.0, 0.06)
 	assert_almost_eq(c.g, 1.0, 0.06, "child must NOT turn red — documented limitation")
+
+
+# ─── v0.8.3: focus stamping (Task 2) ───────────────────────────────
+
+func test_clickable_span_gets_focus_mode_all() -> void:
+	var view := _build_view('<div><span @click="x">click me</span></div>')
+	view.state.set("x", null)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var found := false
+	var stack: Array = [view]
+	while not stack.is_empty():
+		var nd = stack.pop_back()
+		if nd is Control and (nd as Control).get_meta("_gml_focusable", false):
+			if (nd as Control).focus_mode == Control.FOCUS_ALL:
+				found = true
+				break
+		for ch in nd.get_children():
+			stack.append(ch)
+	assert_true(found, "a @click element should be focusable with FOCUS_ALL")
