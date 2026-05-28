@@ -171,3 +171,45 @@ func test_perf_vfor_build_scale() -> void:
 			1
 		)
 	assert_true(true)
+
+# ─── v-for reconcile ops (keyed) ───────────────────────────
+
+func test_perf_vfor_reconcile_ops() -> void:
+	_print_header("v-for reconcile ops")
+	var base := make_items(100)
+	var appended := make_items(100)
+	appended.append({"id": "100", "name": "Item 100"})
+	var prepended: Array = [{"id": "p", "name": "Prepend"}]
+	prepended.append_array(make_items(100))
+	var replaced := make_items(100)
+	replaced[50] = {"id": "X", "name": "Replaced"}
+	var reversed: Array = []
+	for i in range(99, -1, -1):
+		reversed.append(base[i])
+
+	# One settled view; setup resets to a FRESH base copy (untimed), op
+	# applies the mutation (timed). Each op is a single synchronous
+	# reconcile. base.duplicate() differs from the prior op array, so the
+	# reset always fires; the mutation arrays differ from base, so ops fire.
+	var view := _build_view('<ul><li v-for="item in items" :key="item.id">{{ item.name }}</li></ul>')
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var reset := func(): view.state.set("items", base.duplicate())
+
+	_bench("append", 100, 50, func(): view.state.set("items", appended), reset)
+	_bench("prepend", 100, 50, func(): view.state.set("items", prepended), reset)
+	_bench("replace_one", 100, 50, func(): view.state.set("items", replaced), reset)
+	_bench("shuffle_reverse", 100, 30, func(): view.state.set("items", reversed), reset)
+
+	# Shuffle at N=500 to stress LIS through the full scene-mutating reconcile.
+	var base500 := make_items(500)
+	var reversed500: Array = []
+	for i in range(499, -1, -1):
+		reversed500.append(base500[i])
+	view.state.set("items", base500)
+	await get_tree().process_frame
+	var reset500 := func(): view.state.set("items", base500.duplicate())
+	_bench("shuffle_reverse", 500, 10, func(): view.state.set("items", reversed500), reset500)
+
+	assert_true(true)
