@@ -105,6 +105,9 @@ static func restyle(control: Control, node, ancestor_chain: Array, dynamic_class
 ## Apply visual props to the control in place. Stylebox-bearing controls
 ## (PanelContainer/Button) get bg/border mutated on their existing
 ## stylebox; Labels get font_color; all controls get opacity via modulate.
+## When the bound control is a container (e.g. HBoxContainer for <li>),
+## font_color propagates to all descendant Labels — matching CSS `color`
+## inheritance so `:class` on a container re-colors its text children.
 static func _apply_visual(control: Control, target: Dictionary, full_style: Dictionary, transition_manager) -> void:
 	# Opacity → modulate.a
 	if target.has("opacity"):
@@ -112,14 +115,13 @@ static func _apply_visual(control: Control, target: Dictionary, full_style: Dict
 		if a is float or a is int:
 			control.modulate.a = float(a)
 
-	# Font color → theme override (Label / RichTextLabel / Button)
+	# Font color → theme override (Label / RichTextLabel / Button / Button descendants).
+	# For container controls (e.g. HBoxContainer wrapping a <li>), propagate the
+	# color to all descendant Labels so CSS `color` inheritance is respected.
 	if target.has("color"):
 		var col = target["color"]
 		if col is Color:
-			if control is RichTextLabel:
-				control.add_theme_color_override("default_color", col)
-			else:
-				control.add_theme_color_override("font_color", col)
+			_apply_font_color(control, col)
 
 	# Font size
 	if target.has("font-size"):
@@ -148,6 +150,20 @@ static func _apply_visual(control: Control, target: Dictionary, full_style: Dict
 				box.corner_radius_top_right = int(br)
 				box.corner_radius_bottom_left = int(br)
 				box.corner_radius_bottom_right = int(br)
+
+
+## Apply font_color to control and, if it is a container, to all descendant
+## Labels / RichTextLabels. Mirrors CSS `color` inheritance.
+static func _apply_font_color(control: Control, col: Color) -> void:
+	if control is RichTextLabel:
+		control.add_theme_color_override("default_color", col)
+	elif control is Label or control is Button:
+		control.add_theme_color_override("font_color", col)
+	else:
+		# Container: propagate to all Label/RTL descendants.
+		for child in control.get_children():
+			if child is Control:
+				_apply_font_color(child as Control, col)
 
 
 ## Return the StyleBoxFlat a control renders its background through, or
