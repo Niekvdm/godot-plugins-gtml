@@ -555,4 +555,4 @@ overflow-y: scroll;  /* Vertical only */
 - [CSS Properties](css-properties.md) - All layout properties
 - [HTML Elements](html-elements.md) - Container elements
 - [Getting Started](getting-started.md) - Basic examples
-- Example: `addons/gtml/examples/flex_layout.html`
+- Example: `addons/gtml/examples/showcase/atlas/` (flex-heavy dashboard)

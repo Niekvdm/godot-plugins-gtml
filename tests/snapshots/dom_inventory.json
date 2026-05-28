@@ -1,0 +1,318 @@
+{
+  "_t": "el",
+  "tag": "div",
+  "attrs": {
+    "class": "page"
+  },
+  "children": [
+    {
+      "_t": "el",
+      "tag": "header",
+      "attrs": {
+        "class": "topbar"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "span",
+          "attrs": {
+            "class": "title"
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "Inventory"
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "span",
+          "attrs": {
+            "class": "gold"
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "Gold: {{ gold }}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_t": "el",
+      "tag": "div",
+      "attrs": {
+        "class": "content"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "left-pane"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "filter-row"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "input",
+                  "attrs": {
+                    "class": "search-input",
+                    "placeholder": "Search items...",
+                    "type": "text",
+                    "v-model": "search"
+                  },
+                  "children": []
+                },
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    ":class": "{ active: filter == 'all' }",
+                    "@click": "set_filter('all')",
+                    "class": "filter-btn"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "All"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    ":class": "{ active: filter == 'weapon' }",
+                    "@click": "set_filter('weapon')",
+                    "class": "filter-btn"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Weapon"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    ":class": "{ active: filter == 'potion' }",
+                    "@click": "set_filter('potion')",
+                    "class": "filter-btn"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Potion"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "ul",
+              "attrs": {
+                "class": "item-grid"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "li",
+                  "attrs": {
+                    "@click": "select(item)",
+                    "class": "item-card",
+                    "v-for": "item, i in filtered_items"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "div",
+                      "attrs": {
+                        "class": "item-row"
+                      },
+                      "children": [
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "item-icon"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "{{ item.icon }}"
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "item-name"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "{{ item.name }}"
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "item-qty"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "x{{ item.qty }}"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+                "class": "empty-msg",
+                "v-if": "empty"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "No items match."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "right-pane",
+            "v-show": "has_selection"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "h2",
+              "attrs": {
+                "class": "detail-name"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "{{ selected_name }}"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+                "class": "detail-rarity"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "{{ selected_rarity }}"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+                "class": "detail-desc"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "{{ selected_desc }}"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "button",
+              "attrs": {
+                ":disabled": "!has_selection",
+                "@click": "use_item",
+                "class": "use-btn"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Use"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_t": "el",
+      "tag": "div",
+      "attrs": {
+        "class": "hotbar"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "slot",
+            "v-for": "slot, i in hotbar"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "slot-num"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "{{ i }}"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "slot-icon"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "{{ slot }}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

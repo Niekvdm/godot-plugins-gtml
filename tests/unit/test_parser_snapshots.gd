@@ -8,12 +8,16 @@ const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
 const GmlStyleResolverScript = preload("res://addons/gtml/src/css/GmlStyleResolver.gd")
 const SnapshotHelper = preload("res://tests/unit/snapshot_helper.gd")
 
+## The curated showcase corpus. Each entry's HTML/CSS lives under
+## showcase/<dir>/{index.html,style.css}. Snapshotting these locks parser +
+## resolver output (including the binding syntax the showcase uses) so
+## future refactors surface diffs.
 const EXAMPLES := [
-	"basic",
-	"all_elements",
-	"flex_layout",
-	"css_features",
-	"transitions",
+	{"name": "atlas", "dir": "showcase/atlas"},
+	{"name": "atelier", "dir": "showcase/atelier"},
+	{"name": "forge", "dir": "showcase/forge"},
+	{"name": "kitchen", "dir": "showcase/kitchen"},
+	{"name": "inventory", "dir": "showcase/inventory"},
 ]
 
 
@@ -49,8 +53,9 @@ func _assert_snapshot(name: String, value: Variant) -> void:
 
 
 func test_parser_dom_snapshots() -> void:
-	for name in EXAMPLES:
-		var html := _load_text("res://addons/gtml/examples/%s.html" % name)
+	for example in EXAMPLES:
+		var name: String = example["name"]
+		var html := _load_text("res://addons/gtml/examples/%s/index.html" % example["dir"])
 		var parser = GmlHtmlParserScript.new()
 		var dom = parser.parse(html)
 		assert_not_null(dom, "parser returned null for %s" % name)
@@ -58,9 +63,10 @@ func test_parser_dom_snapshots() -> void:
 
 
 func test_resolver_style_snapshots() -> void:
-	for name in EXAMPLES:
-		var html := _load_text("res://addons/gtml/examples/%s.html" % name)
-		var css := _load_text("res://addons/gtml/examples/%s.css" % name)
+	for example in EXAMPLES:
+		var name: String = example["name"]
+		var html := _load_text("res://addons/gtml/examples/%s/index.html" % example["dir"])
+		var css := _load_text("res://addons/gtml/examples/%s/style.css" % example["dir"])
 		var parser = GmlHtmlParserScript.new()
 		var dom = parser.parse(html)
 		var css_parser = GmlCssParserScript.new()

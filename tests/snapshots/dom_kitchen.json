@@ -1,0 +1,1147 @@
+{
+  "_t": "el",
+  "tag": "div",
+  "attrs": {
+    "class": "page"
+  },
+  "children": [
+    {
+      "_t": "el",
+      "tag": "header",
+      "attrs": {
+        "class": "top"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "span",
+          "attrs": {
+            "class": "brand"
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "GTML"
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "span",
+          "attrs": {
+            "class": "brand-sep"
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "·"
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "span",
+          "attrs": {
+            "class": "brand-context"
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "kitchen sink"
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "span",
+          "attrs": {
+            "class": "brand-flex"
+          },
+          "children": []
+        },
+        {
+          "_t": "el",
+          "tag": "span",
+          "attrs": {
+            "class": "version"
+          },
+          "children": [
+            {
+              "_t": "text",
+              "v": "v0.5"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_t": "el",
+      "tag": "main",
+      "attrs": {
+        "class": "sheet"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "section",
+          "attrs": {
+            "class": "block"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "block-eyebrow"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "01 · Typography"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "h1",
+              "attrs": {
+
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Heading one"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "h2",
+              "attrs": {
+
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Heading two"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "h3",
+              "attrs": {
+
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Heading three"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "h4",
+              "attrs": {
+
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Heading four"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "h5",
+              "attrs": {
+
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Heading five"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "h6",
+              "attrs": {
+
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Heading six"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Plain paragraph."
+                },
+                {
+                  "_t": "el",
+                  "tag": "strong",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Bold text"
+                    }
+                  ]
+                },
+                {
+                  "_t": "text",
+                  "v": "via <strong>."
+                },
+                {
+                  "_t": "el",
+                  "tag": "em",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Italic text"
+                    }
+                  ]
+                },
+                {
+                  "_t": "text",
+                  "v": "via <em>. A"
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "link",
+                    "href": "#"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "link"
+                    }
+                  ]
+                },
+                {
+                  "_t": "text",
+                  "v": "for good measure."
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+                "class": "muted"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Muted secondary text. Useful for help copy and timestamps."
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+                "class": "spaced"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Letter-spacing 3px via FontVariation (v0.3)."
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+                "class": "upper"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "text-transform: uppercase"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+                "class": "indent"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "First-line indent simulated with metadata; visual rendering deferred."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "section",
+          "attrs": {
+            "class": "block"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "block-eyebrow"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "02 · Layout"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "row-demo"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "swatch swatch-1"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "flex 1"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "swatch swatch-2"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "flex 1"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "swatch swatch-3"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "flex 2"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "col-demo"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "cell"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "column gap 12"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "cell"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "column gap 12"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "cell"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "column gap 12"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "rounded"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "border-radius + box-shadow target"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "gradient"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "linear-gradient background"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "section",
+          "attrs": {
+            "class": "block"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "block-eyebrow"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "03 · Inputs"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "label",
+              "attrs": {
+                "class": "row",
+                "for": "k-text"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "label-text"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Text input"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "input",
+                  "attrs": {
+                    "class": "input",
+                    "id": "k-text",
+                    "type": "text",
+                    "value": "hello"
+                  },
+                  "children": []
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "label",
+              "attrs": {
+                "class": "row",
+                "for": "k-pass"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "label-text"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Password"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "input",
+                  "attrs": {
+                    "class": "input",
+                    "id": "k-pass",
+                    "type": "password",
+                    "value": "secret"
+                  },
+                  "children": []
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "label",
+              "attrs": {
+                "class": "row",
+                "for": "k-check"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "input",
+                  "attrs": {
+                    "checked": "true",
+                    "class": "check",
+                    "id": "k-check",
+                    "type": "checkbox"
+                  },
+                  "children": []
+                },
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "label-text"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Checkbox (with :checked)"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "radio-group"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "label",
+                  "attrs": {
+                    "class": "row",
+                    "for": "k-r1"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "input",
+                      "attrs": {
+                        "class": "check",
+                        "id": "k-r1",
+                        "name": "kpick",
+                        "type": "radio",
+                        "value": "a"
+                      },
+                      "children": []
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "label-text"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Radio one"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "label",
+                  "attrs": {
+                    "class": "row",
+                    "for": "k-r2"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "input",
+                      "attrs": {
+                        "checked": "true",
+                        "class": "check",
+                        "id": "k-r2",
+                        "name": "kpick",
+                        "type": "radio",
+                        "value": "b"
+                      },
+                      "children": []
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "label-text"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Radio two (selected)"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "button",
+              "attrs": {
+                "class": "btn-secondary"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Secondary button"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "button",
+              "attrs": {
+                "class": "btn-primary"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Primary action"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "section",
+          "attrs": {
+            "class": "block"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "block-eyebrow"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "04 · Lists"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "ul",
+              "attrs": {
+                "class": "list"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "li",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Unordered first"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "li",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Unordered second (hover me)"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "li",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Unordered third"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "ol",
+              "attrs": {
+                "class": "list"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "li",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Ordered first"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "li",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Ordered second"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "li",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Ordered third"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "section",
+          "attrs": {
+            "class": "block"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "block-eyebrow"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "05 · Pseudos & states"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "state-grid"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "state-card"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": ":hover scales 1.04"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    "class": "state-card focus-demo"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "tab here for :focus"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "state-card combined"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": ":hover + :focus combined"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "section",
+          "attrs": {
+            "class": "block"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "block-eyebrow"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "06 · CSS authoring"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+                "class": "feat-note"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "All three samples in this showcase use the features below:"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "ul",
+              "attrs": {
+                "class": "feat-list"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "li",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "code",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "--name"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "text",
+                      "v": "custom properties +"
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "code",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "var(--name)"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "li",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "code",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "calc()"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "text",
+                      "v": "for derived dimensions"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "li",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "code",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "transform: scale / translate / rotate"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "text",
+                      "v": "animated via transitions"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "li",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Structural selectors:"
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "code",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": ":first-child"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "text",
+                      "v": ","
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "code",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": ":nth-child(2n+1)"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "text",
+                      "v": ","
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "code",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": ":not(...)"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "li",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Substring attribute matchers:"
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "code",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "[href^=\"https\"]"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "text",
+                      "v": ","
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "code",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "[class~=\"card\"]"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "li",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Sibling combinators:"
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "code",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": ".a + .b"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "text",
+                      "v": ","
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "code",
+                      "attrs": {
+
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": ".a ~ .b"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

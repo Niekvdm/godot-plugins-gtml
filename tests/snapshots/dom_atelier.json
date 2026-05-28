@@ -1,0 +1,538 @@
+{
+  "_t": "el",
+  "tag": "div",
+  "attrs": {
+    "class": "page"
+  },
+  "children": [
+    {
+      "_t": "el",
+      "tag": "header",
+      "attrs": {
+        "class": "masthead"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "masthead-left"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "logo"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "ATELIER"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "tagline"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "journal · craft · design"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "masthead-right"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "issue"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "ISSUE 14 · SPRING"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_t": "el",
+      "tag": "div",
+      "attrs": {
+        "class": "content"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "article",
+          "attrs": {
+            "class": "essay"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "essay-meta"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "essay-section"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "ON CRAFT"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "essay-dot"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "·"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "essay-kind"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "ESSAY"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "h1",
+              "attrs": {
+                "class": "essay-title"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "The discipline of quiet tools"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "p",
+              "attrs": {
+                "class": "essay-deck"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "A study of the interfaces that disappear into the work — and what we lose when software shouts instead of listens."
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "essay-byline"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "byline-name"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Jonas Lindqvist"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "byline-sep"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "·"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "byline-time"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "12 min read"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "byline-sep"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "·"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "byline-date"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "March 2026"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "essay-body"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "p",
+                  "attrs": {
+                    "class": "lead"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "There is a kind of software that announces itself constantly. It pulses, it badges, it nudges. It assumes — politely, at first — that you have nothing better to do than respond to it."
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "p",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "And then there is the other kind. The kind that earns the right to your attention slowly, by being so quiet that you forget it is there until you need it."
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "p",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "The discipline of quiet tools is mostly the discipline of restraint. Every notification justified. Every animation slow enough to be ignored. Every default chosen by someone who had to live with it."
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "p",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "The quiet tool does not perform. It does not flatter. It does its job and steps back so you can do yours. The work — your work — remains the center of gravity."
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "p",
+                  "attrs": {
+                    "class": "callout"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "\"The best interface is the one you stop noticing on the third day.\""
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "p",
+                  "attrs": {
+
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "This is harder to design than it looks. A loud product can hide a thin idea. A quiet product cannot. Every surface that disappears is a surface that had to be considered hard enough to know that disappearing was the point."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "aside",
+          "attrs": {
+            "class": "sidebar"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "section",
+              "attrs": {
+                "class": "side-block"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "h3",
+                  "attrs": {
+                    "class": "side-heading"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "SECTIONS"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "ul",
+                  "attrs": {
+                    "class": "side-list"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "li",
+                      "attrs": {
+                        "class": "side-item side-active"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Process"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "li",
+                      "attrs": {
+                        "class": "side-item"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Materials"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "li",
+                      "attrs": {
+                        "class": "side-item"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Voice"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "li",
+                      "attrs": {
+                        "class": "side-item"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Restraint"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "li",
+                      "attrs": {
+                        "class": "side-item"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Surface"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "section",
+              "attrs": {
+                "class": "side-block"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "h3",
+                  "attrs": {
+                    "class": "side-heading"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "RELATED"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "ul",
+                  "attrs": {
+                    "class": "side-list"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "li",
+                      "attrs": {
+                        "class": "side-item-link"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "The anti-default movement"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "li",
+                      "attrs": {
+                        "class": "side-item-link"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Density as a discipline"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "li",
+                      "attrs": {
+                        "class": "side-item-link"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "In defense of borders"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "section",
+              "attrs": {
+                "class": "side-block side-block-quiet"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "h3",
+                  "attrs": {
+                    "class": "side-heading"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "FROM THE EDITOR"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "p",
+                  "attrs": {
+                    "class": "side-note"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "This issue celebrates the makers who refuse to ship the obvious answer. Subscribe to receive the next four issues by post."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

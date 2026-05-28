@@ -1,0 +1,776 @@
+[
+  {
+    "path": "div.page",
+    "style": {
+      "background-color": "Color(0.9608,0.9412,0.9098,1.0000)",
+      "color": "Color(0.1020,0.0863,0.0706,1.0000)",
+      "display": "flex",
+      "flex-direction": "column",
+      "height": {
+        "unit": "%",
+        "value": 100.0
+      },
+      "width": {
+        "unit": "%",
+        "value": 100.0
+      }
+    }
+  },
+  {
+    "path": "div.page > header.masthead",
+    "style": {
+      "align-items": "center",
+      "border-bottom": {
+        "color": "Color(0.8471,0.8118,0.7529,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "display": "flex",
+      "flex-direction": "row",
+      "justify-content": "space-between",
+      "padding-bottom": 24,
+      "padding-left": 48,
+      "padding-right": 48,
+      "padding-top": 24
+    }
+  },
+  {
+    "path": "div.page > header.masthead > div.masthead-left",
+    "style": {
+      "align-items": "center",
+      "display": "flex",
+      "flex-direction": "row",
+      "gap": 24
+    }
+  },
+  {
+    "path": "div.page > header.masthead > div.masthead-left > span.logo",
+    "style": {
+      "color": "Color(0.1020,0.0863,0.0706,1.0000)",
+      "font-size": 18,
+      "font-weight": 700,
+      "letter-spacing": 6.0
+    }
+  },
+  {
+    "path": "div.page > header.masthead > div.masthead-left > span.tagline",
+    "style": {
+      "color": "Color(0.4314,0.3922,0.3412,1.0000)",
+      "font-size": 11,
+      "font-weight": 500,
+      "letter-spacing": 2.0,
+      "text-transform": "uppercase"
+    }
+  },
+  {
+    "path": "div.page > header.masthead > div.masthead-right",
+    "style": {
+      "align-items": "center",
+      "display": "flex",
+      "flex-direction": "row"
+    }
+  },
+  {
+    "path": "div.page > header.masthead > div.masthead-right > span.issue",
+    "style": {
+      "color": "Color(0.6588,0.2706,0.1216,1.0000)",
+      "font-size": 11,
+      "font-weight": 600,
+      "letter-spacing": 3.0
+    }
+  },
+  {
+    "path": "div.page > div.content",
+    "style": {
+      "display": "flex",
+      "flex-direction": "row",
+      "flex-grow": 1.0,
+      "overflow": "hidden"
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "flex-grow": 1.0,
+      "gap": 24,
+      "max-width": {
+        "unit": "px",
+        "value": 720
+      },
+      "overflow-y": "auto",
+      "padding-bottom": 56,
+      "padding-left": 80,
+      "padding-right": 80,
+      "padding-top": 56
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-meta",
+    "style": {
+      "align-items": "center",
+      "display": "flex",
+      "flex-direction": "row",
+      "gap": 12
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-meta > span.essay-section",
+    "style": {
+      "color": "Color(0.6588,0.2706,0.1216,1.0000)",
+      "font-size": 11,
+      "font-weight": 700,
+      "letter-spacing": 4.0
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-meta > span.essay-dot",
+    "style": {
+      "color": "Color(0.7686,0.7216,0.6431,1.0000)",
+      "font-size": 12
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-meta > span.essay-kind",
+    "style": {
+      "color": "Color(0.4314,0.3922,0.3412,1.0000)",
+      "font-size": 11,
+      "font-weight": 600,
+      "letter-spacing": 4.0
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > h1.essay-title",
+    "style": {
+      "color": "Color(0.1020,0.0863,0.0706,1.0000)",
+      "font-size": 48,
+      "font-weight": 700,
+      "line-height": 4,
+      "margin-bottom": 8
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > p.essay-deck",
+    "style": {
+      "color": "Color(0.2902,0.2510,0.2078,1.0000)",
+      "font-size": 18,
+      "font-weight": 400,
+      "line-height": 8,
+      "margin-bottom": 16
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-byline",
+    "style": {
+      "align-items": "center",
+      "border-bottom": {
+        "color": "Color(0.8471,0.8118,0.7529,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "display": "flex",
+      "flex-direction": "row",
+      "gap": 8,
+      "margin-bottom": 16,
+      "padding-bottom": 24
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-byline > span.byline-name",
+    "style": {
+      "color": "Color(0.1020,0.0863,0.0706,1.0000)",
+      "font-size": 12,
+      "font-weight": 600,
+      "letter-spacing": 1.0
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-byline > span.byline-sep",
+    "style": {
+      "color": "Color(0.7686,0.7216,0.6431,1.0000)",
+      "font-size": 11
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-byline > span.byline-time",
+    "style": {
+      "color": "Color(0.4314,0.3922,0.3412,1.0000)",
+      "font-size": 11,
+      "letter-spacing": 1.0
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-byline > span.byline-sep",
+    "style": {
+      "color": "Color(0.7686,0.7216,0.6431,1.0000)",
+      "font-size": 11
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-byline > span.byline-date",
+    "style": {
+      "color": "Color(0.4314,0.3922,0.3412,1.0000)",
+      "font-size": 11,
+      "letter-spacing": 1.0
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-body",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 16
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-body > p.lead",
+    "style": {
+      "color": "Color(0.1647,0.1333,0.0941,1.0000)",
+      "font-size": 15,
+      "font-weight": 500,
+      "line-height": 10
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-body > p",
+    "style": {
+      "color": "Color(0.1647,0.1333,0.0941,1.0000)",
+      "font-size": 15,
+      "line-height": 10
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-body > p",
+    "style": {
+      "color": "Color(0.1647,0.1333,0.0941,1.0000)",
+      "font-size": 15,
+      "line-height": 10
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-body > p",
+    "style": {
+      "color": "Color(0.1647,0.1333,0.0941,1.0000)",
+      "font-size": 15,
+      "line-height": 10
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-body > p.callout",
+    "style": {
+      "border-left": {
+        "color": "Color(0.6588,0.2706,0.1216,1.0000)",
+        "style": "solid",
+        "width": 3
+      },
+      "color": "Color(0.1647,0.1333,0.0941,1.0000)",
+      "font-size": 15,
+      "font-weight": 600,
+      "line-height": 10,
+      "margin-bottom": 16,
+      "margin-top": 16,
+      "padding-bottom": 16,
+      "padding-left": 24,
+      "padding-top": 16
+    }
+  },
+  {
+    "path": "div.page > div.content > article.essay > div.essay-body > p",
+    "style": {
+      "color": "Color(0.1647,0.1333,0.0941,1.0000)",
+      "font-size": 15,
+      "line-height": 10
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar",
+    "style": {
+      "background-color": "Color(0.9216,0.8902,0.8314,1.0000)",
+      "border-left": {
+        "color": "Color(0.8471,0.8118,0.7529,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 40,
+      "overflow-y": "auto",
+      "padding-bottom": 56,
+      "padding-left": 32,
+      "padding-right": 32,
+      "padding-top": 56,
+      "width": {
+        "unit": "px",
+        "value": 280
+      }
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 12
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block > h3.side-heading",
+    "style": {
+      "border-bottom": {
+        "color": "Color(0.7686,0.7216,0.6431,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "color": "Color(0.4314,0.3922,0.3412,1.0000)",
+      "font-size": 11,
+      "font-weight": 700,
+      "letter-spacing": 4.0,
+      "margin-bottom": 4,
+      "padding-bottom": 8
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block > ul.side-list",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 2,
+      "list-style-type": "none"
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block > ul.side-list > li.side-item.side-active",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.8667,0.8275,0.7529,1.0000)"
+      },
+      "background-color": "Color(0.9216,0.8902,0.8314,1.0000)",
+      "border-left": {
+        "color": "Color(0.6588,0.2706,0.1216,1.0000)",
+        "style": "solid",
+        "width": 2
+      },
+      "border-radius": 2,
+      "color": "Color(0.6588,0.2706,0.1216,1.0000)",
+      "font-size": 13,
+      "font-weight": 600,
+      "padding-bottom": 8,
+      "padding-left": 10,
+      "padding-right": 12,
+      "padding-top": 8,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block > ul.side-list > li.side-item",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.8667,0.8275,0.7529,1.0000)"
+      },
+      "background-color": "Color(0.9216,0.8902,0.8314,1.0000)",
+      "border-radius": 2,
+      "color": "Color(0.1647,0.1333,0.0941,1.0000)",
+      "font-size": 13,
+      "padding-bottom": 8,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 8,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block > ul.side-list > li.side-item",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.8667,0.8275,0.7529,1.0000)"
+      },
+      "background-color": "Color(0.9216,0.8902,0.8314,1.0000)",
+      "border-radius": 2,
+      "color": "Color(0.1647,0.1333,0.0941,1.0000)",
+      "font-size": 13,
+      "padding-bottom": 8,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 8,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block > ul.side-list > li.side-item",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.8667,0.8275,0.7529,1.0000)"
+      },
+      "background-color": "Color(0.9216,0.8902,0.8314,1.0000)",
+      "border-radius": 2,
+      "color": "Color(0.1647,0.1333,0.0941,1.0000)",
+      "font-size": 13,
+      "padding-bottom": 8,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 8,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block > ul.side-list > li.side-item",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.8667,0.8275,0.7529,1.0000)"
+      },
+      "background-color": "Color(0.9216,0.8902,0.8314,1.0000)",
+      "border-radius": 2,
+      "color": "Color(0.1647,0.1333,0.0941,1.0000)",
+      "font-size": 13,
+      "padding-bottom": 8,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 8,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 12
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block > h3.side-heading",
+    "style": {
+      "border-bottom": {
+        "color": "Color(0.7686,0.7216,0.6431,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "color": "Color(0.4314,0.3922,0.3412,1.0000)",
+      "font-size": 11,
+      "font-weight": 700,
+      "letter-spacing": 4.0,
+      "margin-bottom": 4,
+      "padding-bottom": 8
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block > ul.side-list",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 2,
+      "list-style-type": "none"
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block > ul.side-list > li.side-item-link",
+    "style": {
+      "_hover": {
+        "border-bottom": {
+          "color": "Color(0.6588,0.2706,0.1216,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "color": "Color(0.6588,0.2706,0.1216,1.0000)",
+        "transform": {
+          "rotate": 0.0,
+          "scale": "(1.0, 1.0)",
+          "translate": "(2.0, 0.0)"
+        }
+      },
+      "background-color": "Color(0.9216,0.8902,0.8314,1.0000)",
+      "border-bottom": {
+        "color": "Color(0.8667,0.8275,0.7529,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 2,
+      "color": "Color(0.2902,0.2510,0.2078,1.0000)",
+      "font-size": 13,
+      "padding-bottom": 8,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 8,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "border-bottom",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.22,
+          "property": "transform",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block > ul.side-list > li.side-item-link",
+    "style": {
+      "_hover": {
+        "border-bottom": {
+          "color": "Color(0.6588,0.2706,0.1216,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "color": "Color(0.6588,0.2706,0.1216,1.0000)",
+        "transform": {
+          "rotate": 0.0,
+          "scale": "(1.0, 1.0)",
+          "translate": "(2.0, 0.0)"
+        }
+      },
+      "background-color": "Color(0.9216,0.8902,0.8314,1.0000)",
+      "border-bottom": {
+        "color": "Color(0.8667,0.8275,0.7529,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 2,
+      "color": "Color(0.2902,0.2510,0.2078,1.0000)",
+      "font-size": 13,
+      "padding-bottom": 8,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 8,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "border-bottom",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.22,
+          "property": "transform",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block > ul.side-list > li.side-item-link",
+    "style": {
+      "_hover": {
+        "border-bottom": {
+          "color": "Color(0.6588,0.2706,0.1216,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "color": "Color(0.6588,0.2706,0.1216,1.0000)",
+        "transform": {
+          "rotate": 0.0,
+          "scale": "(1.0, 1.0)",
+          "translate": "(2.0, 0.0)"
+        }
+      },
+      "background-color": "Color(0.9216,0.8902,0.8314,1.0000)",
+      "border-bottom": {
+        "color": "Color(0.8667,0.8275,0.7529,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 2,
+      "color": "Color(0.2902,0.2510,0.2078,1.0000)",
+      "font-size": 13,
+      "padding-bottom": 8,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 8,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "border-bottom",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.22,
+          "property": "transform",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block.side-block-quiet",
+    "style": {
+      "background-color": "Color(0.8784,0.8471,0.7843,1.0000)",
+      "border-radius": 2,
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 12,
+      "padding": 20
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block.side-block-quiet > h3.side-heading",
+    "style": {
+      "border-bottom": {
+        "color": "Color(0.7686,0.7216,0.6431,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "color": "Color(0.4314,0.3922,0.3412,1.0000)",
+      "font-size": 11,
+      "font-weight": 700,
+      "letter-spacing": 4.0,
+      "margin-bottom": 4,
+      "padding-bottom": 8
+    }
+  },
+  {
+    "path": "div.page > div.content > aside.sidebar > section.side-block.side-block-quiet > p.side-note",
+    "style": {
+      "color": "Color(0.2902,0.2510,0.2078,1.0000)",
+      "font-size": 12,
+      "line-height": 8
+    }
+  }
+]
