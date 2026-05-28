@@ -119,3 +119,17 @@ static func find_autofocus(root: Control) -> Control:
 		if (e["control"] as Control).get_meta(META_AUTOFOCUS, false):
 			return e["control"]
 	return null
+
+
+## The first control in the ROOT group's Tab order (positive-tabindex
+## first, then natural), excluding focus-trap subtrees and tab_skip
+## elements. This is what focus_first() should grab — NOT raw document
+## order, which would ignore tabindex and could land inside a trap.
+static func first_tabbable(root: Control) -> Control:
+	if root == null:
+		return null
+	var root_group: Array = _collect(root).filter(func(e): return e["trap_group"] == null)
+	var ordered: Array = _order(root_group)
+	if ordered.is_empty():
+		return null
+	return ordered[0]["control"]

@@ -121,6 +121,32 @@ func test_find_autofocus_returns_first_in_doc_order() -> void:
 	assert_eq(FM.find_autofocus(r), b, "first autofocus in doc order wins")
 
 
+func test_first_tabbable_respects_tabindex_not_doc_order() -> void:
+	# DOM order: b(natural), a(tabindex=5). Tab order puts a first.
+	var r := _root()
+	var b := _focusable(r, 0)
+	var a := _focusable(r, 5)
+	assert_eq(FM.first_tabbable(r), a, "positive tabindex wins over doc order")
+
+
+func test_first_tabbable_skips_trapped_and_tab_skip() -> void:
+	var r := _root()
+	var skip := _focusable(r, -1, true)
+	var trap := Control.new()
+	trap.set_meta("_gml_focus_trap", true)
+	r.add_child(trap)
+	var trapped := _focusable(trap)
+	var root_btn := _focusable(r)
+	# first_tabbable ignores the tab_skip element and the trapped one,
+	# returning the first real root-group stop.
+	assert_eq(FM.first_tabbable(r), root_btn)
+
+
+func test_first_tabbable_empty_returns_null() -> void:
+	var r := _root()
+	assert_null(FM.first_tabbable(r))
+
+
 func test_empty_tree_no_crash() -> void:
 	var r := _root()
 	FM.wire_focus(r)

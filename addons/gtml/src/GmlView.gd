@@ -172,6 +172,10 @@ func _rebuild() -> void:
 	if _binding_registry != null:
 		_binding_registry.clear()
 	_focus_initialized = false
+	# Drop the stale handle: _clear_children() freed the old tree. Early
+	# returns below (no html, parse failure) leave it null so focus_first()
+	# won't touch a freed Control.
+	_content_root = null
 
 	if html_path.is_empty():
 		_show_placeholder("No HTML file assigned")
@@ -272,10 +276,14 @@ func _rebuild() -> void:
 		if target_control != null:
 			_content_root = target_control
 			GmlFocusManagerScript.wire_focus(target_control)
-			var autofocus_ctl: Control = GmlFocusManagerScript.find_autofocus(target_control)
-			if autofocus_ctl != null and not _focus_initialized:
-				_focus_initialized = true
-				autofocus_ctl.call_deferred("grab_focus")
+			# Don't steal the editor's keyboard focus on hot-reload: a @tool
+			# GmlView rebuilds on every HTML/CSS save, and a deferred
+			# grab_focus would yank focus out of the author's code editor.
+			if not Engine.is_editor_hint():
+				var autofocus_ctl: Control = GmlFocusManagerScript.find_autofocus(target_control)
+				if autofocus_ctl != null and not _focus_initialized:
+					_focus_initialized = true
+					autofocus_ctl.call_deferred("grab_focus")
 	else:
 		push_error("GmlView: Renderer returned null ui_root")
 
@@ -437,18 +445,18 @@ func get_element_by_id(element_id: String) -> Control:
 	return _elements_by_id.get(element_id, null)
 
 
-## Grab the first Tab-order focusable in the view (first non-tab-skip
-## focusable in document order). Returns false if nothing is focusable.
-## For game code seizing focus when a menu opens.
+## Grab the first Tab-order focusable in the view — the first element in
+## the root group's tab order (tabindex-aware, trap subtrees excluded).
+## Returns false if nothing is focusable. For game code seizing focus
+## when a menu opens.
 func focus_first() -> bool:
 	if _content_root == null:
 		return false
-	var entries: Array = GmlFocusManagerScript._collect(_content_root)
-	for e in entries:
-		if not e["tab_skip"]:
-			(e["control"] as Control).grab_focus()
-			return true
-	return false
+	var first: Control = GmlFocusManagerScript.first_tabbable(_content_root)
+	if first == null:
+		return false
+	first.grab_focus()
+	return true
 
 
 ## Get the wrapper control for an element by its ID.
