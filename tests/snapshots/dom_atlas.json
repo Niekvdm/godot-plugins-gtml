@@ -1,0 +1,1051 @@
+{
+  "_t": "el",
+  "tag": "div",
+  "attrs": {
+    "class": "app"
+  },
+  "children": [
+    {
+      "_t": "el",
+      "tag": "header",
+      "attrs": {
+        "class": "topbar"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "brand-block"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "brand-mark"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "atlas"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "brand-sep"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "/"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "brand-context"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "orbital ops"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "topbar-right"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "status-pill"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "status-dot"
+                  },
+                  "children": []
+                },
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "status-label"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "all systems nominal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "user-chip"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "jl · ops"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_t": "el",
+      "tag": "div",
+      "attrs": {
+        "class": "shell"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "nav",
+          "attrs": {
+            "class": "sidebar"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "nav-section"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "nav-label"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "workspace"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-item nav-active"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Mission control"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-item"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Activity feed"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-item"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Alerts"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "nav-section"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "nav-label"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "infrastructure"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-item"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Nodes"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-item"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Telemetry"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-item"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Configuration"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "nav-section"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "nav-label"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "archive"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-item"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Incident log"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-item"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Reports"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "main",
+          "attrs": {
+            "class": "main"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "page-head"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "page-head-text"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "eyebrow"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "DASHBOARD"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "h1",
+                      "attrs": {
+                        "class": "page-title"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Mission control"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "p",
+                      "attrs": {
+                        "class": "page-subtitle"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Real-time visibility into the production fleet across all regions."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "button",
+                  "attrs": {
+                    "class": "primary-action"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Trigger sweep"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "section",
+              "attrs": {
+                "class": "kpi-row"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "article",
+                  "attrs": {
+                    "class": "kpi"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "kpi-label"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Active nodes"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "kpi-value"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "142"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "kpi-delta delta-up"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "+3 since 09:00"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "article",
+                  "attrs": {
+                    "class": "kpi"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "kpi-label"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Uptime"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "kpi-value"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "99.84"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "kpi-delta delta-flat"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "30-day rolling"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "article",
+                  "attrs": {
+                    "class": "kpi"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "kpi-label"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Median latency"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "kpi-value"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "17ms"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "kpi-delta delta-down"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "-2ms vs yesterday"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "article",
+                  "attrs": {
+                    "class": "kpi"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "kpi-label"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Open alerts"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "kpi-value kpi-warn"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "3"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "kpi-delta delta-flat"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "1 high severity"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "section",
+              "attrs": {
+                "class": "grid-split"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "article",
+                  "attrs": {
+                    "class": "card"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "header",
+                      "attrs": {
+                        "class": "card-head"
+                      },
+                      "children": [
+                        {
+                          "_t": "el",
+                          "tag": "h2",
+                          "attrs": {
+                            "class": "card-title"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "Recent activity"
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "card-meta"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "last 30 minutes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "ul",
+                      "attrs": {
+                        "class": "activity"
+                      },
+                      "children": [
+                        {
+                          "_t": "el",
+                          "tag": "li",
+                          "attrs": {
+                            "class": "activity-item"
+                          },
+                          "children": [
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "activity-time"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "12:48"
+                                }
+                              ]
+                            },
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "activity-text"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "node-04 reconnected after maintenance window"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "li",
+                          "attrs": {
+                            "class": "activity-item"
+                          },
+                          "children": [
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "activity-time"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "12:31"
+                                }
+                              ]
+                            },
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "activity-text"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "alert ALR-2841 resolved by m.tanaka"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "li",
+                          "attrs": {
+                            "class": "activity-item"
+                          },
+                          "children": [
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "activity-time"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "12:19"
+                                }
+                              ]
+                            },
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "activity-text"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "node-12 joined eu-west cluster"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "li",
+                          "attrs": {
+                            "class": "activity-item"
+                          },
+                          "children": [
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "activity-time"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "12:02"
+                                }
+                              ]
+                            },
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "activity-text"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "scheduled sweep completed in 1.4s"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "li",
+                          "attrs": {
+                            "class": "activity-item"
+                          },
+                          "children": [
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "activity-time"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "11:47"
+                                }
+                              ]
+                            },
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "activity-text"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "configuration deployed to 142 nodes"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "article",
+                  "attrs": {
+                    "class": "card"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "header",
+                      "attrs": {
+                        "class": "card-head"
+                      },
+                      "children": [
+                        {
+                          "_t": "el",
+                          "tag": "h2",
+                          "attrs": {
+                            "class": "card-title"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "System status"
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "card-meta"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "live"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "ul",
+                      "attrs": {
+                        "class": "status-list"
+                      },
+                      "children": [
+                        {
+                          "_t": "el",
+                          "tag": "li",
+                          "attrs": {
+                            "class": "status-row"
+                          },
+                          "children": [
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "status-name"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "API gateway"
+                                }
+                              ]
+                            },
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "status-badge badge-ok"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "OPERATIONAL"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "li",
+                          "attrs": {
+                            "class": "status-row"
+                          },
+                          "children": [
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "status-name"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "Database replica"
+                                }
+                              ]
+                            },
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "status-badge badge-ok"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "OPERATIONAL"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "li",
+                          "attrs": {
+                            "class": "status-row"
+                          },
+                          "children": [
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "status-name"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "Edge CDN"
+                                }
+                              ]
+                            },
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "status-badge badge-warn"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "DEGRADED"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "li",
+                          "attrs": {
+                            "class": "status-row"
+                          },
+                          "children": [
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "status-name"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "Auth provider"
+                                }
+                              ]
+                            },
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "status-badge badge-ok"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "OPERATIONAL"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "li",
+                          "attrs": {
+                            "class": "status-row"
+                          },
+                          "children": [
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "status-name"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "Webhook dispatcher"
+                                }
+                              ]
+                            },
+                            {
+                              "_t": "el",
+                              "tag": "span",
+                              "attrs": {
+                                "class": "status-badge badge-ok"
+                              },
+                              "children": [
+                                {
+                                  "_t": "text",
+                                  "v": "OPERATIONAL"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

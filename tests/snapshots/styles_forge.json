@@ -1,0 +1,1645 @@
+[
+  {
+    "path": "div.app",
+    "style": {
+      "background-color": "Color(0.0510,0.0510,0.0510,1.0000)",
+      "color": "Color(0.8314,0.8314,0.8314,1.0000)",
+      "display": "flex",
+      "flex-direction": "column",
+      "height": {
+        "unit": "%",
+        "value": 100.0
+      },
+      "width": {
+        "unit": "%",
+        "value": 100.0
+      }
+    }
+  },
+  {
+    "path": "div.app > header.topbar",
+    "style": {
+      "align-items": "center",
+      "background-color": "Color(0.0667,0.0667,0.0667,1.0000)",
+      "border-bottom": {
+        "color": "Color(0.1216,0.1216,0.1216,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "display": "flex",
+      "flex-direction": "row",
+      "justify-content": "space-between",
+      "padding-bottom": 14,
+      "padding-left": 24,
+      "padding-right": 24,
+      "padding-top": 14
+    }
+  },
+  {
+    "path": "div.app > header.topbar > div.topbar-left",
+    "style": {
+      "align-items": "center",
+      "display": "flex",
+      "flex-direction": "row",
+      "gap": 12
+    }
+  },
+  {
+    "path": "div.app > header.topbar > div.topbar-left > span.brand",
+    "style": {
+      "color": "Color(1.0000,1.0000,1.0000,1.0000)",
+      "font-size": 14,
+      "font-weight": 700,
+      "letter-spacing": 1.0
+    }
+  },
+  {
+    "path": "div.app > header.topbar > div.topbar-left > span.brand-divider",
+    "style": {
+      "color": "Color(0.2275,0.2275,0.2275,1.0000)",
+      "font-size": 14
+    }
+  },
+  {
+    "path": "div.app > header.topbar > div.topbar-left > span.crumb",
+    "style": {
+      "color": "Color(0.5412,0.5412,0.5412,1.0000)",
+      "font-size": 13
+    }
+  },
+  {
+    "path": "div.app > header.topbar > div.topbar-actions",
+    "style": {
+      "align-items": "center",
+      "display": "flex",
+      "flex-direction": "row",
+      "gap": 8
+    }
+  },
+  {
+    "path": "div.app > header.topbar > div.topbar-actions > button.btn.btn-ghost",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.1020,0.1020,0.1020,1.0000)",
+        "border": {
+          "color": "Color(0.2275,0.2275,0.2275,1.0000)",
+          "style": "solid",
+          "width": 1
+        }
+      },
+      "background-color": "Color(0.0667,0.0667,0.0667,1.0000)",
+      "border": {
+        "color": "Color(0.1647,0.1647,0.1647,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 4,
+      "color": "Color(0.8314,0.8314,0.8314,1.0000)",
+      "font-size": 13,
+      "font-weight": 600,
+      "padding-bottom": 8,
+      "padding-left": 14,
+      "padding-right": 14,
+      "padding-top": 8,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "border",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > header.topbar > div.topbar-actions > button.btn.btn-primary",
+    "style": {
+      "_focus": {
+        "border": {
+          "color": "Color(0.8314,0.7843,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        }
+      },
+      "_hover": {
+        "background-color": "Color(0.7020,0.6157,1.0000,1.0000)",
+        "border": {
+          "color": "Color(0.7020,0.6157,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "transform": {
+          "rotate": 0.0,
+          "scale": "(1.03, 1.03)",
+          "translate": "(0.0, 0.0)"
+        }
+      },
+      "background-color": "Color(0.6078,0.4941,1.0000,1.0000)",
+      "border": {
+        "color": "Color(0.6078,0.4941,1.0000,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 4,
+      "color": "Color(0.0510,0.0510,0.0510,1.0000)",
+      "font-size": 13,
+      "font-weight": 600,
+      "padding-bottom": 8,
+      "padding-left": 14,
+      "padding-right": 14,
+      "padding-top": 8,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "border",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "transform",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell",
+    "style": {
+      "display": "flex",
+      "flex-direction": "row",
+      "flex-grow": 1.0,
+      "overflow": "hidden"
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav",
+    "style": {
+      "background-color": "Color(0.0667,0.0667,0.0667,1.0000)",
+      "border-right": {
+        "color": "Color(0.1216,0.1216,0.1216,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 24,
+      "padding": 16,
+      "width": {
+        "unit": "px",
+        "value": 220
+      }
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 2
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group > span.nav-group-label",
+    "style": {
+      "color": "Color(0.3529,0.3529,0.3529,1.0000)",
+      "font-size": 10,
+      "font-weight": 700,
+      "letter-spacing": 3.0,
+      "padding-bottom": 8,
+      "padding-left": 12,
+      "text-transform": "uppercase"
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group > a.nav-link.nav-link-active",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.1020,0.1020,0.1020,1.0000)",
+        "color": "Color(0.8314,0.8314,0.8314,1.0000)"
+      },
+      "background-color": "Color(0.1216,0.1020,0.1804,1.0000)",
+      "border-left": {
+        "color": "Color(0.6078,0.4941,1.0000,1.0000)",
+        "style": "solid",
+        "width": 2
+      },
+      "border-radius": 4,
+      "color": "Color(0.7020,0.6157,1.0000,1.0000)",
+      "display": "block",
+      "font-size": 13,
+      "font-weight": 600,
+      "padding-bottom": 7,
+      "padding-left": 10,
+      "padding-right": 12,
+      "padding-top": 7,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group > a.nav-link",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.1020,0.1020,0.1020,1.0000)",
+        "color": "Color(0.8314,0.8314,0.8314,1.0000)"
+      },
+      "background-color": "Color(0.0667,0.0667,0.0667,1.0000)",
+      "border-radius": 4,
+      "color": "Color(0.5412,0.5412,0.5412,1.0000)",
+      "display": "block",
+      "font-size": 13,
+      "padding-bottom": 7,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 7,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group > a.nav-link",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.1020,0.1020,0.1020,1.0000)",
+        "color": "Color(0.8314,0.8314,0.8314,1.0000)"
+      },
+      "background-color": "Color(0.0667,0.0667,0.0667,1.0000)",
+      "border-radius": 4,
+      "color": "Color(0.5412,0.5412,0.5412,1.0000)",
+      "display": "block",
+      "font-size": 13,
+      "padding-bottom": 7,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 7,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group > a.nav-link",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.1020,0.1020,0.1020,1.0000)",
+        "color": "Color(0.8314,0.8314,0.8314,1.0000)"
+      },
+      "background-color": "Color(0.0667,0.0667,0.0667,1.0000)",
+      "border-radius": 4,
+      "color": "Color(0.5412,0.5412,0.5412,1.0000)",
+      "display": "block",
+      "font-size": 13,
+      "padding-bottom": 7,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 7,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 2
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group > span.nav-group-label",
+    "style": {
+      "color": "Color(0.3529,0.3529,0.3529,1.0000)",
+      "font-size": 10,
+      "font-weight": 700,
+      "letter-spacing": 3.0,
+      "padding-bottom": 8,
+      "padding-left": 12,
+      "text-transform": "uppercase"
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group > a.nav-link",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.1020,0.1020,0.1020,1.0000)",
+        "color": "Color(0.8314,0.8314,0.8314,1.0000)"
+      },
+      "background-color": "Color(0.0667,0.0667,0.0667,1.0000)",
+      "border-radius": 4,
+      "color": "Color(0.5412,0.5412,0.5412,1.0000)",
+      "display": "block",
+      "font-size": 13,
+      "padding-bottom": 7,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 7,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group > a.nav-link",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.1020,0.1020,0.1020,1.0000)",
+        "color": "Color(0.8314,0.8314,0.8314,1.0000)"
+      },
+      "background-color": "Color(0.0667,0.0667,0.0667,1.0000)",
+      "border-radius": 4,
+      "color": "Color(0.5412,0.5412,0.5412,1.0000)",
+      "display": "block",
+      "font-size": 13,
+      "padding-bottom": 7,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 7,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group > a.nav-link",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.1020,0.1020,0.1020,1.0000)",
+        "color": "Color(0.8314,0.8314,0.8314,1.0000)"
+      },
+      "background-color": "Color(0.0667,0.0667,0.0667,1.0000)",
+      "border-radius": 4,
+      "color": "Color(0.5412,0.5412,0.5412,1.0000)",
+      "display": "block",
+      "font-size": 13,
+      "padding-bottom": 7,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 7,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 2
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group > span.nav-group-label",
+    "style": {
+      "color": "Color(0.3529,0.3529,0.3529,1.0000)",
+      "font-size": 10,
+      "font-weight": 700,
+      "letter-spacing": 3.0,
+      "padding-bottom": 8,
+      "padding-left": 12,
+      "text-transform": "uppercase"
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group > a.nav-link",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.1020,0.1020,0.1020,1.0000)",
+        "color": "Color(0.8314,0.8314,0.8314,1.0000)"
+      },
+      "background-color": "Color(0.0667,0.0667,0.0667,1.0000)",
+      "border-radius": 4,
+      "color": "Color(0.5412,0.5412,0.5412,1.0000)",
+      "display": "block",
+      "font-size": 13,
+      "padding-bottom": 7,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 7,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group > a.nav-link",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.1020,0.1020,0.1020,1.0000)",
+        "color": "Color(0.8314,0.8314,0.8314,1.0000)"
+      },
+      "background-color": "Color(0.0667,0.0667,0.0667,1.0000)",
+      "border-radius": 4,
+      "color": "Color(0.5412,0.5412,0.5412,1.0000)",
+      "display": "block",
+      "font-size": 13,
+      "padding-bottom": 7,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 7,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > nav.sidenav > div.nav-group > a.nav-link",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.1020,0.1020,0.1020,1.0000)",
+        "color": "Color(0.8314,0.8314,0.8314,1.0000)"
+      },
+      "background-color": "Color(0.0667,0.0667,0.0667,1.0000)",
+      "border-radius": 4,
+      "color": "Color(0.5412,0.5412,0.5412,1.0000)",
+      "display": "block",
+      "font-size": 13,
+      "padding-bottom": 7,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 7,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "flex-grow": 1.0,
+      "gap": 32,
+      "max-width": {
+        "unit": "px",
+        "value": 720
+      },
+      "overflow-y": "auto",
+      "padding-bottom": 40,
+      "padding-left": 48,
+      "padding-right": 48,
+      "padding-top": 40
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 20
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > header.section-head",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 4,
+      "padding-bottom": 4
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > header.section-head > h2.section-title",
+    "style": {
+      "color": "Color(1.0000,1.0000,1.0000,1.0000)",
+      "font-size": 18,
+      "font-weight": 600,
+      "letter-spacing": 0.0
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > header.section-head > p.section-help",
+    "style": {
+      "color": "Color(0.4157,0.4157,0.4157,1.0000)",
+      "font-size": 13
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > div.field",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 6
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > div.field > label.field-label",
+    "style": {
+      "color": "Color(0.7216,0.7216,0.7216,1.0000)",
+      "font-size": 12,
+      "font-weight": 600,
+      "letter-spacing": 1.0
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > div.field > input#workspace-name.field-input",
+    "style": {
+      "_focus": {
+        "background-color": "Color(0.1020,0.0824,0.1451,1.0000)",
+        "border": {
+          "color": "Color(0.6078,0.4941,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        }
+      },
+      "_hover": {
+        "background-color": "Color(0.1020,0.1020,0.1020,1.0000)",
+        "border": {
+          "color": "Color(0.2275,0.2275,0.2275,1.0000)",
+          "style": "solid",
+          "width": 1
+        }
+      },
+      "background-color": "Color(0.0863,0.0863,0.0863,1.0000)",
+      "border": {
+        "color": "Color(0.1647,0.1647,0.1647,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 4,
+      "color": "Color(1.0000,1.0000,1.0000,1.0000)",
+      "font-size": 13,
+      "padding-bottom": 9,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 9,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "border",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > div.field > span.field-hint",
+    "style": {
+      "color": "Color(0.3529,0.3529,0.3529,1.0000)",
+      "font-size": 12
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > div.field",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 6
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > div.field > label.field-label",
+    "style": {
+      "color": "Color(0.7216,0.7216,0.7216,1.0000)",
+      "font-size": 12,
+      "font-weight": 600,
+      "letter-spacing": 1.0
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > div.field > input#workspace-slug.field-input",
+    "style": {
+      "_focus": {
+        "background-color": "Color(0.1020,0.0824,0.1451,1.0000)",
+        "border": {
+          "color": "Color(0.6078,0.4941,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        }
+      },
+      "_hover": {
+        "background-color": "Color(0.1020,0.1020,0.1020,1.0000)",
+        "border": {
+          "color": "Color(0.2275,0.2275,0.2275,1.0000)",
+          "style": "solid",
+          "width": 1
+        }
+      },
+      "background-color": "Color(0.0863,0.0863,0.0863,1.0000)",
+      "border": {
+        "color": "Color(0.1647,0.1647,0.1647,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 4,
+      "color": "Color(1.0000,1.0000,1.0000,1.0000)",
+      "font-size": 13,
+      "padding-bottom": 9,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 9,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "border",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > div.field > span.field-hint",
+    "style": {
+      "color": "Color(0.3529,0.3529,0.3529,1.0000)",
+      "font-size": 12
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > div.field",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 6
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > div.field > label.field-label",
+    "style": {
+      "color": "Color(0.7216,0.7216,0.7216,1.0000)",
+      "font-size": 12,
+      "font-weight": 600,
+      "letter-spacing": 1.0
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > div.field > input#workspace-region.field-input",
+    "style": {
+      "_focus": {
+        "background-color": "Color(0.1020,0.0824,0.1451,1.0000)",
+        "border": {
+          "color": "Color(0.6078,0.4941,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        }
+      },
+      "_hover": {
+        "background-color": "Color(0.1020,0.1020,0.1020,1.0000)",
+        "border": {
+          "color": "Color(0.2275,0.2275,0.2275,1.0000)",
+          "style": "solid",
+          "width": 1
+        }
+      },
+      "background-color": "Color(0.0863,0.0863,0.0863,1.0000)",
+      "border": {
+        "color": "Color(0.1647,0.1647,0.1647,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 4,
+      "color": "Color(1.0000,1.0000,1.0000,1.0000)",
+      "font-size": 13,
+      "padding-bottom": 9,
+      "padding-left": 12,
+      "padding-right": 12,
+      "padding-top": 9,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "border",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.18,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > div.field > span.field-hint",
+    "style": {
+      "color": "Color(0.3529,0.3529,0.3529,1.0000)",
+      "font-size": 12
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > div.section-divider",
+    "style": {
+      "background-color": "Color(0.1216,0.1216,0.1216,1.0000)",
+      "height": {
+        "unit": "px",
+        "value": 1
+      }
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 20
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > header.section-head",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 4,
+      "padding-bottom": 4
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > header.section-head > h2.section-title",
+    "style": {
+      "color": "Color(1.0000,1.0000,1.0000,1.0000)",
+      "font-size": 18,
+      "font-weight": 600,
+      "letter-spacing": 0.0
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > header.section-head > p.section-help",
+    "style": {
+      "color": "Color(0.4157,0.4157,0.4157,1.0000)",
+      "font-size": 13
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.check-row",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.0941,0.0941,0.0941,1.0000)",
+        "border": {
+          "color": "Color(0.1647,0.1647,0.1647,1.0000)",
+          "style": "solid",
+          "width": 1
+        }
+      },
+      "align-items": "flex-start",
+      "background-color": "Color(0.0745,0.0745,0.0745,1.0000)",
+      "border": {
+        "color": "Color(0.1216,0.1216,0.1216,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 4,
+      "display": "flex",
+      "flex-direction": "row",
+      "gap": 12,
+      "padding": 12,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "border",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.check-row > input#notify-email.check-box",
+    "style": {
+      "_checked": {
+        "background-color": "Color(0.6078,0.4941,1.0000,1.0000)",
+        "border": {
+          "color": "Color(0.7020,0.6157,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "border-radius": 3
+      },
+      "_focus": {
+        "border": {
+          "color": "Color(0.6078,0.4941,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "border-radius": 3
+      },
+      "height": {
+        "unit": "px",
+        "value": 18
+      },
+      "width": {
+        "unit": "px",
+        "value": 18
+      }
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.check-row > div.check-text",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 2
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.check-row > div.check-text > span.check-label",
+    "style": {
+      "color": "Color(1.0000,1.0000,1.0000,1.0000)",
+      "font-size": 13,
+      "font-weight": 500
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.check-row > div.check-text > span.check-help",
+    "style": {
+      "color": "Color(0.4157,0.4157,0.4157,1.0000)",
+      "font-size": 12
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.check-row",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.0941,0.0941,0.0941,1.0000)",
+        "border": {
+          "color": "Color(0.1647,0.1647,0.1647,1.0000)",
+          "style": "solid",
+          "width": 1
+        }
+      },
+      "align-items": "flex-start",
+      "background-color": "Color(0.0745,0.0745,0.0745,1.0000)",
+      "border": {
+        "color": "Color(0.1216,0.1216,0.1216,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 4,
+      "display": "flex",
+      "flex-direction": "row",
+      "gap": 12,
+      "padding": 12,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "border",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.check-row > input#notify-slack.check-box",
+    "style": {
+      "_checked": {
+        "background-color": "Color(0.6078,0.4941,1.0000,1.0000)",
+        "border": {
+          "color": "Color(0.7020,0.6157,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "border-radius": 3
+      },
+      "_focus": {
+        "border": {
+          "color": "Color(0.6078,0.4941,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "border-radius": 3
+      },
+      "height": {
+        "unit": "px",
+        "value": 18
+      },
+      "width": {
+        "unit": "px",
+        "value": 18
+      }
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.check-row > div.check-text",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 2
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.check-row > div.check-text > span.check-label",
+    "style": {
+      "color": "Color(1.0000,1.0000,1.0000,1.0000)",
+      "font-size": 13,
+      "font-weight": 500
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.check-row > div.check-text > span.check-help",
+    "style": {
+      "color": "Color(0.4157,0.4157,0.4157,1.0000)",
+      "font-size": 12
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.check-row",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.0941,0.0941,0.0941,1.0000)",
+        "border": {
+          "color": "Color(0.1647,0.1647,0.1647,1.0000)",
+          "style": "solid",
+          "width": 1
+        }
+      },
+      "align-items": "flex-start",
+      "background-color": "Color(0.0745,0.0745,0.0745,1.0000)",
+      "border": {
+        "color": "Color(0.1216,0.1216,0.1216,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 4,
+      "display": "flex",
+      "flex-direction": "row",
+      "gap": 12,
+      "padding": 12,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "border",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.check-row > input#notify-weekly.check-box",
+    "style": {
+      "_checked": {
+        "background-color": "Color(0.6078,0.4941,1.0000,1.0000)",
+        "border": {
+          "color": "Color(0.7020,0.6157,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "border-radius": 3
+      },
+      "_focus": {
+        "border": {
+          "color": "Color(0.6078,0.4941,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "border-radius": 3
+      },
+      "height": {
+        "unit": "px",
+        "value": 18
+      },
+      "width": {
+        "unit": "px",
+        "value": 18
+      }
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.check-row > div.check-text",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 2
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.check-row > div.check-text > span.check-label",
+    "style": {
+      "color": "Color(1.0000,1.0000,1.0000,1.0000)",
+      "font-size": 13,
+      "font-weight": 500
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.check-row > div.check-text > span.check-help",
+    "style": {
+      "color": "Color(0.4157,0.4157,0.4157,1.0000)",
+      "font-size": 12
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > div.section-divider",
+    "style": {
+      "background-color": "Color(0.1216,0.1216,0.1216,1.0000)",
+      "height": {
+        "unit": "px",
+        "value": 1
+      }
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 20
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > header.section-head",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 4,
+      "padding-bottom": 4
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > header.section-head > h2.section-title",
+    "style": {
+      "color": "Color(1.0000,1.0000,1.0000,1.0000)",
+      "font-size": 18,
+      "font-weight": 600,
+      "letter-spacing": 0.0
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > header.section-head > p.section-help",
+    "style": {
+      "color": "Color(0.4157,0.4157,0.4157,1.0000)",
+      "font-size": 13
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.radio-row",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.0941,0.0941,0.0941,1.0000)",
+        "border": {
+          "color": "Color(0.1647,0.1647,0.1647,1.0000)",
+          "style": "solid",
+          "width": 1
+        }
+      },
+      "align-items": "flex-start",
+      "background-color": "Color(0.0745,0.0745,0.0745,1.0000)",
+      "border": {
+        "color": "Color(0.1216,0.1216,0.1216,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 4,
+      "display": "flex",
+      "flex-direction": "row",
+      "gap": 12,
+      "padding": 12,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "border",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.radio-row > input#archive-keep.radio-dot",
+    "style": {
+      "_checked": {
+        "background-color": "Color(0.6078,0.4941,1.0000,1.0000)",
+        "border": {
+          "color": "Color(0.7020,0.6157,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "border-radius": 9
+      },
+      "_focus": {
+        "border": {
+          "color": "Color(0.6078,0.4941,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "border-radius": 9
+      },
+      "height": {
+        "unit": "px",
+        "value": 18
+      },
+      "width": {
+        "unit": "px",
+        "value": 18
+      }
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.radio-row > div.radio-text",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 2
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.radio-row > div.radio-text > span.radio-label",
+    "style": {
+      "color": "Color(1.0000,1.0000,1.0000,1.0000)",
+      "font-size": 13,
+      "font-weight": 500
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.radio-row > div.radio-text > span.radio-help",
+    "style": {
+      "color": "Color(0.4157,0.4157,0.4157,1.0000)",
+      "font-size": 12
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.radio-row",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.0941,0.0941,0.0941,1.0000)",
+        "border": {
+          "color": "Color(0.1647,0.1647,0.1647,1.0000)",
+          "style": "solid",
+          "width": 1
+        }
+      },
+      "align-items": "flex-start",
+      "background-color": "Color(0.0745,0.0745,0.0745,1.0000)",
+      "border": {
+        "color": "Color(0.1216,0.1216,0.1216,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 4,
+      "display": "flex",
+      "flex-direction": "row",
+      "gap": 12,
+      "padding": 12,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "border",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.radio-row > input#archive-auto.radio-dot",
+    "style": {
+      "_checked": {
+        "background-color": "Color(0.6078,0.4941,1.0000,1.0000)",
+        "border": {
+          "color": "Color(0.7020,0.6157,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "border-radius": 9
+      },
+      "_focus": {
+        "border": {
+          "color": "Color(0.6078,0.4941,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "border-radius": 9
+      },
+      "height": {
+        "unit": "px",
+        "value": 18
+      },
+      "width": {
+        "unit": "px",
+        "value": 18
+      }
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.radio-row > div.radio-text",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 2
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.radio-row > div.radio-text > span.radio-label",
+    "style": {
+      "color": "Color(1.0000,1.0000,1.0000,1.0000)",
+      "font-size": 13,
+      "font-weight": 500
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.radio-row > div.radio-text > span.radio-help",
+    "style": {
+      "color": "Color(0.4157,0.4157,0.4157,1.0000)",
+      "font-size": 12
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.radio-row",
+    "style": {
+      "_hover": {
+        "background-color": "Color(0.0941,0.0941,0.0941,1.0000)",
+        "border": {
+          "color": "Color(0.1647,0.1647,0.1647,1.0000)",
+          "style": "solid",
+          "width": 1
+        }
+      },
+      "align-items": "flex-start",
+      "background-color": "Color(0.0745,0.0745,0.0745,1.0000)",
+      "border": {
+        "color": "Color(0.1216,0.1216,0.1216,1.0000)",
+        "style": "solid",
+        "width": 1
+      },
+      "border-radius": 4,
+      "display": "flex",
+      "flex-direction": "row",
+      "gap": 12,
+      "padding": 12,
+      "transition": [
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "background-color",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        },
+        {
+          "delay": 0.0,
+          "duration": 0.15,
+          "property": "border",
+          "timing": {
+            "ease_type": 2,
+            "trans_type": 1
+          }
+        }
+      ]
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.radio-row > input#archive-manual.radio-dot",
+    "style": {
+      "_checked": {
+        "background-color": "Color(0.6078,0.4941,1.0000,1.0000)",
+        "border": {
+          "color": "Color(0.7020,0.6157,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "border-radius": 9
+      },
+      "_focus": {
+        "border": {
+          "color": "Color(0.6078,0.4941,1.0000,1.0000)",
+          "style": "solid",
+          "width": 1
+        },
+        "border-radius": 9
+      },
+      "height": {
+        "unit": "px",
+        "value": 18
+      },
+      "width": {
+        "unit": "px",
+        "value": 18
+      }
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.radio-row > div.radio-text",
+    "style": {
+      "display": "flex",
+      "flex-direction": "column",
+      "gap": 2
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.radio-row > div.radio-text > span.radio-label",
+    "style": {
+      "color": "Color(1.0000,1.0000,1.0000,1.0000)",
+      "font-size": 13,
+      "font-weight": 500
+    }
+  },
+  {
+    "path": "div.app > div.shell > main.panel > section.form-section > label.radio-row > div.radio-text > span.radio-help",
+    "style": {
+      "color": "Color(0.4157,0.4157,0.4157,1.0000)",
+      "font-size": 12
+    }
+  }
+]

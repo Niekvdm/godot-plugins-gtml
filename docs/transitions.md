@@ -391,7 +391,7 @@ button:hover {
 
 ## Example File
 
-See `addons/gtml/examples/transitions.html` and `transitions.css` for a complete working example.
+See `addons/gtml/examples/showcase/forge/` (settings panel with `:hover`/`:focus` transitions) for a complete working example.
 
 ## Limitations
 

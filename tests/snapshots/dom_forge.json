@@ -1,0 +1,949 @@
+{
+  "_t": "el",
+  "tag": "div",
+  "attrs": {
+    "class": "app"
+  },
+  "children": [
+    {
+      "_t": "el",
+      "tag": "header",
+      "attrs": {
+        "class": "topbar"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "topbar-left"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "brand"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Forge"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "brand-divider"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "/"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "span",
+              "attrs": {
+                "class": "crumb"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Workspace settings"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "div",
+          "attrs": {
+            "class": "topbar-actions"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "button",
+              "attrs": {
+                "class": "btn btn-ghost"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Cancel"
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "button",
+              "attrs": {
+                "class": "btn btn-primary"
+              },
+              "children": [
+                {
+                  "_t": "text",
+                  "v": "Save changes"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_t": "el",
+      "tag": "div",
+      "attrs": {
+        "class": "shell"
+      },
+      "children": [
+        {
+          "_t": "el",
+          "tag": "nav",
+          "attrs": {
+            "class": "sidenav"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "nav-group"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "nav-group-label"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Workspace"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-link nav-link-active"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Account"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-link"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Members"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-link"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Billing"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-link"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Audit log"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "nav-group"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "nav-group-label"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Develop"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-link"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "API keys"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-link"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Webhooks"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-link"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Integrations"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "nav-group"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "span",
+                  "attrs": {
+                    "class": "nav-group-label"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Security"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-link"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Two-factor auth"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-link"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "Active sessions"
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "a",
+                  "attrs": {
+                    "class": "nav-link"
+                  },
+                  "children": [
+                    {
+                      "_t": "text",
+                      "v": "SSO"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_t": "el",
+          "tag": "main",
+          "attrs": {
+            "class": "panel"
+          },
+          "children": [
+            {
+              "_t": "el",
+              "tag": "section",
+              "attrs": {
+                "class": "form-section"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "header",
+                  "attrs": {
+                    "class": "section-head"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "h2",
+                      "attrs": {
+                        "class": "section-title"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Identity"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "p",
+                      "attrs": {
+                        "class": "section-help"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "How your workspace is referenced across the product."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "field"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "label",
+                      "attrs": {
+                        "class": "field-label",
+                        "for": "workspace-name"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Workspace name"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "input",
+                      "attrs": {
+                        "class": "field-input",
+                        "id": "workspace-name",
+                        "type": "text",
+                        "value": "Acme Industries"
+                      },
+                      "children": []
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "field-hint"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Shown in the topbar, billing receipts, and the API."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "field"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "label",
+                      "attrs": {
+                        "class": "field-label",
+                        "for": "workspace-slug"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Slug"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "input",
+                      "attrs": {
+                        "class": "field-input",
+                        "id": "workspace-slug",
+                        "type": "text",
+                        "value": "acme-industries"
+                      },
+                      "children": []
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "field-hint"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Used in URLs. Lowercase, no spaces, hyphens allowed."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "div",
+                  "attrs": {
+                    "class": "field"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "label",
+                      "attrs": {
+                        "class": "field-label",
+                        "for": "workspace-region"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Region"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "input",
+                      "attrs": {
+                        "class": "field-input",
+                        "id": "workspace-region",
+                        "type": "text",
+                        "value": "eu-west-1"
+                      },
+                      "children": []
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "field-hint"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Data residency cannot be changed after creation."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "section-divider"
+              },
+              "children": []
+            },
+            {
+              "_t": "el",
+              "tag": "section",
+              "attrs": {
+                "class": "form-section"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "header",
+                  "attrs": {
+                    "class": "section-head"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "h2",
+                      "attrs": {
+                        "class": "section-title"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Preferences"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "p",
+                      "attrs": {
+                        "class": "section-help"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Per-user defaults you can override anytime."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "label",
+                  "attrs": {
+                    "class": "check-row",
+                    "for": "notify-email"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "input",
+                      "attrs": {
+                        "checked": "true",
+                        "class": "check-box",
+                        "id": "notify-email",
+                        "type": "checkbox"
+                      },
+                      "children": []
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "div",
+                      "attrs": {
+                        "class": "check-text"
+                      },
+                      "children": [
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "check-label"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "Email notifications"
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "check-help"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "Receive a digest of mentions, comments, and alerts twice daily."
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "label",
+                  "attrs": {
+                    "class": "check-row",
+                    "for": "notify-slack"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "input",
+                      "attrs": {
+                        "class": "check-box",
+                        "id": "notify-slack",
+                        "type": "checkbox"
+                      },
+                      "children": []
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "div",
+                      "attrs": {
+                        "class": "check-text"
+                      },
+                      "children": [
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "check-label"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "Slack notifications"
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "check-help"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "Mirror your inbox into the configured Slack channel."
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "label",
+                  "attrs": {
+                    "class": "check-row",
+                    "for": "notify-weekly"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "input",
+                      "attrs": {
+                        "checked": "true",
+                        "class": "check-box",
+                        "id": "notify-weekly",
+                        "type": "checkbox"
+                      },
+                      "children": []
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "div",
+                      "attrs": {
+                        "class": "check-text"
+                      },
+                      "children": [
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "check-label"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "Weekly summary"
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "check-help"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "A Monday-morning recap of the previous week's activity."
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_t": "el",
+              "tag": "div",
+              "attrs": {
+                "class": "section-divider"
+              },
+              "children": []
+            },
+            {
+              "_t": "el",
+              "tag": "section",
+              "attrs": {
+                "class": "form-section"
+              },
+              "children": [
+                {
+                  "_t": "el",
+                  "tag": "header",
+                  "attrs": {
+                    "class": "section-head"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "h2",
+                      "attrs": {
+                        "class": "section-title"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "Archival policy"
+                        }
+                      ]
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "p",
+                      "attrs": {
+                        "class": "section-help"
+                      },
+                      "children": [
+                        {
+                          "_t": "text",
+                          "v": "How long inactive projects remain visible in your workspace."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "label",
+                  "attrs": {
+                    "class": "radio-row",
+                    "for": "archive-keep"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "input",
+                      "attrs": {
+                        "class": "radio-dot",
+                        "id": "archive-keep",
+                        "name": "archive",
+                        "type": "radio"
+                      },
+                      "children": []
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "div",
+                      "attrs": {
+                        "class": "radio-text"
+                      },
+                      "children": [
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "radio-label"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "Keep everything indefinitely"
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "radio-help"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "Best for compliance-heavy workspaces."
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "label",
+                  "attrs": {
+                    "class": "radio-row",
+                    "for": "archive-auto"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "input",
+                      "attrs": {
+                        "checked": "true",
+                        "class": "radio-dot",
+                        "id": "archive-auto",
+                        "name": "archive",
+                        "type": "radio"
+                      },
+                      "children": []
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "div",
+                      "attrs": {
+                        "class": "radio-text"
+                      },
+                      "children": [
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "radio-label"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "Auto-archive after 30 days of inactivity"
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "radio-help"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "Recommended for most teams."
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_t": "el",
+                  "tag": "label",
+                  "attrs": {
+                    "class": "radio-row",
+                    "for": "archive-manual"
+                  },
+                  "children": [
+                    {
+                      "_t": "el",
+                      "tag": "input",
+                      "attrs": {
+                        "class": "radio-dot",
+                        "id": "archive-manual",
+                        "name": "archive",
+                        "type": "radio"
+                      },
+                      "children": []
+                    },
+                    {
+                      "_t": "el",
+                      "tag": "div",
+                      "attrs": {
+                        "class": "radio-text"
+                      },
+                      "children": [
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "radio-label"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "Manual archive only"
+                            }
+                          ]
+                        },
+                        {
+                          "_t": "el",
+                          "tag": "span",
+                          "attrs": {
+                            "class": "radio-help"
+                          },
+                          "children": [
+                            {
+                              "_t": "text",
+                              "v": "Nothing is hidden without an explicit action."
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

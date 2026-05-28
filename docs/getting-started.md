@@ -192,12 +192,8 @@ CSS rules override these defaults.
 
 ## Example Files
 
-Check out the example files in `addons/gtml/examples/`:
-- `basic.html/css` - Simple menu example
-- `all_elements.html/css` - Showcase of all HTML elements
-- `css_features.html/css` - CSS property demonstrations
-- `flex_layout.html/css` - Flexbox layout examples
-- `transitions.html/css` - CSS transition animations
+The crafted demos live in `addons/gtml/examples/showcase/` — see the
+[Showcase samples](#showcase-samples) section below.
 
 ## Next Steps
 
@@ -216,8 +212,14 @@ Check out the example files in `addons/gtml/examples/`:
 
 ### Showcase samples
 
-The `addons/gtml/examples/showcase/` directory has four crafted demos —
-**atlas** (dashboard), **atelier** (editorial reader), **forge**
-(settings panel), and **kitchen** (kitchen-sink reference). Each uses the
-v0.4 design-token + transform patterns and is good starting material for
-your own scenes.
+The `addons/gtml/examples/showcase/` directory has five crafted demos:
+
+- **atlas** — dashboard layout (flex-heavy)
+- **atelier** — editorial reader (typography + design tokens)
+- **forge** — settings panel (`:hover`/`:focus` transitions)
+- **kitchen** — kitchen-sink reference (nearly every element + CSS property)
+- **inventory** — the reactive flagship: `state`, `{{ }}`, `v-for :key`,
+  `:class`, `v-model`, `@click(item)` with a real `demo.gd` game script
+
+Open any `demo.tscn` and press Play. The inventory demo is the best
+starting point for a dynamic, data-driven UI.
