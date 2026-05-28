@@ -46,7 +46,7 @@
 					<button class="buy-btn" :class="{ affordable: u.affordable }" :disabled="!u.affordable" @click="buy_upgrade(u.id)">[ {{ u.cost_display }} ]</button>
 				</li>
 			</ul>
-			<p v-if="no_upgrades" class="empty">// unlock more generators to reveal upgrades</p>
+			<p v-show="no_upgrades" class="empty">// unlock more generators to reveal upgrades</p>
 		</section>
 
 		<section class="panel" v-show="active_tab == 'achievements'">
@@ -62,7 +62,7 @@
 
 	<div v-show="show_toast" class="toast">{{ toast }}</div>
 
-	<div v-if="show_refactor" class="confirm">
+	<div v-show="show_refactor" class="confirm">
 		<div class="confirm-box" focus-trap>
 			<div class="confirm-title">REFACTOR?</div>
 			<p class="confirm-text">reset this run for {{ refactor_gain }} Insight (permanent +2% output each)</p>
