@@ -107,3 +107,29 @@ func test_upgrades_view_excludes_purchased_and_locked() -> void:
 	for u in d.build_upgrades_view():
 		ids2.append(u.id)
 	assert_false(ids2.has("keyboard"))
+
+func test_check_achievements_returns_newly_earned_once() -> void:
+	var d = _new_demo()
+	d.commits = 1.0
+	var newly: Array = d._check_achievements()
+	assert_true(newly.has("first"))
+	assert_true(d.earned.has("first"))
+	# Calling again returns nothing new.
+	assert_eq(d._check_achievements(), [])
+
+func test_five_gens_achievement_requires_all_types() -> void:
+	var d = _new_demo()
+	for g in d.GENERATORS:
+		d.gen_owned[g.id] = 1
+	var newly: Array = d._check_achievements()
+	assert_true(newly.has("five_gens"))
+
+func test_achievements_view_reports_earned_flag() -> void:
+	var d = _new_demo()
+	d.commits = 1.0
+	d._check_achievements()
+	var by_id := {}
+	for a in d.build_achievements_view():
+		by_id[a.id] = a.earned
+	assert_true(by_id["first"])
+	assert_false(by_id["kilo"])

@@ -150,3 +150,40 @@ func build_upgrades_view() -> Array:
 			"cost_display": fmt(c), "affordable": can_afford(c),
 		})
 	return out
+
+
+func _all_gens_owned() -> bool:
+	for g in GENERATORS:
+		if _owned(g.id) <= 0:
+			return false
+	return true
+
+func _check_achievements() -> Array:
+	var conds := {
+		"first": commits >= 1.0,
+		"ten_interns": _owned("intern") >= 10,
+		"kilo": commits >= 1000.0,
+		"mega": commits >= 1000000.0,
+		"first_refactor": refactored >= 1,
+		"five_gens": _all_gens_owned(),
+		"upgrader": purchased.size() >= 3,
+		"insightful": insight >= 10,
+	}
+	var newly := []
+	for a in ACHIEVEMENTS:
+		if conds.get(a.id, false) and not earned.has(a.id):
+			earned[a.id] = true
+			newly.append(a.id)
+	return newly
+
+func _ach_name(id: String) -> String:
+	for a in ACHIEVEMENTS:
+		if a.id == id:
+			return a.name
+	return id
+
+func build_achievements_view() -> Array:
+	var out := []
+	for a in ACHIEVEMENTS:
+		out.append({"id": a.id, "name": a.name, "desc": a.desc, "earned": earned.has(a.id)})
+	return out
