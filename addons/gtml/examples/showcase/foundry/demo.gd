@@ -282,8 +282,7 @@ func _push_log() -> void:
 
 func _seed_log() -> void:
 	_log("sys", "foundry v0.8 — idle commit console")
-	_log("sys", "type a command and press enter, or click one below")
-	_log("sys", "try: help")
+	_log("sys", "press <enter> to commit · type a command (try: help)")
 	_push_log()
 
 
@@ -295,7 +294,10 @@ func _on_key(handler: String, event: InputEvent) -> void:
 		return
 	var raw: String = str(view.state.get("cmd")).strip_edges()
 	view.state.set("cmd", "")
-	if not raw.is_empty():
+	# Empty enter = commit (hold/spam enter to write commits, like clicking).
+	if raw.is_empty():
+		run_command("commit")
+	else:
 		run_command(raw)
 
 
@@ -321,6 +323,7 @@ func run_command(raw: String) -> void:
 			_log("ok", "> commit +%s  (%s total)" % [fmt(v), fmt(commits)])
 		"help":
 			_log("info", "commands:")
+			_log("info", "  <enter>    write a commit (empty input)")
 			_log("info", "  commit (c) write a commit by hand")
 			_log("info", "  buy [id]   list generators / buy one")
 			_log("info", "  upgrades   list available upgrades")

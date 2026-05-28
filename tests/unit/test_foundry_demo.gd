@@ -239,3 +239,11 @@ func test_scene_builds_and_runs_a_command() -> void:
 	var log: Array = view.state.get("log")
 	var has_buy := log.filter(func(l): return l.kind == "buy_gen").size() > 0
 	assert_true(has_buy, "clicking the buy token appends generator lines to the log")
+
+	# Empty enter = commit.
+	var before: float = inst.commits
+	var ev := InputEventKey.new()
+	ev.pressed = true
+	ev.keycode = KEY_ENTER
+	inst._on_key("submit", ev)
+	assert_gt(inst.commits, before, "pressing enter on an empty input writes a commit")
