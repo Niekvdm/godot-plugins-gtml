@@ -49,6 +49,19 @@ func test_text_interpolation_updates_dom_on_set() -> void:
 	assert_eq(label.text, "Hello, Bob!")
 
 
+func test_interpolation_updates_when_label_is_wrapped() -> void:
+	# text-shadow (also text-decoration / padding) wraps the Label in a
+	# container, so the element's `control` is not a Label. Interpolation must
+	# still bind to the inner Label, not silently render the literal {{ }}.
+	var view := _build_view('<span class="g">{{ name }}</span>', '.g { text-shadow: 0px 0px 4px #00ff00; }')
+	view.state.set("name", "Ada")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var label := _find_first_label(view)
+	assert_not_null(label)
+	assert_eq(label.text, "Ada", "interpolation must resolve even when the label is wrapped")
+
+
 func test_v_if_omits_subtree_when_falsy() -> void:
 	# Empty initial state → v-if="show" reads null → falsy → element omitted.
 	var view := _build_view('<div><span v-if="show">shown</span></div>')
