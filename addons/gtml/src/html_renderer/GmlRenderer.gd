@@ -103,6 +103,8 @@ func _build_node(node, ancestor_chain: Array = []) -> Control:
 	# Post-build: register Vue-style bindings on the resolved control.
 	_register_bindings_for_node(node, control, inner)
 
+	_stamp_focus_meta(node, control, inner)
+
 	# For v-for clones, stash the scope dict on the built Control so move
 	# ops can mutate the index_var in place and _fire_clone_bindings re-applies.
 	if node.has_meta("_vfor_key"):
@@ -632,6 +634,13 @@ func _reconcile_v_for_region(parent_node, container: Control) -> void:
 
 	parent_node.set_meta("_vfor_state", state_map)
 
+	# Re-wire focus so inserted clones join the chain and removed clones
+	# drop out. wire_focus is idempotent + does not move focus, so a
+	# surviving focused control keeps focus.
+	if _gml_view != null and _gml_view._content_root != null:
+		var GmlFocusManagerScript = preload("res://addons/gtml/src/focus/GmlFocusManager.gd")
+		GmlFocusManagerScript.wire_focus(_gml_view._content_root)
+
 
 ## Apply a reconciler ops list to the rendered children of container.
 ## Updates entry["controls"] and entry["binding_tags"] in place.
@@ -726,3 +735,43 @@ func _make_class_restyle_callback(control: Control, node) -> Callable:
 		if c == null:
 			return
 		GmlClassRestylerScript.restyle(c, node, chain, dynamic_classes, css_rules, base_snapshot, tm)
+
+
+## Classify focusability for an element and stamp _gml_* focus meta +
+## set focus_mode. For native inputs the focus target is `inner` (the
+## LineEdit/CheckBox/…); otherwise it's `control`. focus-trap stamps on
+## `control` (the element's own container).
+func _stamp_focus_meta(node, control: Control, inner: Control) -> void:
+	# focus-trap is a container concern → stamp on the element's control.
+	if node.has_attr("focus-trap"):
+		control.set_meta("_gml_focus_trap", true)
+
+	var focus_target: Control = inner if inner != null else control
+
+	var has_tabindex: bool = node.has_attr("tabindex")
+	var tabindex: int = node.get_attr("tabindex", "0").to_int() if has_tabindex else 0
+
+	var is_native: bool = (
+		focus_target is Button or focus_target is LineEdit or focus_target is TextEdit
+		or focus_target is CheckBox or focus_target is OptionButton or focus_target is HSlider
+	)
+	var is_anchor: bool = node.tag == "a"
+	var has_event: bool = false
+	for attr_name in node.attrs:
+		if attr_name.begins_with("@") or attr_name.begins_with("v-on:"):
+			has_event = true
+			break
+
+	var focusable: bool = is_native or is_anchor or has_event or (has_tabindex and tabindex >= 0)
+	if has_tabindex and tabindex == -1:
+		focusable = true
+
+	if not focusable:
+		return
+
+	focus_target.set_meta("_gml_focusable", true)
+	focus_target.set_meta("_gml_tabindex", tabindex)
+	focus_target.set_meta("_gml_tab_skip", has_tabindex and tabindex == -1)
+	focus_target.focus_mode = Control.FOCUS_ALL
+	if node.has_attr("autofocus"):
+		focus_target.set_meta("_gml_autofocus", true)

@@ -1,5 +1,51 @@
 # Changelog
 
+## 0.8.3
+
+### Features — Focus traversal (keyboard / gamepad navigation)
+
+GTML now wires keyboard + gamepad focus automatically. Previously native
+controls were accidentally Tab-reachable but every GTML mouse-clickable
+(`@click` labels, anchors, clickable divs, v-for rows) was unreachable
+without a pointer — blocking console / Steam Deck use.
+
+- **Everything interactive is focusable**: native controls, `<a>`
+  anchors, any element with an `@event` handler, and `tabindex>=0`
+  elements get `FOCUS_ALL`.
+- **Deterministic Tab order**: document order with full HTML `tabindex`
+  semantics (`>0` first ascending, `0`/absent natural, `-1`
+  focusable-but-skipped).
+- **`autofocus`** grabs initial focus once per build.
+- **`focus-trap`** cycles focus within a modal subtree (nested traps
+  supported).
+- **v-for**: the chain re-wires after every reconcile; a focused input
+  keeps focus when the list changes.
+- **`GmlView.focus_first()`** API for game code seizing focus on menu open.
+
+### Architecture
+
+New `GmlFocusManager.wire_focus` walks the built tree and wires
+`focus_next`/`focus_previous` (+ neighbor mirrors). Build-time
+`_stamp_focus_meta` classifies focusability + sets `focus_mode`. GmlView
+runs the wiring post-build and grabs autofocus; the v-for reconciler
+re-runs it after each op-batch.
+
+### Limitations
+
+- Directional (arrow/d-pad) nav uses Godot's geometry search; sequential
+  Tab/next-prev is explicit.
+- No roving-tabindex composite widgets.
+- Root (non-trapped) chain does not wrap.
+
+### Tests
+
+20 new tests (focus manager + integration); 385 → 405.
+
+### Remaining
+
+The v0.8 perf-benchmark harness is the last production-readiness item
+(separate PR).
+
 ## 0.8.2
 
 ### Features — Dynamic :class CSS re-resolution

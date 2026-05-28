@@ -12,6 +12,7 @@ const GmlNodeScript = preload("res://addons/gtml/src/html_parser/GmlNode.gd")
 const GmlRendererScript = preload("res://addons/gtml/src/html_renderer/GmlRenderer.gd")
 const GmlStateScript = preload("res://addons/gtml/src/binding/GmlState.gd")
 const GmlBindingRegistryScript = preload("res://addons/gtml/src/binding/GmlBindingRegistry.gd")
+const GmlFocusManagerScript = preload("res://addons/gtml/src/focus/GmlFocusManager.gd")
 # Note: GmlCssParser and GmlStyleResolver are accessed via their class_name directly
 # because they have inner classes that cause issues with preload().new()
 
@@ -113,6 +114,12 @@ var _binding_registry: GmlBindingRegistry
 var _css_rules: Array = []
 ## Style resolver instance retained for runtime re-resolution.
 var _style_resolver = null
+## The attached content root of the last build. Stable handle so v-for
+## reconciliation can re-run focus wiring without re-deriving it.
+var _content_root: Control = null
+## Whether autofocus has been granted for the current build. Reset on
+## _rebuild so autofocus fires once per rebuild, not on every reconcile.
+var _focus_initialized: bool = false
 
 #endregion
 
@@ -164,6 +171,11 @@ func _rebuild() -> void:
 	_clear_children()
 	if _binding_registry != null:
 		_binding_registry.clear()
+	_focus_initialized = false
+	# Drop the stale handle: _clear_children() freed the old tree. Early
+	# returns below (no html, parse failure) leave it null so focus_first()
+	# won't touch a freed Control.
+	_content_root = null
 
 	if html_path.is_empty():
 		_show_placeholder("No HTML file assigned")
@@ -260,6 +272,18 @@ func _rebuild() -> void:
 				# For ScrollContainer, set the size using set_deferred to avoid anchor conflict warning
 				if target_control is ScrollContainer:
 					target_control.set_deferred("size", size)
+
+		if target_control != null:
+			_content_root = target_control
+			GmlFocusManagerScript.wire_focus(target_control)
+			# Don't steal the editor's keyboard focus on hot-reload: a @tool
+			# GmlView rebuilds on every HTML/CSS save, and a deferred
+			# grab_focus would yank focus out of the author's code editor.
+			if not Engine.is_editor_hint():
+				var autofocus_ctl: Control = GmlFocusManagerScript.find_autofocus(target_control)
+				if autofocus_ctl != null and not _focus_initialized:
+					_focus_initialized = true
+					autofocus_ctl.call_deferred("grab_focus")
 	else:
 		push_error("GmlView: Renderer returned null ui_root")
 
@@ -419,6 +443,20 @@ func get_tag_defaults() -> Dictionary:
 ## Use this to access the content control's properties like text, disabled, etc.
 func get_element_by_id(element_id: String) -> Control:
 	return _elements_by_id.get(element_id, null)
+
+
+## Grab the first Tab-order focusable in the view — the first element in
+## the root group's tab order (tabindex-aware, trap subtrees excluded).
+## Returns false if nothing is focusable. For game code seizing focus
+## when a menu opens.
+func focus_first() -> bool:
+	if _content_root == null:
+		return false
+	var first: Control = GmlFocusManagerScript.first_tabbable(_content_root)
+	if first == null:
+		return false
+	first.grab_focus()
+	return true
 
 
 ## Get the wrapper control for an element by its ID.
