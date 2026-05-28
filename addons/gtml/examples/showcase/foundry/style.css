@@ -1,143 +1,143 @@
-/* Font: Courier Prime is supplied as the scene Theme's default_font (see
-   foundry_theme.tres), so every Label/Button inherits monospace without
-   relying on GTML font-family resolution (which text nodes don't apply).
-   Dense, sharp-cornered terminal scale. */
+/* Modern terminal theme (Tokyo-Night-ish): soft dark surfaces, light neutral
+   text for readability, green = affordable/success, amber = Insight/earned.
+   No glow / text-shadow — easy on the eyes. Courier Prime via foundry_theme.tres. */
+
 .app {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
-	background-color: #020600;
+	background-color: #1a1b26;
 }
 
+/* ── header ───────────────────────────────────────────── */
 .hud {
 	display: flex;
 	flex-direction: column;
-	gap: 3px;
-	padding: 12px;
-	background-color: #04140a;
-	border-bottom: 1px solid #1f7a45;
+	gap: 4px;
+	padding: 14px;
+	background-color: #1f2335;
+	border-bottom: 1px solid #2a2e3f;
 }
-.prompt { color: #0e6b3a; font-size: 12px; }
+.prompt { color: #565f89; font-size: 12px; }
 .counts { display: flex; flex-direction: row; align-items: baseline; gap: 8px; }
-.commits { color: #39ff8a; font-size: 24px; font-weight: bold; text-shadow: 0px 0px 6px #2bd673; }
-.unit { color: #1faf5f; font-size: 12px; }
-.rate { color: #1faf5f; font-size: 12px; }
+.commits { color: #9ece6a; font-size: 26px; font-weight: bold; }
+.unit { color: #565f89; font-size: 12px; }
+.rate { color: #9aa5ce; font-size: 13px; }
 
-.actions { display: flex; flex-direction: row; gap: 8px; margin-top: 4px; }
+.actions { display: flex; flex-direction: row; gap: 8px; margin-top: 8px; }
 .tap-btn {
-	color: #aaffcc;
+	color: #9ece6a;
 	font-size: 14px;
 	font-weight: bold;
-	padding: 7px;
-	background-color: #04210f;
-	border: 1px solid #39ff8a;
-	transition: background-color 0.1s;
+	padding: 9px;
+	background-color: #1d2a18;
+	border: 1px solid #3d5a2e;
+	transition: background-color 0.15s;
 }
-.tap-btn:hover, .tap-btn:focus { background-color: #0a3a1c; box-shadow: 0px 0px 8px #2bd673; }
+.tap-btn:hover, .tap-btn:focus { background-color: #243a1d; border: 1px solid #9ece6a; }
 
 .refactor-btn {
-	color: #6b561f;
+	color: #565f89;
 	font-size: 12px;
-	padding: 7px;
-	background-color: #100c03;
-	border: 1px solid #3a2e10;
-	transition: background-color 0.1s;
+	padding: 9px;
+	background-color: #1f2335;
+	border: 1px solid #2a2e3f;
+	transition: background-color 0.15s;
 }
 .refactor-btn.ready {
-	color: #ffcf4d;
-	background-color: #1a1405;
-	border: 1px solid #7a5e1f;
+	color: #e0af68;
+	background-color: #2a2310;
+	border: 1px solid #5a4a2a;
 }
-.refactor-btn.ready:hover, .refactor-btn.ready:focus { background-color: #2a2208; box-shadow: 0px 0px 8px #b8902f; }
+.refactor-btn.ready:hover, .refactor-btn.ready:focus { background-color: #352c14; border: 1px solid #e0af68; }
 
-.meta { display: flex; flex-direction: row; gap: 12px; margin-top: 4px; }
-.insight { color: #ffcf4d; font-size: 12px; }
-.mult { color: #ffcf4d; font-size: 12px; }
+.meta { display: flex; flex-direction: row; gap: 14px; margin-top: 8px; }
+.insight { color: #e0af68; font-size: 12px; }
+.mult { color: #9aa5ce; font-size: 12px; }
 
-.body { overflow-y: auto; padding: 12px; }
+/* ── tabs ─────────────────────────────────────────────── */
+.body { overflow-y: auto; padding: 14px; }
 
-.tabs {
-	display: flex;
-	flex-direction: row;
-	gap: 4px;
-	margin-bottom: 12px;
-}
+.tabs { display: flex; flex-direction: row; gap: 4px; margin-bottom: 14px; }
 .tab {
-	color: #1faf5f;
+	color: #565f89;
 	font-size: 12px;
 	font-weight: bold;
-	padding: 8px;
-	background-color: #04140a;
-	border: 1px solid #123d24;
-	transition: background-color 0.1s;
+	padding: 9px;
+	background-color: #1f2335;
+	border: 1px solid #2a2e3f;
+	transition: background-color 0.15s;
 }
-.tab:hover { background-color: #0a2716; }
+.tab:hover { background-color: #24283b; }
 .tab.active {
-	color: #39ff8a;
-	background-color: #0a3a1c;
-	border: 1px solid #39ff8a;
+	color: #c0caf5;
+	background-color: #292e42;
+	border: 1px solid #7aa2f7;
 }
 
 .panel { margin-bottom: 4px; }
 
-.rows { display: flex; flex-direction: column; gap: 3px; }
+/* ── rows (generators / upgrades) ─────────────────────── */
+.rows { display: flex; flex-direction: column; gap: 5px; }
 .row {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	gap: 10px;
-	padding: 7px;
-	background-color: #021006;
-	border: 1px solid #0f3320;
+	gap: 12px;
+	padding: 11px;
+	background-color: #1f2335;
+	border: 1px solid #2a2e3f;
 }
-.row.affordable { border: 1px solid #2f7d4f; }
-.row-info { display: flex; flex-direction: column; gap: 1px; flex-grow: 1; }
-.row-name { color: #39ff8a; font-size: 13px; font-weight: bold; }
-.row-desc { color: #1faf5f; font-size: 11px; }
-.row-stat { color: #0e6b3a; font-size: 11px; }
+.row.affordable { border: 1px solid #3d5a2e; }
+.row-info { display: flex; flex-direction: column; gap: 3px; flex-grow: 1; }
+.row-name { color: #c0caf5; font-size: 14px; font-weight: bold; }
+.row-desc { color: #565f89; font-size: 12px; }
+.row-stat { color: #9aa5ce; font-size: 12px; }
 
 .buy-btn {
-	color: #1faf5f;
+	color: #565f89;
 	font-size: 13px;
-	padding: 6px;
-	background-color: #04140a;
-	border: 1px solid #1f5e38;
-	transition: background-color 0.1s;
+	padding: 9px;
+	background-color: #1a1b26;
+	border: 1px solid #2a2e3f;
+	transition: background-color 0.15s;
 }
 .buy-btn.affordable {
-	color: #021006;
-	background-color: #39ff8a;
-	border: 1px solid #39ff8a;
+	color: #9ece6a;
+	background-color: #1d2a18;
+	border: 1px solid #3d5a2e;
 }
-.buy-btn.affordable:hover { background-color: #5effa3; box-shadow: 0px 0px 8px #2bd673; }
+.buy-btn.affordable:hover { background-color: #243a1d; border: 1px solid #9ece6a; }
 
-.badges { display: flex; flex-direction: column; gap: 2px; }
+/* ── achievements ─────────────────────────────────────── */
+.badges { display: flex; flex-direction: column; gap: 4px; }
 .badge {
 	display: flex;
 	flex-direction: row;
 	align-items: baseline;
-	gap: 8px;
-	padding: 4px;
-	background-color: #020d05;
-	border: 1px solid #0c2d1b;
+	gap: 10px;
+	padding: 9px;
+	background-color: #1f2335;
+	border: 1px solid #2a2e3f;
 }
-.badge.earned { border: 1px solid #5a4717; color: #ffcf4d; }
-.badge-mark { color: #0e6b3a; font-size: 12px; }
-.badge-name { color: #1faf5f; font-size: 12px; }
-.badge-desc { color: #0e6b3a; font-size: 11px; flex-grow: 1; }
+.badge.earned { border: 1px solid #5a4a2a; color: #e0af68; }
+.badge-mark { color: #565f89; font-size: 13px; }
+.badge-name { color: #9aa5ce; font-size: 13px; }
+.badge-desc { color: #565f89; font-size: 12px; flex-grow: 1; }
 
-.empty { color: #0e6b3a; font-size: 12px; }
+.empty { color: #565f89; font-size: 12px; }
 
+/* ── toast ────────────────────────────────────────────── */
 .toast {
-	color: #ffcf4d;
-	font-size: 12px;
-	padding: 8px;
-	background-color: #1a1405;
-	border: 1px solid #7a5e1f;
-	text-shadow: 0px 0px 5px #b8902f;
+	color: #e0af68;
+	font-size: 13px;
+	padding: 10px;
+	background-color: #2a2310;
+	border: 1px solid #5a4a2a;
 	transition: opacity 0.2s;
 }
 
+/* ── refactor confirm screen ──────────────────────────── */
 .confirm {
 	display: flex;
 	flex-direction: column;
@@ -145,34 +145,33 @@
 	justify-content: center;
 	flex-grow: 1;
 	padding: 30px;
-	background-color: #020600;
+	background-color: #1a1b26;
 }
 .confirm-box {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
-	padding: 20px;
-	background-color: #04140a;
-	border: 1px solid #39ff8a;
-	box-shadow: 0px 0px 14px #1c8a4d;
+	gap: 14px;
+	padding: 24px;
+	background-color: #1f2335;
+	border: 1px solid #3b4261;
 }
-.confirm-title { color: #39ff8a; font-size: 18px; font-weight: bold; text-shadow: 0px 0px 6px #2bd673; }
-.confirm-text { color: #1faf5f; font-size: 12px; }
-.confirm-actions { display: flex; flex-direction: row; gap: 10px; }
+.confirm-title { color: #c0caf5; font-size: 18px; font-weight: bold; }
+.confirm-text { color: #9aa5ce; font-size: 13px; }
+.confirm-actions { display: flex; flex-direction: row; gap: 12px; }
 .confirm-btn {
-	color: #021006;
+	color: #9ece6a;
 	font-size: 13px;
 	font-weight: bold;
-	padding: 8px;
-	background-color: #39ff8a;
-	border: 1px solid #39ff8a;
-	transition: background-color 0.1s;
+	padding: 10px;
+	background-color: #1d2a18;
+	border: 1px solid #3d5a2e;
+	transition: background-color 0.15s;
 }
-.confirm-btn:hover, .confirm-btn:focus { background-color: #5effa3; box-shadow: 0px 0px 8px #2bd673; }
+.confirm-btn:hover, .confirm-btn:focus { background-color: #243a1d; border: 1px solid #9ece6a; }
 .cancel-btn {
-	color: #1faf5f;
+	color: #9aa5ce;
 	font-size: 13px;
-	padding: 8px;
-	background-color: #04140a;
-	border: 1px solid #1f5e38;
+	padding: 10px;
+	background-color: #1f2335;
+	border: 1px solid #2a2e3f;
 }
