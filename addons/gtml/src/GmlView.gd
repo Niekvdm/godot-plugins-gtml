@@ -107,6 +107,12 @@ var _radio_groups: Dictionary = {}
 var state: GmlState
 ## Reverse-index of state keys → registered bindings. Cleared each rebuild.
 var _binding_registry: GmlBindingRegistry
+## Parsed CSS rules retained after _rebuild so runtime :class
+## re-resolution (GmlClassRestyler) can recompute styles. Repopulated
+## each rebuild; empty when the view has no CSS.
+var _css_rules: Array = []
+## Style resolver instance retained for runtime re-resolution.
+var _style_resolver = null
 
 #endregion
 
@@ -190,11 +196,15 @@ func _rebuild() -> void:
 
 	# Parse CSS
 	var styles: Dictionary = {}
+	_css_rules = []
+	_style_resolver = null
 	if not css_content.is_empty():
 		var css_parser = GmlCssParser.new()
 		var css_rules = css_parser.parse(css_content)
 		var style_resolver = GmlStyleResolver.new()
 		styles = style_resolver.resolve(dom_root, css_rules)
+		_css_rules = css_rules
+		_style_resolver = style_resolver
 
 	# Build UI
 	var renderer = GmlRendererScript.new()

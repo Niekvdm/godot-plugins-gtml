@@ -499,3 +499,142 @@ func _collect_label_nodes(node: Node, out: Array) -> void:
 		out.append(node)
 	for c in node.get_children():
 		_collect_label_nodes(c, out)
+
+
+# ─── v0.8.2: css_rules retention ───────────────────────────
+
+func test_view_retains_css_rules_after_build() -> void:
+	var view := _build_view('<div class="box">x</div>', '.box { color: #ff0000; }')
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_gt(view._css_rules.size(), 0, "view must retain parsed css_rules for runtime re-resolution")
+
+
+# ─── v0.8.2: dynamic :class CSS re-resolution ──────────────
+
+func _find_first_span_label(view: GmlView) -> Label:
+	var out: Array = []
+	_collect_label_nodes(view, out)
+	return out[0] if out.size() > 0 else null
+
+
+func test_dynamic_class_reresolves_font_color() -> void:
+	var view := _build_view(
+		'<div><span :class="{ rare: is_rare }" class="name">Item</span></div>',
+		'.name { color: #ffffff; } .rare { color: #b59aff; }'
+	)
+	view.state.set("is_rare", false)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var label := _find_first_span_label(view)
+	assert_not_null(label)
+
+	view.state.set("is_rare", true)
+	await get_tree().process_frame
+	var c: Color = label.get_theme_color("font_color")
+	assert_almost_eq(c.b, 1.0, 0.06, "rare class should turn font purple-ish")
+
+	view.state.set("is_rare", false)
+	await get_tree().process_frame
+	var c2: Color = label.get_theme_color("font_color")
+	assert_almost_eq(c2.r, 1.0, 0.06)
+	assert_almost_eq(c2.b, 1.0, 0.06)
+
+
+func test_dynamic_class_reresolves_background_on_panel() -> void:
+	var view := _build_view(
+		'<div :class="{ active: on }" class="card">x</div>',
+		'.card { background-color: #222222; } .active { background-color: #ffcc00; }'
+	)
+	view.state.set("on", false)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	view.state.set("on", true)
+	await get_tree().process_frame
+	var found := false
+	var stack: Array = [view]
+	while not stack.is_empty():
+		var nd = stack.pop_back()
+		if nd is PanelContainer and nd.has_theme_stylebox("panel"):
+			var box = nd.get_theme_stylebox("panel")
+			if box is StyleBoxFlat and box.bg_color.r > 0.8 and box.bg_color.g > 0.6 and box.bg_color.b < 0.3:
+				found = true
+				break
+		for ch in nd.get_children():
+			stack.append(ch)
+	assert_true(found, "active class should set goldish panel background")
+
+
+func test_dynamic_class_low_hp_turns_red() -> void:
+	var view := _build_view(
+		'<div><span :class="{ low: hp < 25 }" class="hp">HP</span></div>',
+		'.hp { color: #ffffff; } .low { color: #ff0000; }'
+	)
+	view.state.set("hp", 100)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var label := _find_first_span_label(view)
+
+	view.state.set("hp", 10)
+	await get_tree().process_frame
+	var c: Color = label.get_theme_color("font_color")
+	assert_almost_eq(c.r, 1.0, 0.06)
+	assert_almost_eq(c.g, 0.0, 0.06, "low hp should turn red")
+
+
+func test_dynamic_class_array_syntax_swaps_rarity() -> void:
+	var view := _build_view(
+		'<div><span :class="[\'badge\', rarity]" class="b">x</span></div>',
+		'.common { color: #888888; } .epic { color: #cc44ff; }'
+	)
+	view.state.set("rarity", "common")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var label := _find_first_span_label(view)
+
+	view.state.set("rarity", "epic")
+	await get_tree().process_frame
+	var c: Color = label.get_theme_color("font_color")
+	assert_almost_eq(c.b, 1.0, 0.1, "epic rarity should turn purple-ish")
+
+
+func test_dynamic_class_in_vfor_clone_reresolves() -> void:
+	var view := _build_view(
+		'<ul><li v-for="item in items" :key="item.id" :class="{ sel: item.active }" class="row">{{ item.name }}</li></ul>',
+		'.row { color: #ffffff; } .sel { color: #00ff00; }'
+	)
+	view.state.set("items", [
+		{"id": "a", "name": "A", "active": false},
+		{"id": "b", "name": "B", "active": true},
+	])
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var labels: Array = []
+	_collect_label_nodes(view, labels)
+	var any_green := false
+	for l in labels:
+		var c: Color = (l as Label).get_theme_color("font_color")
+		if c.g > 0.8 and c.r < 0.2:
+			any_green = true
+			break
+	assert_true(any_green, "v-for clone with :class sel should re-resolve green")
+
+
+func test_dynamic_class_descendant_from_ancestor_NOT_reresolved() -> void:
+	# Documented limitation (spec §6.1): toggling a class on the CARD does
+	# NOT re-resolve a child styled by `.card.selected .name`.
+	var view := _build_view(
+		'<div :class="{ selected: on }" class="card"><span class="name">child</span></div>',
+		'.name { color: #ffffff; } .card.selected .name { color: #ff0000; }'
+	)
+	view.state.set("on", false)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var label := _find_first_span_label(view)
+
+	view.state.set("on", true)
+	await get_tree().process_frame
+	var c: Color = label.get_theme_color("font_color")
+	assert_almost_eq(c.r, 1.0, 0.06)
+	assert_almost_eq(c.g, 1.0, 0.06, "child must NOT turn red — documented limitation")

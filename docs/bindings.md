@@ -89,11 +89,23 @@ Three forms:
 <div :class="['static', dynamic_class_name]">
 ```
 
-**Limitation in v0.7**: `:class` stores the dynamic class list on the
-control's `dynamic_classes` meta but does NOT re-resolve CSS rules.
-Styles declared on classes present at build time work normally; dynamic
-class addition does not pull in new styles. Workaround: declare all
-possible classes at build time and use `v-show` / `v-if` to swap.
+**Runtime re-resolution (v0.8.2+)**: changing a dynamic class re-resolves
+the element's **visual** properties — `color`, `background-color`,
+`border-color`, `border-width`, `border-radius`, `opacity`,
+`font-size` — from the merged class list and applies them in place. The
+element's identity (focus, scroll, animations) is preserved.
+
+**Not re-resolved** (documented limitations):
+- **Layout / structural props** in a dynamic class (`display`, `flex-*`,
+  `width`, `height`, `padding`, `margin`, `gap`) are ignored + warned.
+  Use `v-if` / `v-show` for layout swaps.
+- **Descendant selectors keyed on an ancestor's dynamic class**
+  (`.card.selected .name`) do NOT re-resolve the descendant. Only the
+  element carrying the `:class` binding restyles. Put the `:class` on
+  the element you want to restyle, or bind the child to its own state key.
+- **Hover collision**: if hovering when a dynamic class changes the same
+  property, hover wins until it ends, then the new base shows.
+- **Font-family** is not re-resolved (only `font-size`).
 
 ### `v-if="expr"` — conditional rendering
 

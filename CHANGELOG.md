@@ -1,5 +1,54 @@
 # Changelog
 
+## 0.8.2
+
+### Features — Dynamic :class CSS re-resolution
+
+Since v0.7, `:class` only wrote a `dynamic_classes` meta — adding a class
+at runtime pulled in no styles. v0.8.2 makes dynamic `:class` actually
+restyle the element: on change, the bound element's **visual** properties
+(color, background, border, opacity, font-size) are recomputed
+from the merged class list and applied in place. Control identity
+(focus / scroll / animation) is preserved — no structural rebuild.
+
+```html
+<span :class="{ rare: is_rare }">{{ item.name }}</span>
+```
+```css
+.rare { color: #b59aff; }
+```
+
+`view.state.set("is_rare", true)` now turns the span purple.
+
+### Architecture
+
+- New `GmlClassRestyler` recomputes the visual-property subset via
+  `GmlStyleResolver._compute_style` (temporarily setting the node's
+  `class` attr to the merged list since selector matching reads node
+  state) and applies deltas in place: stylebox field mutation for
+  bg/border, theme overrides for color/font-size, `modulate.a` for
+  opacity. `color` propagates to descendant Labels (CSS inheritance).
+- `GmlView` retains the parsed `_css_rules` + resolver after build.
+- The renderer threads the ancestor chain and registers an `on_change`
+  callback on `:class` bindings with a static-only base snapshot for
+  clean revert.
+
+### Limitations (documented)
+
+- Layout props in dynamic classes are ignored + warned.
+- Descendant selectors keyed on an ancestor's dynamic class are not
+  re-resolved (only the bound element restyles).
+- Hover wins during a collision; new base shows after.
+- `font-family` not re-resolved (only `font-size`).
+
+### Tests
+
+17 new tests across the restyler + integration; 367 → 384.
+
+### Next blocker
+
+One v0.8 production-readiness PR remains: focus traversal + perf bench.
+
 ## 0.8.1
 
 ### Features — v-for keyed reconciliation
