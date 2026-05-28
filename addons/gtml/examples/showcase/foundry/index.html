@@ -1,0 +1,67 @@
+<div class="app">
+	<header class="hud">
+		<div class="counts">
+			<span class="commits">{{ commits_display }}</span>
+			<span class="rate">{{ per_sec_display }} commits/s</span>
+		</div>
+		<button class="tap-btn" @click="tap">Commit  (+{{ per_click_display }})</button>
+		<div class="meta">
+			<span class="insight">Insight: {{ insight }}</span>
+			<span class="mult">x{{ mult_display }}</span>
+			<button class="refactor-btn" @click="open_refactor">Refactor</button>
+		</div>
+	</header>
+
+	<div class="body">
+		<section class="panel">
+			<h2 class="panel-title">Generators</h2>
+			<ul class="rows">
+				<li v-for="g in generators" :key="g.id" class="row">
+					<div class="row-info">
+						<span class="row-name">{{ g.name }}</span>
+						<span class="row-desc">{{ g.desc }}</span>
+						<span class="row-stat">Owned {{ g.owned }} &middot; {{ g.rate_display }}/s</span>
+					</div>
+					<button class="buy-btn" :class="{ affordable: g.affordable }" :disabled="!g.affordable" @click="buy(g.id)">{{ g.cost_display }}</button>
+				</li>
+			</ul>
+		</section>
+
+		<section class="panel">
+			<h2 class="panel-title">Upgrades</h2>
+			<ul class="rows">
+				<li v-for="u in upgrades" :key="u.id" class="row">
+					<div class="row-info">
+						<span class="row-name">{{ u.name }}</span>
+						<span class="row-desc">{{ u.desc }}</span>
+					</div>
+					<button class="buy-btn" :class="{ affordable: u.affordable }" :disabled="!u.affordable" @click="buy_upgrade(u.id)">{{ u.cost_display }}</button>
+				</li>
+			</ul>
+			<p v-if="no_upgrades" class="empty">No upgrades available yet.</p>
+		</section>
+
+		<section class="panel">
+			<h2 class="panel-title">Achievements</h2>
+			<ul class="badges">
+				<li v-for="a in achievements" :key="a.id" class="badge" :class="{ earned: a.earned }">
+					<span class="badge-name">{{ a.name }}</span>
+					<span class="badge-desc">{{ a.desc }}</span>
+				</li>
+			</ul>
+		</section>
+	</div>
+
+	<div v-show="show_toast" class="toast">Unlocked: {{ toast }}</div>
+
+	<div v-if="show_refactor" class="modal-overlay">
+		<div class="modal" focus-trap>
+			<h2 class="modal-title">Refactor?</h2>
+			<p class="modal-text">Reset commits and generators to gain {{ refactor_gain }} Insight (permanent +2% output each).</p>
+			<div class="modal-actions">
+				<button class="confirm-btn" @click="confirm_refactor" autofocus>Confirm</button>
+				<button class="cancel-btn" @click="cancel_refactor">Cancel</button>
+			</div>
+		</div>
+	</div>
+</div>
