@@ -159,3 +159,15 @@ func test_do_refactor_resets_run_keeps_insight_and_achievements() -> void:
 	assert_almost_eq(d.per_click, 1.0, 0.0001)
 	assert_true(d.earned.has("first"))   # achievements persist
 	assert_almost_eq(d.global_mult(), 1.1, 0.0001)  # 1 + 5*0.02
+
+func test_generators_view_marks_affordability() -> void:
+	var d = _new_demo()
+	d.commits = 10.0
+	var rows: Array = d.build_generators_view()
+	assert_eq(rows.size(), d.GENERATORS.size())
+	var first = rows[0]
+	assert_eq(first.id, "intern")
+	assert_eq(first.owned, 0)
+	assert_eq(first.cost_display, "10")
+	assert_true(first.affordable)        # 10 >= 10
+	assert_false(rows[1].affordable)     # compiler costs 120

@@ -201,3 +201,111 @@ func do_refactor() -> void:
 	gen_owned.clear()
 	purchased.clear()
 	# insight + earned achievements intentionally persist.
+
+
+func build_generators_view() -> Array:
+	var out := []
+	for g in GENERATORS:
+		var c := cost_of(g.id)
+		out.append({
+			"id": g.id, "name": g.name, "desc": g.desc,
+			"owned": _owned(g.id),
+			"cost_display": fmt(c),
+			"rate_display": fmt(effective_rate(g.id)),
+			"affordable": can_afford(c),
+		})
+	return out
+
+
+func _ready() -> void:
+	view.state.set_state({
+		"commits_display": fmt(commits),
+		"per_sec_display": fmt(per_sec()),
+		"per_click_display": fmt(click_value()),
+		"insight": insight,
+		"mult_display": "%.2f" % global_mult(),
+		"generators": build_generators_view(),
+		"upgrades": build_upgrades_view(),
+		"no_upgrades": build_upgrades_view().is_empty(),
+		"achievements": build_achievements_view(),
+		"toast": "",
+		"show_toast": false,
+		"show_refactor": false,
+		"refactor_gain": str(refactor_gain()),
+	})
+	view.button_clicked.connect(_on_button)
+	view.item_clicked.connect(_on_item)
+
+
+func _process(delta: float) -> void:
+	if view == null:
+		return
+	var rate := per_sec()
+	var earnings := rate * delta
+	commits += earnings
+	total_this_run += earnings
+	view.state.set("commits_display", fmt(commits))
+	view.state.set("per_sec_display", fmt(rate))
+	_derive_accum += delta
+	if _derive_accum >= DERIVE_INTERVAL:
+		_derive_accum = 0.0
+		_derive()
+
+
+func _derive() -> void:
+	if view == null:
+		return
+	var ups := build_upgrades_view()
+	view.state.set("generators", build_generators_view())
+	view.state.set("upgrades", ups)
+	view.state.set("no_upgrades", ups.is_empty())
+	view.state.set("per_click_display", fmt(click_value()))
+	view.state.set("refactor_gain", str(refactor_gain()))
+	var newly := _check_achievements()
+	if not newly.is_empty():
+		view.state.set("achievements", build_achievements_view())
+		_show_toast(_ach_name(newly[0]))
+
+
+func _show_toast(text: String) -> void:
+	view.state.set("toast", text)
+	view.state.set("show_toast", true)
+	await get_tree().create_timer(3.0).timeout
+	if view != null:
+		view.state.set("show_toast", false)
+
+
+func _on_button(method: String) -> void:
+	match method:
+		"tap":
+			var v := click_value()
+			commits += v
+			total_this_run += v
+			_derive()
+		"open_refactor":
+			view.state.set("refactor_gain", str(refactor_gain()))
+			view.state.set("show_refactor", true)
+		"confirm_refactor":
+			do_refactor()
+			view.state.set("show_refactor", false)
+			_refresh_all()
+		"cancel_refactor":
+			view.state.set("show_refactor", false)
+
+
+func _on_item(handler: String, args: Array) -> void:
+	var id := str(args[0]) if args.size() > 0 else ""
+	match handler:
+		"buy":
+			if buy_generator(id):
+				_derive()
+		"buy_upgrade":
+			if buy_upgrade(id):
+				_derive()
+
+
+func _refresh_all() -> void:
+	view.state.set("insight", insight)
+	view.state.set("mult_display", "%.2f" % global_mult())
+	view.state.set("achievements", build_achievements_view())
+	_derive()
