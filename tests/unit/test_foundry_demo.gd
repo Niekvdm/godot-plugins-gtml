@@ -133,3 +133,29 @@ func test_achievements_view_reports_earned_flag() -> void:
 		by_id[a.id] = a.earned
 	assert_true(by_id["first"])
 	assert_false(by_id["kilo"])
+
+func test_refactor_gain_formula() -> void:
+	var d = _new_demo()
+	d.total_this_run = 10000.0      # floor(sqrt(1)) = 1
+	assert_eq(d.refactor_gain(), 1)
+	d.total_this_run = 250000.0     # floor(sqrt(25)) = 5
+	assert_eq(d.refactor_gain(), 5)
+
+func test_do_refactor_resets_run_keeps_insight_and_achievements() -> void:
+	var d = _new_demo()
+	d.commits = 1.0
+	d._check_achievements()         # earns "first"
+	d.total_this_run = 250000.0
+	d.gen_owned["intern"] = 7
+	d.commits = 250000.0
+	d.purchased["keyboard"] = true
+	d.do_refactor()
+	assert_eq(d.insight, 5)
+	assert_eq(d.refactored, 1)
+	assert_almost_eq(d.commits, 0.0, 0.0001)
+	assert_almost_eq(d.total_this_run, 0.0, 0.0001)
+	assert_eq(d._owned("intern"), 0)
+	assert_eq(d.purchased.size(), 0)
+	assert_almost_eq(d.per_click, 1.0, 0.0001)
+	assert_true(d.earned.has("first"))   # achievements persist
+	assert_almost_eq(d.global_mult(), 1.1, 0.0001)  # 1 + 5*0.02

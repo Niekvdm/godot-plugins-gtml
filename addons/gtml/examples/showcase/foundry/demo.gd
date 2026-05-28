@@ -187,3 +187,17 @@ func build_achievements_view() -> Array:
 	for a in ACHIEVEMENTS:
 		out.append({"id": a.id, "name": a.name, "desc": a.desc, "earned": earned.has(a.id)})
 	return out
+
+
+func refactor_gain() -> int:
+	return int(floor(sqrt(total_this_run / 10000.0)))
+
+func do_refactor() -> void:
+	insight += refactor_gain()
+	refactored += 1
+	commits = 0.0
+	total_this_run = 0.0
+	per_click = 1.0
+	gen_owned.clear()
+	purchased.clear()
+	# insight + earned achievements intentionally persist.
