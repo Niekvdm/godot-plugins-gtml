@@ -275,14 +275,16 @@ static func _values_equal(a: Variant, b: Variant) -> bool:
 ## interpolated spans, register a binding so the label.text refreshes
 ## whenever any dep changes. Scope (from v-for) is captured at register
 ## time so loop variables resolve against the right element.
-static func register_text_interpolation(label: Label, spans: Array, registry: GtmlBindingRegistry, state: GtmlState, scope: Dictionary = {}, tag: String = "") -> void:
+# `target` is any Control with a `text` property (Label, RichTextLabel, or
+# Button) — interpolation writes through Object.set so all are supported.
+static func register_text_interpolation(target: Control, spans: Array, registry: GtmlBindingRegistry, state: GtmlState, scope: Dictionary = {}, tag: String = "") -> void:
 	var deps: Array = _collect_text_deps(spans)
-	var ref: WeakRef = weakref(label)
+	var ref: WeakRef = weakref(target)
 	var apply := func():
 		var ctl = ref.get_ref()
 		if ctl == null:
 			return
-		(ctl as Label).text = _render_spans(spans, state, scope)
+		ctl.set("text", _render_spans(spans, state, scope))
 	registry.register({
 		"deps": deps,
 		"apply": apply,
