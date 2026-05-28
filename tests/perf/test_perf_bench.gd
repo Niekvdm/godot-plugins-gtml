@@ -213,3 +213,50 @@ func test_perf_vfor_reconcile_ops() -> void:
 	_bench("shuffle_reverse", 500, 10, func(): view.state.set("items", reversed500), reset500)
 
 	assert_true(true)
+
+
+# ─── state.set fan-out + full view build ───────────────────
+
+func test_perf_state_fanout_and_full_build() -> void:
+	_print_header("state.set fan-out")
+	for k in [10, 100, 500]:
+		# K interpolations of the same key → one set fires K text bindings.
+		var inner := ""
+		for _i in k:
+			inner += "<span>{{ count }}</span>"
+		var view := _build_view("<div>" + inner + "</div>")
+		view.state.set("count", 0)
+		await get_tree().process_frame
+		await get_tree().process_frame
+		# op must set a CHANGING value each time (set short-circuits equals).
+		var counter: Array = [0]
+		_bench("set_fanout", k, 200,
+			func():
+				counter[0] += 1
+				view.state.set("count", counter[0])
+		)
+
+	_print_header("full view build (renderer.build)")
+	# Representative document: header + a 50-item list + footer + some text.
+	var li := ""
+	for i in 50:
+		li += '<li>Item %d</li>' % i
+	var html := '<div class="page"><header><h1>Title</h1></header><ul>' + li + '</ul><footer><p>Footer text here</p></footer></div>'
+	var css := '.page { background-color: #222; } h1 { color: #fff; } li { color: #ccc; }'
+	# Parse + resolve ONCE (untimed); time only renderer.build.
+	var dom = GmlHtmlParserScript.new().parse(html)
+	var rules = GmlCssParserScript.new().parse(css)
+	var resolver = GmlStyleResolver.new()
+	var styles = resolver.resolve(dom, rules)
+	var host_view := _build_view("<div></div>")
+	await get_tree().process_frame
+	var built: Array = []
+	_bench("renderer_build", 50, 30,
+		func(): built.append(GmlRendererScript.new().build(dom, styles, host_view))
+	)
+	# Free all built roots (untimed, after the loop).
+	for b in built:
+		if is_instance_valid(b):
+			(b as Node).free()
+
+	assert_true(true)
