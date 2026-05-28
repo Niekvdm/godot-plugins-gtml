@@ -1,5 +1,63 @@
 # Changelog
 
+## 0.8.1
+
+### Features — v-for keyed reconciliation
+
+v0.7/v0.8 tore down every v-for child on any array change and rebuilt
+the whole region from scratch. That broke focus, scroll, hover state,
+and any in-flight animation on a 100-item HUD or chat list.
+
+v0.8.1 replaces the rebuild with a Vue-3-style LIS-based keyed
+reconciler that preserves Control identity across array mutations.
+Authors opt into stable identity per item via `:key`:
+
+```html
+<li v-for="item in items" :key="item.id">
+  <input :value="item.name">
+</li>
+```
+
+After `state.set("items", items_reordered)`, the `<input>` that had
+focus still has focus. Only DOM positions move.
+
+Without `:key`, the array index is the default — useful for
+stable-order lists, suboptimal for reorderable ones.
+
+### Architecture
+
+- New `GmlVForReconciler` (pure-data LIS diff, no scene access). 15
+  unit tests cover all edge cases.
+- `GmlBindingRegistry` gains `register(binding, tag)` + `prune_tag(tag)`
+  so per-clone bindings can be freed as a group when their clone leaves
+  the rendered set.
+- `GmlRenderer` replaces its tear-down-rebuild closure with a
+  reconcile-in-place flow. Per-host state lives on the parent control's
+  meta, keyed by the v-for template node's instance id.
+
+### Backward-incompatible
+
+None. Existing v-for samples (the inventory showcase, all integration
+fixtures) work unchanged — default-index reconciliation is
+behaviour-compatible with the old tear-down path from the author's POV.
+
+### Tests
+
+25 new tests across reconciler, registry, and integration; 341 → 366.
+
+### Deferred to v0.8.2+
+
+- Item-mutation propagation without key change (currently: keep keys
+  stable AND update with new dict instances if you want field updates).
+- Cross-list reuse (item moves from one v-for to another).
+- Staggered enter/leave animations.
+
+### Next blockers
+
+Two more v0.8 production-readiness PRs remain:
+- Dynamic `:class` CSS re-resolution
+- Focus traversal + perf bench infrastructure
+
 ## 0.8.0
 
 ### Features — Expression operators

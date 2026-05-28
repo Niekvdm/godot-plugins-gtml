@@ -128,10 +128,38 @@ With index:
 <li v-for="entry, i in inventory">{{ i }}: {{ entry.name }}</li>
 ```
 
-On state change to the bound array, all children of the v-for parent
-are torn down and rebuilt. For typical game inventories (<100 items)
-this is fast enough. Keyed reconciliation (`:key="entry.id"`) is
-planned for a future release.
+#### `:key` for stable identity
+
+v0.8.1 reconciles v-for output against the new array on every state
+change — same Control nodes are reused when their key matches, so
+focus, scroll, hover state, and in-flight animations survive
+reorders. Add `:key` to opt into stable identity by item:
+
+```html
+<li v-for="item in items" :key="item.id">{{ item.name }}</li>
+```
+
+Without `:key`, the array index is the default. Default-index works
+fine for stable-order lists but causes spurious updates when items
+move (the Control at position 3 keeps its identity even if the
+underlying item at index 3 is now different).
+
+**Always add `:key` for lists that can reorder.** Without it, an
+`<input v-model="item.name">` inside a v-for loses focus the moment
+the array reorders.
+
+#### Reconciliation cost
+
+The reconciler is O(n log n) for the diff itself plus O(k) for
+moves/inserts where k is the number of actual changes. A 100-item
+list with one item replaced costs ~1 remove + ~1 insert, not 100
+rebuilds.
+
+#### Duplicate `:key`
+
+Two items with the same key abort the reconcile: a warning is
+emitted and the DOM is left unchanged. Fix the key expression
+before continuing.
 
 ### `v-model="key"` — two-way input binding
 
