@@ -309,10 +309,19 @@ func run_command(raw: String) -> void:
 		return
 	var cmd: String = parts[0].to_lower()
 	var arg: String = parts[1] if parts.size() > 1 else ""
-	_log("cmd", "$ " + raw)
+	# `commit` is the core action and gets spammed — skip the "$ cmd" echo for
+	# it so the log stays readable; everything else echoes like a real shell.
+	if cmd != "commit" and cmd != "c":
+		_log("cmd", "$ " + raw)
 	match cmd:
+		"commit", "c":
+			var v := click_value()
+			commits += v
+			total_this_run += v
+			_log("ok", "> commit +%s  (%s total)" % [fmt(v), fmt(commits)])
 		"help":
 			_log("info", "commands:")
+			_log("info", "  commit (c) write a commit by hand")
 			_log("info", "  buy [id]   list generators / buy one")
 			_log("info", "  upgrades   list available upgrades")
 			_log("info", "  ach        list achievements")

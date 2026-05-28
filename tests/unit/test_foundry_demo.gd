@@ -175,6 +175,13 @@ func test_generators_view_marks_affordability() -> void:
 	assert_false(rows[1].affordable)     # compiler costs 120
 
 # ── command runner (REPL) ──────────────────────────────────
+func test_run_command_commit_increments() -> void:
+	var d = _new_demo()
+	d.run_command("commit")
+	assert_almost_eq(d.commits, 1.0, 0.0001, "commit adds click_value")
+	d.run_command("c")
+	assert_almost_eq(d.commits, 2.0, 0.0001, "c is an alias for commit")
+
 func test_run_command_buy_lists_generators() -> void:
 	var d = _new_demo()
 	d.run_command("buy")

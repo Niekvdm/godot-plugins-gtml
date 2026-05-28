@@ -113,3 +113,14 @@
 	background-color: #2a3050;
 	border: 1px solid #7aa2f7;
 }
+.token.commit {
+	color: #9ece6a;
+	background-color: #1d2a18;
+	border: 1px solid #3d5a2e;
+	font-weight: bold;
+}
+.token.commit:hover, .token.commit:focus {
+	color: #b9f27c;
+	background-color: #243a1d;
+	border: 1px solid #9ece6a;
+}
