@@ -78,16 +78,17 @@
 	background-color: #16161e;
 }
 .ps1 { color: #9ece6a; font-size: 14px; font-weight: bold; }
+/* No text-box chrome — the input blends into the prompt line; the blinking
+   green caret (set on the LineEdit in demo.gd) is the only cursor. */
 .cmdline {
 	flex-grow: 1;
 	color: #c0caf5;
 	font-size: 14px;
-	padding: 8px;
-	background-color: #1f2335;
-	border: 1px solid #2a2e3f;
-	caret-color: #9ece6a;
+	padding: 2px;
+	background-color: #16161e;
+	border: 0px solid #16161e;
 }
-.cmdline:focus { border: 1px solid #7aa2f7; background-color: #222538; }
+.cmdline:focus { background-color: #16161e; border: 0px solid #16161e; }
 
 /* ── command palette ───────────────────────────────────── */
 .palette {

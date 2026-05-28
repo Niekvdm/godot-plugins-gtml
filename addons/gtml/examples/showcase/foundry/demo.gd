@@ -230,9 +230,26 @@ func _ready() -> void:
 	_seed_log()
 
 
+# Make the command input read like a terminal prompt: a blinking green caret
+# that moves with the text, no text-box chrome (styled away in CSS). GtmlView
+# builds deferred, so the LineEdit isn't registered during _ready — wire it on
+# the first tick once it exists.
+var _caret_inited := false
+func _init_caret() -> void:
+	var le := view.get_element_by_id("cmdline")
+	if le is LineEdit:
+		le.caret_blink = true
+		le.caret_blink_interval = 0.6
+		le.add_theme_color_override("caret_color", Color("#9ece6a"))
+		le.grab_focus()
+		_caret_inited = true
+
+
 func _process(delta: float) -> void:
 	if view == null:
 		return
+	if not _caret_inited:
+		_init_caret()
 	var rate := per_sec()
 	var earnings := rate * delta
 	commits += earnings
