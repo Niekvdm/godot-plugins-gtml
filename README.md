@@ -5,6 +5,8 @@ your interface in markup, drive it from game state, and let GTML keep the
 Control tree in sync — menus, HUDs, inventories, leaderboards, and dialog
 trees without per-element GDScript glue.
 
+> ⚠ **API rename in progress.** The addon is **GTML**; its classes are migrating from `Gml*` to `Gtml*`. These docs use the target `Gtml*` names. If your installed build still registers `GmlView`, use that name until the rename ships.
+
 ```html
 <ul>
   <li v-for="item in inventory" :key="item.id" @click="select(item)"
@@ -17,7 +19,7 @@ trees without per-element GDScript glue.
 ```
 
 ```gdscript
-@onready var view: GmlView = $GmlView
+@onready var view: GtmlView = $GtmlView
 
 func _ready() -> void:
     view.state.set("inventory", load_inventory())
@@ -53,7 +55,7 @@ focused inputs keep focus, only the changed rows re-render.
 ## Install
 
 Copy `addons/gtml/` into your project and enable it in
-**Project Settings → Plugins**. Add a `GmlView` node and set its
+**Project Settings → Plugins**. Add a `GtmlView` node and set its
 **Html Path** + **Css Path** in the Inspector.
 
 ## Quick start — reactive
@@ -77,7 +79,7 @@ Copy `addons/gtml/` into your project and enable it in
 
 **hud.gd**
 ```gdscript
-@onready var view: GmlView = $GmlView
+@onready var view: GtmlView = $GtmlView
 
 func _ready() -> void:
     view.state.set_state({ "score": 0, "hp": 100, "max_hp": 100, "player_name": "Ada" })
@@ -106,7 +108,7 @@ For a plain menu you don't even need state — bare `@click` fires a signal:
 
 ```gdscript
 func _ready() -> void:
-    $GmlView.button_clicked.connect(func(handler):
+    $GtmlView.button_clicked.connect(func(handler):
         match handler:
             "play": get_tree().change_scene_to_file("res://game.tscn")
             "quit": get_tree().quit())
@@ -131,15 +133,13 @@ Crafted demos live in `addons/gtml/examples/showcase/` — open any
 
 ## Documentation
 
-- [Getting Started](docs/getting-started.md) — install + basics
-- [Reactive bindings](docs/bindings.md) — `{{ }}`, `:attr`, `:class`, `v-if`/`v-show`, `v-for :key`, `v-model`, `@event(args)`, the expression grammar
-- [Focus & navigation](docs/focus.md) — keyboard / gamepad, `tabindex`, `autofocus`, `focus-trap`
-- [HTML Elements](docs/html-elements.md) · [CSS Properties](docs/css-properties.md) · [CSS Selectors](docs/css-selectors.md) · [CSS Tokens](docs/css-tokens.md)
-- [Layout & Flexbox](docs/layout-and-flexbox.md) · [Transforms](docs/transforms.md) · [Transitions](docs/transitions.md) · [Fonts & Typography](docs/fonts-and-typography.md)
-- [Forms & Inputs](docs/forms-and-inputs.md) · [SVG Support](docs/svg-support.md)
-- [The Editor Pane](docs/editor.md) — autocomplete, jumps, color picker, multi-cursor
-- [Performance](docs/perf.md) — the benchmark harness + how to run it
-- [Extending GTML](docs/extending-gtml.md) · [Limitations](docs/limitations.md)
+Full docs: **[docs/index.md](docs/index.md)**
+
+- [Getting started](docs/guide/getting-started.md) — install + your first view
+- [Reactivity](docs/guide/reactivity.md) — the state → bindings model
+- [Bindings](docs/guide/bindings.md) — `{{ }}`, `:class`, `v-for`, `v-model`, `@event`, expressions
+- [Focus & navigation](docs/guide/focus.md) — keyboard / gamepad
+- [GtmlView API](docs/reference/gtmlview-api.md) — state, signals, methods, exports
 
 ## License
 

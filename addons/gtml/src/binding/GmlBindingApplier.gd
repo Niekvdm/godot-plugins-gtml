@@ -372,7 +372,7 @@ static func register_attr_binding(control: Control, target: String, expr: Dictio
 ## Note: v0.7 does NOT re-resolve CSS rules when dynamic classes change.
 ## Dynamic class addition affects only the meta; the Control's existing
 ## stylebox is not updated. Static styling (declared on classes present
-## at build time) still works. Document the limitation in docs/bindings.md.
+## at build time) still works. Document the limitation in docs/guide/bindings.md.
 static func register_class_binding(control: Control, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState, scope: Dictionary = {}, tag: String = "", on_change: Callable = Callable()) -> void:
 	var ref: WeakRef = weakref(control)
 	var apply := func():
