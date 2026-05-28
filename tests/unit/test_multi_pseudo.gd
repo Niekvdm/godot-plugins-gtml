@@ -7,15 +7,15 @@ extends GutTest
 ## Single-pseudo styles still work and stack — the more-specific combined
 ## state wins when its full pseudo set is active.
 
-const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
-const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
-const GmlStyleResolverScript = preload("res://addons/gtml/src/css/GmlStyleResolver.gd")
+const GtmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GtmlHtmlParser.gd")
+const GtmlCssParserScript = preload("res://addons/gtml/src/css/GtmlCssParser.gd")
+const GtmlStyleResolverScript = preload("res://addons/gtml/src/css/GtmlStyleResolver.gd")
 
 
 func _resolved_style(html: String, css: String, id: String) -> Dictionary:
-	var dom = GmlHtmlParserScript.new().parse(html)
-	var rules := GmlCssParserScript.new().parse(css)
-	var styles: Dictionary = GmlStyleResolverScript.new().resolve(dom, rules)
+	var dom = GtmlHtmlParserScript.new().parse(html)
+	var rules := GtmlCssParserScript.new().parse(css)
+	var styles: Dictionary = GtmlStyleResolverScript.new().resolve(dom, rules)
 	var node = _find_by_id(dom, id)
 	if node == null:
 		return {}
@@ -96,7 +96,7 @@ func test_combined_bucket_wins_when_all_pseudos_active() -> void:
 
 
 func test_active_and_disabled_buckets_resolve_but_never_fire_on_non_buttons() -> void:
-	# Document the intentional limitation: the generic GmlTransitionSetup only
+	# Document the intentional limitation: the generic GtmlTransitionSetup only
 	# tracks hover + focus signals on plain controls. _active / _disabled
 	# buckets parse and land on the style, but the runtime won't toggle them
 	# unless the element type drives those signals (buttons do; inputs/anchors

@@ -6,7 +6,7 @@ extends Control
 ## state_changed, and item_clicked compose to make a fully reactive UI
 ## without per-element binding code.
 
-@onready var view: GmlView = $GmlView
+@onready var view: GtmlView = $GtmlView
 
 const ITEMS := [
 	{"id": "sword",    "name": "Iron Sword",    "type": "weapon", "rarity": "common", "icon": "[S]", "qty": 1, "desc": "A reliable iron blade."},

@@ -6,24 +6,24 @@ extends GutTest
 ##   - Structural pseudo-classes (:not, :nth-child, :first-child, :last-child,
 ##     :only-child)
 
-const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
-const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
-const GmlStyleResolverScript = preload("res://addons/gtml/src/css/GmlStyleResolver.gd")
-const GmlSelectorScript = preload("res://addons/gtml/src/css/GmlSelector.gd")
+const GtmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GtmlHtmlParser.gd")
+const GtmlCssParserScript = preload("res://addons/gtml/src/css/GtmlCssParser.gd")
+const GtmlStyleResolverScript = preload("res://addons/gtml/src/css/GtmlStyleResolver.gd")
+const GtmlSelectorScript = preload("res://addons/gtml/src/css/GtmlSelector.gd")
 
 
 func _dom(html: String):
-	return GmlHtmlParserScript.new().parse(html)
+	return GtmlHtmlParserScript.new().parse(html)
 
 
 func _rules(css: String) -> Array:
-	return GmlCssParserScript.new().parse(css)
+	return GtmlCssParserScript.new().parse(css)
 
 
 func _style_for_id(html: String, css: String, id: String) -> Dictionary:
 	var dom = _dom(html)
 	var rules := _rules(css)
-	var styles: Dictionary = GmlStyleResolverScript.new().resolve(dom, rules)
+	var styles: Dictionary = GtmlStyleResolverScript.new().resolve(dom, rules)
 	var found = _find_by_id(dom, id)
 	if found == null:
 		return {}

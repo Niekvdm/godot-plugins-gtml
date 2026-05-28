@@ -1,9 +1,9 @@
 extends GutTest
 
-## Tests for GmlBindingRegistry — per-view {key → Array[binding]} reverse index.
+## Tests for GtmlBindingRegistry — per-view {key → Array[binding]} reverse index.
 
 func test_register_then_fire_invokes_applier() -> void:
-	var r := GmlBindingRegistry.new()
+	var r := GtmlBindingRegistry.new()
 	var fired: Array = []
 	var binding := {
 		"deps": ["score"],
@@ -16,7 +16,7 @@ func test_register_then_fire_invokes_applier() -> void:
 
 
 func test_fire_unrelated_key_does_not_invoke() -> void:
-	var r := GmlBindingRegistry.new()
+	var r := GtmlBindingRegistry.new()
 	var fired: Array = []
 	r.register({
 		"deps": ["score"],
@@ -28,7 +28,7 @@ func test_fire_unrelated_key_does_not_invoke() -> void:
 
 
 func test_multiple_deps_fire_on_any_key() -> void:
-	var r := GmlBindingRegistry.new()
+	var r := GtmlBindingRegistry.new()
 	var fired: Array = []
 	r.register({
 		"deps": ["a", "b"],
@@ -41,7 +41,7 @@ func test_multiple_deps_fire_on_any_key() -> void:
 
 
 func test_clear_drops_all_bindings() -> void:
-	var r := GmlBindingRegistry.new()
+	var r := GtmlBindingRegistry.new()
 	var fired: Array = []
 	r.register({
 		"deps": ["a"],
@@ -54,7 +54,7 @@ func test_clear_drops_all_bindings() -> void:
 
 
 func test_pruned_when_control_ref_freed() -> void:
-	var r := GmlBindingRegistry.new()
+	var r := GtmlBindingRegistry.new()
 	var ctrl := Control.new()
 	add_child_autofree(ctrl)
 	var ref: WeakRef = weakref(ctrl)
@@ -70,7 +70,7 @@ func test_pruned_when_control_ref_freed() -> void:
 
 
 func test_fire_batched_runs_each_binding_once() -> void:
-	var r := GmlBindingRegistry.new()
+	var r := GtmlBindingRegistry.new()
 	var fired: Array = []
 	r.register({
 		"deps": ["a", "b"],
@@ -84,7 +84,7 @@ func test_fire_batched_runs_each_binding_once() -> void:
 # ─── Tag-grouping (v0.8.1) ─────────────────────────────────
 
 func test_register_with_tag_still_fires_on_dep() -> void:
-	var r := GmlBindingRegistry.new()
+	var r := GtmlBindingRegistry.new()
 	var fired: Array = []
 	r.register({
 		"deps": ["x"],
@@ -96,7 +96,7 @@ func test_register_with_tag_still_fires_on_dep() -> void:
 
 
 func test_prune_tag_drops_bindings_under_that_tag() -> void:
-	var r := GmlBindingRegistry.new()
+	var r := GtmlBindingRegistry.new()
 	var fired: Array = []
 	r.register({
 		"deps": ["x"],
@@ -109,7 +109,7 @@ func test_prune_tag_drops_bindings_under_that_tag() -> void:
 
 
 func test_prune_tag_isolation_other_tags_survive() -> void:
-	var r := GmlBindingRegistry.new()
+	var r := GtmlBindingRegistry.new()
 	var fired_a: Array = []
 	var fired_b: Array = []
 	r.register({
@@ -129,7 +129,7 @@ func test_prune_tag_isolation_other_tags_survive() -> void:
 
 
 func test_prune_nonexistent_tag_is_noop() -> void:
-	var r := GmlBindingRegistry.new()
+	var r := GtmlBindingRegistry.new()
 	r.register({
 		"deps": ["x"],
 		"apply": func(): pass,

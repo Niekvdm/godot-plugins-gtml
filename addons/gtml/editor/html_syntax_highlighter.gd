@@ -12,7 +12,7 @@ var data_attr_color := Color("#4ec9b0")   # Teal - data-* attributes
 var string_color := Color("#ce9178")      # Orange - strings
 var comment_color := Color("#6a9955")     # Green - comments
 var bracket_color := Color("#808080")     # Gray - < > / =
-var gml_attr_color := Color("#dcdcaa")    # Yellow - @click, @submit, etc.
+var gtml_attr_color := Color("#dcdcaa")    # Yellow - @click, @submit, etc.
 var doctype_color := Color("#608b4e")     # Dark green - <!DOCTYPE>
 var entity_color := Color("#d7ba7d")      # Gold - &nbsp; entities
 
@@ -189,7 +189,7 @@ func _parse_tag_attributes(line: String, i: int, length: int, colors: Dictionary
 			i += 1
 			while i < length and _is_attr_name_char(line[i]):
 				i += 1
-			_set_color_range(colors, attr_start, i, gml_attr_color)
+			_set_color_range(colors, attr_start, i, gtml_attr_color)
 			# Handle = and value
 			i = _skip_whitespace(line, i, length)
 			if i < length and line[i] == "=":

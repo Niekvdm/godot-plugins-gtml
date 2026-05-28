@@ -5,7 +5,7 @@ extends GutTest
 ## animate together when transform appears in a transitioned :hover/:focus
 ## state bucket.
 
-const GmlTransitionManagerScript = preload("res://addons/gtml/src/html_renderer/GmlTransitionManager.gd")
+const GtmlTransitionManagerScript = preload("res://addons/gtml/src/html_renderer/GtmlTransitionManager.gd")
 
 
 func _control() -> Control:
@@ -28,7 +28,7 @@ func test_transform_scale_applied_via_zero_duration_transition() -> void:
 	# duration: 0 short-circuits to immediate apply — exercises the dispatch
 	# path without waiting for tween frames.
 	var c := _control()
-	var manager = GmlTransitionManagerScript.new()
+	var manager = GtmlTransitionManagerScript.new()
 	var from := {"transform": {"translate": Vector2.ZERO, "scale": Vector2.ONE, "rotate": 0.0}}
 	var to := {"transform": {"translate": Vector2.ZERO, "scale": Vector2(1.5, 1.5), "rotate": 0.0}}
 	manager.transition_style(c, from, to, _transitions(0))
@@ -37,7 +37,7 @@ func test_transform_scale_applied_via_zero_duration_transition() -> void:
 
 func test_transform_rotate_applied_via_zero_duration_transition() -> void:
 	var c := _control()
-	var manager = GmlTransitionManagerScript.new()
+	var manager = GtmlTransitionManagerScript.new()
 	var from := {"transform": {"translate": Vector2.ZERO, "scale": Vector2.ONE, "rotate": 0.0}}
 	var to := {"transform": {"translate": Vector2.ZERO, "scale": Vector2.ONE, "rotate": PI / 4.0}}
 	manager.transition_style(c, from, to, _transitions(0))
@@ -50,7 +50,7 @@ func test_transform_reverts_to_base_when_target_has_no_transform() -> void:
 	var c := _control()
 	c.scale = Vector2(1.5, 1.5)
 	c.rotation = 0.3
-	var manager = GmlTransitionManagerScript.new()
+	var manager = GtmlTransitionManagerScript.new()
 	var from := {"transform": {"translate": Vector2.ZERO, "scale": Vector2(1.5, 1.5), "rotate": 0.3}}
 	var to := {}  # no transform key in target
 	manager.transition_style(c, from, to, _transitions(0))
@@ -62,7 +62,7 @@ func test_transform_with_duration_eventually_reaches_target_value() -> void:
 	# Real tween path — kick off a short animation, wait it out, verify the
 	# final value matches the target. Catches setup-but-no-tween bugs.
 	var c := _control()
-	var manager = GmlTransitionManagerScript.new()
+	var manager = GtmlTransitionManagerScript.new()
 	var from := {"transform": {"translate": Vector2.ZERO, "scale": Vector2.ONE, "rotate": 0.0}}
 	var to := {"transform": {"translate": Vector2.ZERO, "scale": Vector2(1.2, 1.2), "rotate": 0.0}}
 	manager.transition_style(c, from, to, _transitions(50))
@@ -75,7 +75,7 @@ func test_transform_intermediate_frame_is_between_endpoints() -> void:
 	# Mid-animation, scale must be strictly between from and to. Confirms
 	# the tween is actually interpolating, not snapping at frame 0 or N.
 	var c := _control()
-	var manager = GmlTransitionManagerScript.new()
+	var manager = GtmlTransitionManagerScript.new()
 	var from := {"transform": {"translate": Vector2.ZERO, "scale": Vector2.ONE, "rotate": 0.0}}
 	var to := {"transform": {"translate": Vector2.ZERO, "scale": Vector2(2.0, 2.0), "rotate": 0.0}}
 	manager.transition_style(c, from, to, _transitions(200))
@@ -93,7 +93,7 @@ func test_transform_combined_with_color_both_fire() -> void:
 	# both — verifies the dispatch loop isn't short-circuiting after the
 	# transform branch.
 	var c := _control()
-	var manager = GmlTransitionManagerScript.new()
+	var manager = GtmlTransitionManagerScript.new()
 	var from := {
 		"transform": {"translate": Vector2.ZERO, "scale": Vector2.ONE, "rotate": 0.0},
 		"opacity": 1.0,
@@ -116,7 +116,7 @@ func test_transform_interruption_continues_from_live_value() -> void:
 	# a different target. The new tween must pick up from the LIVE scale,
 	# not snap back to the original from_value.
 	var c := _control()
-	var manager = GmlTransitionManagerScript.new()
+	var manager = GtmlTransitionManagerScript.new()
 	var from := {"transform": {"translate": Vector2.ZERO, "scale": Vector2.ONE, "rotate": 0.0}}
 	var to_big := {"transform": {"translate": Vector2.ZERO, "scale": Vector2(2.0, 2.0), "rotate": 0.0}}
 	manager.transition_style(c, from, to_big, _transitions(200))
@@ -138,13 +138,13 @@ func test_transform_interruption_continues_from_live_value() -> void:
 
 func test_transform_translate_reverts_when_base_lacks_transform_meta() -> void:
 	# Atelier .side-item-link case: base style has NO transform, so
-	# GmlDimensions never stamps _transform_base_position. The transition
+	# GtmlDimensions never stamps _transform_base_position. The transition
 	# manager should stamp it lazily on first hover so the revert returns
 	# to the original layout position.
 	var c := Control.new()
 	c.position = Vector2(40, 80)
 	add_child_autofree(c)
-	var manager = GmlTransitionManagerScript.new()
+	var manager = GtmlTransitionManagerScript.new()
 
 	# Hover-in: translate by +2px
 	var from := {}  # no transform
@@ -162,7 +162,7 @@ func test_transform_delay_is_honored() -> void:
 	# in delay), scale should be unchanged. At t=200ms (after full run),
 	# it should be at the target.
 	var c := _control()
-	var manager = GmlTransitionManagerScript.new()
+	var manager = GtmlTransitionManagerScript.new()
 	var from := {"transform": {"translate": Vector2.ZERO, "scale": Vector2.ONE, "rotate": 0.0}}
 	var to := {"transform": {"translate": Vector2.ZERO, "scale": Vector2(1.5, 1.5), "rotate": 0.0}}
 	var transitions := [{

@@ -1,14 +1,14 @@
 extends GutTest
 
-## Tests for GmlJumpResolver.resolve(ctx) — given a cursor on a jumpable
+## Tests for GtmlJumpResolver.resolve(ctx) — given a cursor on a jumpable
 ## token, returns {target_kind, line, col} or null.
 
 func _resolve(kind: String, text: String, line: int, col: int, other: String):
 	var ctx = (
-		GmlEditorContext.from_html(text, line, col, other) if kind == "html"
-		else GmlEditorContext.from_css(text, line, col, other)
+		GtmlEditorContext.from_html(text, line, col, other) if kind == "html"
+		else GtmlEditorContext.from_css(text, line, col, other)
 	)
-	return GmlJumpResolver.resolve(ctx)
+	return GtmlJumpResolver.resolve(ctx)
 
 
 func test_html_class_jumps_to_css_rule() -> void:

@@ -1,51 +1,51 @@
 extends GutTest
 
-## Tests for GmlBindingExpr — the mini-expression parser.
+## Tests for GtmlBindingExpr — the mini-expression parser.
 
 func test_parse_simple_path() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("score")
+	var ast: Dictionary = GtmlBindingExpr.parse("score")
 	assert_eq(ast["type"], "path")
 	assert_eq(ast["parts"], PackedStringArray(["score"]))
 
 
 func test_parse_dotted_path() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("player.health")
+	var ast: Dictionary = GtmlBindingExpr.parse("player.health")
 	assert_eq(ast["type"], "path")
 	assert_eq(ast["parts"], PackedStringArray(["player", "health"]))
 
 
 func test_parse_deep_path() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("a.b.c.d")
+	var ast: Dictionary = GtmlBindingExpr.parse("a.b.c.d")
 	assert_eq(ast["parts"], PackedStringArray(["a", "b", "c", "d"]))
 
 
 func test_parse_negation() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("!loading")
+	var ast: Dictionary = GtmlBindingExpr.parse("!loading")
 	assert_eq(ast["type"], "neg")
 	assert_eq(ast["inner"]["type"], "path")
 	assert_eq(ast["inner"]["parts"], PackedStringArray(["loading"]))
 
 
 func test_parse_negation_dotted_path() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("!player.invincible")
+	var ast: Dictionary = GtmlBindingExpr.parse("!player.invincible")
 	assert_eq(ast["type"], "neg")
 	assert_eq(ast["inner"]["parts"], PackedStringArray(["player", "invincible"]))
 
 
 func test_parse_string_double_quoted() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse('"hello"')
+	var ast: Dictionary = GtmlBindingExpr.parse('"hello"')
 	assert_eq(ast["type"], "string")
 	assert_eq(ast["value"], "hello")
 
 
 func test_parse_string_single_quoted() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("'world'")
+	var ast: Dictionary = GtmlBindingExpr.parse("'world'")
 	assert_eq(ast["type"], "string")
 	assert_eq(ast["value"], "world")
 
 
 func test_parse_object_literal_single_entry() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("{ active: is_active }")
+	var ast: Dictionary = GtmlBindingExpr.parse("{ active: is_active }")
 	assert_eq(ast["type"], "object")
 	assert_eq(ast["entries"].size(), 1)
 	assert_eq(ast["entries"][0]["key"], "active")
@@ -54,7 +54,7 @@ func test_parse_object_literal_single_entry() -> void:
 
 
 func test_parse_object_literal_multiple_with_negation() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("{ active: is_active, dim: !is_active }")
+	var ast: Dictionary = GtmlBindingExpr.parse("{ active: is_active, dim: !is_active }")
 	assert_eq(ast["entries"].size(), 2)
 	assert_eq(ast["entries"][0]["key"], "active")
 	assert_eq(ast["entries"][1]["key"], "dim")
@@ -62,7 +62,7 @@ func test_parse_object_literal_multiple_with_negation() -> void:
 
 
 func test_parse_array_literal() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("['static', dynamic_key]")
+	var ast: Dictionary = GtmlBindingExpr.parse("['static', dynamic_key]")
 	assert_eq(ast["type"], "array")
 	assert_eq(ast["items"].size(), 2)
 	assert_eq(ast["items"][0]["type"], "string")
@@ -71,14 +71,14 @@ func test_parse_array_literal() -> void:
 
 
 func test_parse_call_no_args() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("handler()")
+	var ast: Dictionary = GtmlBindingExpr.parse("handler()")
 	assert_eq(ast["type"], "call")
 	assert_eq(ast["name"], "handler")
 	assert_eq(ast["args"].size(), 0)
 
 
 func test_parse_call_one_arg() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("select(item)")
+	var ast: Dictionary = GtmlBindingExpr.parse("select(item)")
 	assert_eq(ast["type"], "call")
 	assert_eq(ast["name"], "select")
 	assert_eq(ast["args"].size(), 1)
@@ -87,14 +87,14 @@ func test_parse_call_one_arg() -> void:
 
 
 func test_parse_call_multiple_args() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("select(item, index)")
+	var ast: Dictionary = GtmlBindingExpr.parse("select(item, index)")
 	assert_eq(ast["args"].size(), 2)
 	assert_eq(ast["args"][0]["parts"], PackedStringArray(["item"]))
 	assert_eq(ast["args"][1]["parts"], PackedStringArray(["index"]))
 
 
 func test_parse_malformed_returns_error() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("{ unclosed")
+	var ast: Dictionary = GtmlBindingExpr.parse("{ unclosed")
 	assert_eq(ast["type"], "error")
 	assert_true("message" in ast)
 
@@ -102,26 +102,26 @@ func test_parse_malformed_returns_error() -> void:
 # ─── Number literals + parens + ident hyphen drop (Task 2) ───
 
 func test_parse_integer_literal() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("42")
+	var ast: Dictionary = GtmlBindingExpr.parse("42")
 	assert_eq(ast["type"], "number")
 	assert_eq(ast["value"], 42.0)
 
 
 func test_parse_float_literal() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("3.14")
+	var ast: Dictionary = GtmlBindingExpr.parse("3.14")
 	assert_eq(ast["type"], "number")
 	assert_eq(ast["value"], 3.14)
 
 
 func test_parse_zero() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("0")
+	var ast: Dictionary = GtmlBindingExpr.parse("0")
 	assert_eq(ast["type"], "number")
 	assert_eq(ast["value"], 0.0)
 
 
 func test_parse_parenthesized_path() -> void:
 	# Parens are transparent — must collapse back to the inner AST.
-	var ast: Dictionary = GmlBindingExpr.parse("(score)")
+	var ast: Dictionary = GtmlBindingExpr.parse("(score)")
 	assert_eq(ast["type"], "path")
 	assert_eq(ast["parts"], PackedStringArray(["score"]))
 
@@ -132,7 +132,7 @@ func test_parse_ident_hyphens_no_longer_accepted() -> void:
 	# After Task 5 (arithmetic), "data-n" is a valid subtraction expression:
 	# binop{-, data, n}. The hyphen-as-ident rule is still gone; now "-" is
 	# simply a binary minus. Verify the binop shape rather than an error.
-	var ast: Dictionary = GmlBindingExpr.parse("data-n")
+	var ast: Dictionary = GtmlBindingExpr.parse("data-n")
 	assert_eq(ast["type"], "binop")
 	assert_eq(ast["op"], "-")
 	assert_eq(ast["left"]["parts"], PackedStringArray(["data"]))
@@ -142,7 +142,7 @@ func test_parse_ident_hyphens_no_longer_accepted() -> void:
 # ─── Indexing (Task 3) ──────────────────────────────────────
 
 func test_parse_array_index() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("items[0]")
+	var ast: Dictionary = GtmlBindingExpr.parse("items[0]")
 	assert_eq(ast["type"], "index")
 	assert_eq(ast["target"]["type"], "path")
 	assert_eq(ast["target"]["parts"], PackedStringArray(["items"]))
@@ -150,14 +150,14 @@ func test_parse_array_index() -> void:
 
 
 func test_parse_index_with_path_inside() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("items[i]")
+	var ast: Dictionary = GtmlBindingExpr.parse("items[i]")
 	assert_eq(ast["type"], "index")
 	assert_eq(ast["index"]["type"], "path")
 	assert_eq(ast["index"]["parts"], PackedStringArray(["i"]))
 
 
 func test_parse_index_then_dot() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("items[0].name")
+	var ast: Dictionary = GtmlBindingExpr.parse("items[0].name")
 	# items[0] is the index target; .name appends as a string-keyed
 	# index on top.
 	assert_eq(ast["type"], "index")
@@ -167,7 +167,7 @@ func test_parse_index_then_dot() -> void:
 
 
 func test_parse_chained_indexes() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("items[i][0]")
+	var ast: Dictionary = GtmlBindingExpr.parse("items[i][0]")
 	assert_eq(ast["type"], "index")
 	assert_eq(ast["target"]["type"], "index")
 
@@ -175,14 +175,14 @@ func test_parse_chained_indexes() -> void:
 # ─── Unary minus (Task 4) ──────────────────────────────────
 
 func test_parse_unary_minus_number() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("-5")
+	var ast: Dictionary = GtmlBindingExpr.parse("-5")
 	assert_eq(ast["type"], "unary")
 	assert_eq(ast["op"], "-")
 	assert_eq(ast["inner"]["type"], "number")
 
 
 func test_parse_unary_minus_path() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("-score")
+	var ast: Dictionary = GtmlBindingExpr.parse("-score")
 	assert_eq(ast["type"], "unary")
 	assert_eq(ast["op"], "-")
 	assert_eq(ast["inner"]["type"], "path")
@@ -191,7 +191,7 @@ func test_parse_unary_minus_path() -> void:
 # ─── Arithmetic (Task 5) ───────────────────────────────────
 
 func test_parse_addition() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("a + b")
+	var ast: Dictionary = GtmlBindingExpr.parse("a + b")
 	assert_eq(ast["type"], "binop")
 	assert_eq(ast["op"], "+")
 	assert_eq(ast["left"]["parts"], PackedStringArray(["a"]))
@@ -199,7 +199,7 @@ func test_parse_addition() -> void:
 
 
 func test_parse_precedence_mul_over_add() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("a + b * c")
+	var ast: Dictionary = GtmlBindingExpr.parse("a + b * c")
 	# Expected: binop{+, a, binop{*, b, c}}
 	assert_eq(ast["op"], "+")
 	assert_eq(ast["right"]["op"], "*")
@@ -207,7 +207,7 @@ func test_parse_precedence_mul_over_add() -> void:
 
 func test_parse_left_associativity_subtraction() -> void:
 	# a - b - c → binop{-, binop{-, a, b}, c}
-	var ast: Dictionary = GmlBindingExpr.parse("a - b - c")
+	var ast: Dictionary = GtmlBindingExpr.parse("a - b - c")
 	assert_eq(ast["op"], "-")
 	assert_eq(ast["left"]["op"], "-")
 	assert_eq(ast["right"]["parts"], PackedStringArray(["c"]))
@@ -216,27 +216,27 @@ func test_parse_left_associativity_subtraction() -> void:
 # ─── Comparison + equality parsing (Task 6) ────────────────
 
 func test_parse_greater_than() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("a > b")
+	var ast: Dictionary = GtmlBindingExpr.parse("a > b")
 	assert_eq(ast["type"], "binop")
 	assert_eq(ast["op"], ">")
 
 
 func test_parse_equality() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("a == b")
+	var ast: Dictionary = GtmlBindingExpr.parse("a == b")
 	assert_eq(ast["type"], "binop")
 	assert_eq(ast["op"], "==")
 
 
 func test_parse_comparison_below_equality() -> void:
 	# a > b == c → binop{==, binop{>, a, b}, c} (comparison binds tighter)
-	var ast: Dictionary = GmlBindingExpr.parse("a > b == c")
+	var ast: Dictionary = GtmlBindingExpr.parse("a > b == c")
 	assert_eq(ast["op"], "==")
 	assert_eq(ast["left"]["op"], ">")
 
 
 func test_parse_arithmetic_below_comparison() -> void:
 	# a + b > c → binop{>, binop{+, a, b}, c}
-	var ast: Dictionary = GmlBindingExpr.parse("a + b > c")
+	var ast: Dictionary = GtmlBindingExpr.parse("a + b > c")
 	assert_eq(ast["op"], ">")
 	assert_eq(ast["left"]["op"], "+")
 
@@ -244,13 +244,13 @@ func test_parse_arithmetic_below_comparison() -> void:
 # ─── Logical && / || (Task 7) ──────────────────────────────
 
 func test_parse_logical_and() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("a && b")
+	var ast: Dictionary = GtmlBindingExpr.parse("a && b")
 	assert_eq(ast["op"], "&&")
 
 
 func test_parse_or_lower_than_and() -> void:
 	# a || b && c → binop{||, a, binop{&&, b, c}}
-	var ast: Dictionary = GmlBindingExpr.parse("a || b && c")
+	var ast: Dictionary = GtmlBindingExpr.parse("a || b && c")
 	assert_eq(ast["op"], "||")
 	assert_eq(ast["right"]["op"], "&&")
 
@@ -258,7 +258,7 @@ func test_parse_or_lower_than_and() -> void:
 # ─── Ternary (Task 8) ──────────────────────────────────────
 
 func test_parse_simple_ternary() -> void:
-	var ast: Dictionary = GmlBindingExpr.parse("cond ? a : b")
+	var ast: Dictionary = GtmlBindingExpr.parse("cond ? a : b")
 	assert_eq(ast["type"], "ternary")
 	assert_eq(ast["cond"]["parts"], PackedStringArray(["cond"]))
 	assert_eq(ast["then"]["parts"], PackedStringArray(["a"]))
@@ -267,6 +267,6 @@ func test_parse_simple_ternary() -> void:
 
 func test_parse_ternary_right_associative() -> void:
 	# a ? b : c ? d : e → a ? b : (c ? d : e)
-	var ast: Dictionary = GmlBindingExpr.parse("a ? b : c ? d : e")
+	var ast: Dictionary = GtmlBindingExpr.parse("a ? b : c ? d : e")
 	assert_eq(ast["type"], "ternary")
 	assert_eq(ast["else_"]["type"], "ternary")

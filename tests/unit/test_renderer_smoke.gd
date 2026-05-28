@@ -2,11 +2,11 @@ extends GutTest
 
 ## Renderer smoke tests: each example file is fed through the full pipeline
 ## (parser -> resolver -> renderer) inside a real SceneTree so we exercise the
-## modules that touch Control nodes (GmlDimensions, GmlPercentSizing, GmlWrap,
-## GmlTransitionSetup) end-to-end. We assert that build() returns a non-null
+## modules that touch Control nodes (GtmlDimensions, GtmlPercentSizing, GtmlWrap,
+## GtmlTransitionSetup) end-to-end. We assert that build() returns a non-null
 ## root and that no engine errors were raised.
 
-const GmlViewScript = preload("res://addons/gtml/src/GmlView.gd")
+const GtmlViewScript = preload("res://addons/gtml/src/GtmlView.gd")
 
 const SHOWCASES := [
 	{"name": "atlas", "dir": "showcase/atlas"},
@@ -17,8 +17,8 @@ const SHOWCASES := [
 ]
 
 
-func _build_showcase(spec: Dictionary) -> GmlView:
-	var view: GmlView = GmlViewScript.new()
+func _build_showcase(spec: Dictionary) -> GtmlView:
+	var view: GtmlView = GtmlViewScript.new()
 	view.html_path = "res://addons/gtml/examples/%s/index.html" % spec["dir"]
 	view.css_path = "res://addons/gtml/examples/%s/style.css" % spec["dir"]
 	view.size = Vector2(1280, 800)
@@ -26,7 +26,7 @@ func _build_showcase(spec: Dictionary) -> GmlView:
 	return view
 
 
-func _assert_built(view: GmlView, name: String) -> void:
+func _assert_built(view: GtmlView, name: String) -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	assert_gt(view.get_child_count(), 0, "%s produced no children" % name)

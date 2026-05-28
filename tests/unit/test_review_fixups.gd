@@ -9,15 +9,15 @@ extends GutTest
 ##   - Resolver does NOT merge typo'd pseudo rules into base style
 ##   - Snapshot helper diff path returns "diff" status (not just bootstrap)
 
-const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
-const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
-const GmlSelectorScript = preload("res://addons/gtml/src/css/GmlSelector.gd")
-const GmlStyleResolverScript = preload("res://addons/gtml/src/css/GmlStyleResolver.gd")
+const GtmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GtmlHtmlParser.gd")
+const GtmlCssParserScript = preload("res://addons/gtml/src/css/GtmlCssParser.gd")
+const GtmlSelectorScript = preload("res://addons/gtml/src/css/GtmlSelector.gd")
+const GtmlStyleResolverScript = preload("res://addons/gtml/src/css/GtmlStyleResolver.gd")
 const SnapshotHelperScript = preload("res://tests/unit/snapshot_helper.gd")
 
 
 func _parse_html(s: String):
-	return GmlHtmlParserScript.new().parse(s)
+	return GtmlHtmlParserScript.new().parse(s)
 
 
 #region Entity edge cases
@@ -68,7 +68,7 @@ func test_entity_in_event_handler_attribute() -> void:
 
 func test_selector_splitter_respects_brackets_with_commas() -> void:
 	# parse_group must NOT split inside [data-x="a,b"]
-	var sels: Array = GmlSelectorScript.parse_group('a[data-x="a,b"], p')
+	var sels: Array = GtmlSelectorScript.parse_group('a[data-x="a,b"], p')
 	assert_eq(sels.size(), 2)
 	# First selector should have one compound with the attribute matching the literal "a,b"
 	var first = sels[0]
@@ -80,14 +80,14 @@ func test_selector_splitter_respects_brackets_with_commas() -> void:
 func test_selector_splitter_respects_parens_with_commas() -> void:
 	# parse_group must NOT split inside :not(.x, .y) — even though :not isn't
 	# yet supported, the splitter has to cope so we don't blow up on v0.3 input.
-	var sels: Array = GmlSelectorScript.parse_group(':not(.x, .y), p')
+	var sels: Array = GtmlSelectorScript.parse_group(':not(.x, .y), p')
 	assert_eq(sels.size(), 2)
 
 
 func test_attribute_value_with_closing_bracket_inside_quotes() -> void:
 	# The attribute selector ] finder must respect quotes so [data-x="a]b"]
 	# is not truncated to [data-x="a].
-	var sel = GmlSelectorScript.parse('a[data-x="a]b"]')
+	var sel = GtmlSelectorScript.parse('a[data-x="a]b"]')
 	assert_eq(sel.compounds.size(), 1)
 	assert_eq(sel.compounds[0].attrs.size(), 1)
 	assert_eq(sel.compounds[0].attrs[0].value, "a]b")
@@ -114,9 +114,9 @@ func _find_by_id(node, id: String):
 func test_unknown_pseudo_does_not_pollute_base_style() -> void:
 	# Bug fix: a typo'd pseudo (`:hovr`) used to be merged into the base style,
 	# which silently changed the un-hovered appearance. It should be dropped.
-	var dom = GmlHtmlParserScript.new().parse("<button id='target' class='btn'>x</button>")
-	var rules := GmlCssParserScript.new().parse(".btn { color: blue; } .btn:hovr { color: red; }")
-	var styles: Dictionary = GmlStyleResolverScript.new().resolve(dom, rules)
+	var dom = GtmlHtmlParserScript.new().parse("<button id='target' class='btn'>x</button>")
+	var rules := GtmlCssParserScript.new().parse(".btn { color: blue; } .btn:hovr { color: red; }")
+	var styles: Dictionary = GtmlStyleResolverScript.new().resolve(dom, rules)
 	var target = _find_by_id(dom, "target")
 	var s: Dictionary = styles.get(target, {})
 	# Base color must be blue; the typo rule must not have leaked.

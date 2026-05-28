@@ -9,18 +9,18 @@ extends GutTest
 ## machine never fails. The single self-check test verifies the _bench
 ## helper times only the operation (excludes setup/cleanup).
 
-const GmlViewScript = preload("res://addons/gtml/src/GmlView.gd")
-const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
-const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
-const GmlRendererScript = preload("res://addons/gtml/src/html_renderer/GmlRenderer.gd")
+const GtmlViewScript = preload("res://addons/gtml/src/GtmlView.gd")
+const GtmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GtmlHtmlParser.gd")
+const GtmlCssParserScript = preload("res://addons/gtml/src/css/GtmlCssParser.gd")
+const GtmlRendererScript = preload("res://addons/gtml/src/html_renderer/GtmlRenderer.gd")
 
 # Captured by the most recent _bench call so the self-check can inspect it.
 var _last_ms_per_op: float = 0.0
 var _last_ops_per_sec: float = 0.0
 
 
-## Build a GmlView from inline HTML/CSS (writes temp fixture files).
-func _build_view(html: String, css: String = "") -> GmlView:
+## Build a GtmlView from inline HTML/CSS (writes temp fixture files).
+func _build_view(html: String, css: String = "") -> GtmlView:
 	var dir := "res://tests/snapshots/.actual/perf_fixture"
 	var html_path := dir + "/index.html"
 	var css_path := dir + "/style.css"
@@ -31,7 +31,7 @@ func _build_view(html: String, css: String = "") -> GmlView:
 	var fc := FileAccess.open(css_path, FileAccess.WRITE)
 	fc.store_string(css)
 	fc.close()
-	var view: GmlView = GmlViewScript.new()
+	var view: GtmlView = GtmlViewScript.new()
 	view.html_path = html_path
 	view.css_path = css_path
 	view.size = Vector2(800, 600)
@@ -118,33 +118,33 @@ func test_bench_helper_sanity() -> void:
 	assert_lt(_last_ms_per_op, 1.0, "timed region must exclude the slow setup")
 
 
-# ─── Pure GmlVForReconciler.diff ───────────────────────────
+# ─── Pure GtmlVForReconciler.diff ───────────────────────────
 
 func test_perf_pure_diff() -> void:
-	_print_header("pure GmlVForReconciler.diff")
+	_print_header("pure GtmlVForReconciler.diff")
 	for n in [100, 1000]:
 		var old_keys := make_keys(n)
 
 		# append: new = old + 1 extra key
 		var appended := make_keys(n)
 		appended.append(str(n))
-		_bench("diff_append", n, 1000, func(): GmlVForReconciler.diff(old_keys, appended))
+		_bench("diff_append", n, 1000, func(): GtmlVForReconciler.diff(old_keys, appended))
 
 		# prepend: new = [new_key] + old
 		var prepended := PackedStringArray([str(n)])
 		prepended.append_array(old_keys)
-		_bench("diff_prepend", n, 1000, func(): GmlVForReconciler.diff(old_keys, prepended))
+		_bench("diff_prepend", n, 1000, func(): GtmlVForReconciler.diff(old_keys, prepended))
 
 		# replace one middle key
 		var replaced := old_keys.duplicate()
 		replaced[n / 2] = "X"
-		_bench("diff_replace", n, 1000, func(): GmlVForReconciler.diff(old_keys, replaced))
+		_bench("diff_replace", n, 1000, func(): GtmlVForReconciler.diff(old_keys, replaced))
 
 		# shuffle: reverse the array (LIS worst-ish case)
 		var reversed := PackedStringArray()
 		for i in range(n - 1, -1, -1):
 			reversed.append(old_keys[i])
-		_bench("diff_shuffle", n, 200, func(): GmlVForReconciler.diff(old_keys, reversed))
+		_bench("diff_shuffle", n, 200, func(): GtmlVForReconciler.diff(old_keys, reversed))
 
 	assert_true(true)  # keep GUT happy (informational test, no perf assertion)
 
@@ -244,15 +244,15 @@ func test_perf_state_fanout_and_full_build() -> void:
 	var html := '<div class="page"><header><h1>Title</h1></header><ul>' + li + '</ul><footer><p>Footer text here</p></footer></div>'
 	var css := '.page { background-color: #222; } h1 { color: #fff; } li { color: #ccc; }'
 	# Parse + resolve ONCE (untimed); time only renderer.build.
-	var dom = GmlHtmlParserScript.new().parse(html)
-	var rules = GmlCssParserScript.new().parse(css)
-	var resolver = GmlStyleResolver.new()
+	var dom = GtmlHtmlParserScript.new().parse(html)
+	var rules = GtmlCssParserScript.new().parse(css)
+	var resolver = GtmlStyleResolver.new()
 	var styles = resolver.resolve(dom, rules)
 	var host_view := _build_view("<div></div>")
 	await get_tree().process_frame
 	var built: Array = []
 	_bench("renderer_build", 50, 30,
-		func(): built.append(GmlRendererScript.new().build(dom, styles, host_view))
+		func(): built.append(GtmlRendererScript.new().build(dom, styles, host_view))
 	)
 	# Free all built roots (untimed, after the loop).
 	for b in built:

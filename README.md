@@ -5,8 +5,6 @@ your interface in markup, drive it from game state, and let GTML keep the
 Control tree in sync — menus, HUDs, inventories, leaderboards, and dialog
 trees without per-element GDScript glue.
 
-> ⚠ **API rename in progress.** The addon is **GTML**; its classes are migrating from `Gml*` to `Gtml*`. These docs use the target `Gtml*` names. If your installed build still registers `GmlView`, use that name until the rename ships.
-
 ```html
 <ul>
   <li v-for="item in inventory" :key="item.id" @click="select(item)"

@@ -1,15 +1,15 @@
 extends GutTest
 
-## Regression test for the v0.3.1 fix where GmlListBuilder.build_list used to
+## Regression test for the v0.3.1 fix where GtmlListBuilder.build_list used to
 ## build <li> controls inline, bypassing the central dispatcher and silently
 ## dropping per-item CSS. We assert that an <li> with a background-color rule
 ## actually carries that color through to a PanelContainer + StyleBoxFlat in
 ## the built tree.
 
-const GmlViewScript = preload("res://addons/gtml/src/GmlView.gd")
+const GtmlViewScript = preload("res://addons/gtml/src/GtmlView.gd")
 
 
-func _build_view(html: String, css: String) -> GmlView:
+func _build_view(html: String, css: String) -> GtmlView:
 	var dir := "res://tests/snapshots/.actual/list_item_fixture"
 	var html_path := dir + "/index.html"
 	var css_path := dir + "/style.css"
@@ -21,7 +21,7 @@ func _build_view(html: String, css: String) -> GmlView:
 	fc.store_string(css)
 	fc.close()
 
-	var view: GmlView = GmlViewScript.new()
+	var view: GtmlView = GtmlViewScript.new()
 	view.html_path = html_path
 	view.css_path = css_path
 	view.size = Vector2(400, 300)
@@ -61,9 +61,9 @@ func test_li_hover_state_resolves_to_state_bucket() -> void:
 	# Even simpler resolver-level check: the <li>'s style includes a _hover
 	# bucket after resolution. Pins the fact that the resolver sees the rule
 	# (independent of whether transitions fire visually).
-	const ParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
-	const CssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
-	const ResolverScript = preload("res://addons/gtml/src/css/GmlStyleResolver.gd")
+	const ParserScript = preload("res://addons/gtml/src/html_parser/GtmlHtmlParser.gd")
+	const CssParserScript = preload("res://addons/gtml/src/css/GtmlCssParser.gd")
+	const ResolverScript = preload("res://addons/gtml/src/css/GtmlStyleResolver.gd")
 
 	var dom = ParserScript.new().parse('<ul><li id="t" class="row">x</li></ul>')
 	var rules = CssParserScript.new().parse('.row { background-color: blue; transition: background-color 200ms; } .row:hover { background-color: red; }')

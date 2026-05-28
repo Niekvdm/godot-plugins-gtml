@@ -10,17 +10,17 @@ extends GutTest
 ##   - HTML parser get_warnings() exposes line/col/msg (already in
 ##     test_parser_robustness, not repeated here)
 
-const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
-const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
-const GmlStyleResolverScript = preload("res://addons/gtml/src/css/GmlStyleResolver.gd")
-const GmlCssEvalScript = preload("res://addons/gtml/src/css/GmlCssEval.gd")
-const GmlViewScript = preload("res://addons/gtml/src/GmlView.gd")
+const GtmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GtmlHtmlParser.gd")
+const GtmlCssParserScript = preload("res://addons/gtml/src/css/GtmlCssParser.gd")
+const GtmlStyleResolverScript = preload("res://addons/gtml/src/css/GtmlStyleResolver.gd")
+const GtmlCssEvalScript = preload("res://addons/gtml/src/css/GtmlCssEval.gd")
+const GtmlViewScript = preload("res://addons/gtml/src/GtmlView.gd")
 
 
 func _style_for_id(html: String, css: String, id: String) -> Dictionary:
-	var dom = GmlHtmlParserScript.new().parse(html)
-	var rules := GmlCssParserScript.new().parse(css)
-	var styles: Dictionary = GmlStyleResolverScript.new().resolve(dom, rules)
+	var dom = GtmlHtmlParserScript.new().parse(html)
+	var rules := GtmlCssParserScript.new().parse(css)
+	var styles: Dictionary = GtmlStyleResolverScript.new().resolve(dom, rules)
 	var node = _find_by_id(dom, id)
 	if node == null:
 		return {}
@@ -67,7 +67,7 @@ func test_var_two_key_cycle_does_not_hang() -> void:
 
 func test_unterminated_var_does_not_crash() -> void:
 	# var( with no closing paren — substitute_vars must terminate.
-	var out: String = GmlCssEvalScript.substitute_vars("color: var(--x", {})
+	var out: String = GtmlCssEvalScript.substitute_vars("color: var(--x", {})
 	# Either resolves with what we have, or returns the original tail.
 	# The contract: it returns *something* without hanging or erroring out.
 	assert_true(out is String)
@@ -120,7 +120,7 @@ func test_calc_division_by_zero_warns_and_recovers() -> void:
 #region form data
 
 
-func _build_view(html: String) -> GmlView:
+func _build_view(html: String) -> GtmlView:
 	var dir := "res://tests/snapshots/.actual/v04_fixups_fixture"
 	var html_path := dir + "/index.html"
 	var css_path := dir + "/style.css"
@@ -132,7 +132,7 @@ func _build_view(html: String) -> GmlView:
 	fc.store_string("")
 	fc.close()
 
-	var view: GmlView = GmlViewScript.new()
+	var view: GtmlView = GtmlViewScript.new()
 	view.html_path = html_path
 	view.css_path = css_path
 	view.size = Vector2(300, 200)

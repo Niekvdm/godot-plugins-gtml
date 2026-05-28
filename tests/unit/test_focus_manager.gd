@@ -1,17 +1,17 @@
 extends GutTest
 
-## Tests for GmlFocusManager.wire_focus — builds synthetic Control trees
-## with stamped _gml_* focus meta, runs wire_focus, asserts the chain.
+## Tests for GtmlFocusManager.wire_focus — builds synthetic Control trees
+## with stamped _gtml_* focus meta, runs wire_focus, asserts the chain.
 
-const FM = preload("res://addons/gtml/src/focus/GmlFocusManager.gd")
+const FM = preload("res://addons/gtml/src/focus/GtmlFocusManager.gd")
 
 
 ## Make a focusable Control with the given tabindex; add to `parent`.
 func _focusable(parent: Control, tabindex: int = 0, tab_skip: bool = false) -> Control:
 	var c := Control.new()
-	c.set_meta("_gml_focusable", true)
-	c.set_meta("_gml_tabindex", tabindex)
-	c.set_meta("_gml_tab_skip", tab_skip)
+	c.set_meta("_gtml_focusable", true)
+	c.set_meta("_gtml_tabindex", tabindex)
+	c.set_meta("_gtml_tab_skip", tab_skip)
 	parent.add_child(c)
 	return c
 
@@ -80,7 +80,7 @@ func test_positive_tabindex_tie_broken_by_doc_order() -> void:
 func test_focus_trap_group_wraps() -> void:
 	var r := _root()
 	var trap := Control.new()
-	trap.set_meta("_gml_focus_trap", true)
+	trap.set_meta("_gtml_focus_trap", true)
 	r.add_child(trap)
 	var a := _focusable(trap)
 	var b := _focusable(trap)
@@ -102,7 +102,7 @@ func test_nested_trap_isolated_from_outer() -> void:
 	var r := _root()
 	var outer_a := _focusable(r)
 	var trap := Control.new()
-	trap.set_meta("_gml_focus_trap", true)
+	trap.set_meta("_gtml_focus_trap", true)
 	r.add_child(trap)
 	var inner_a := _focusable(trap)
 	var inner_b := _focusable(trap)
@@ -115,9 +115,9 @@ func test_find_autofocus_returns_first_in_doc_order() -> void:
 	var r := _root()
 	var a := _focusable(r)
 	var b := _focusable(r)
-	b.set_meta("_gml_autofocus", true)
+	b.set_meta("_gtml_autofocus", true)
 	var c := _focusable(r)
-	c.set_meta("_gml_autofocus", true)
+	c.set_meta("_gtml_autofocus", true)
 	assert_eq(FM.find_autofocus(r), b, "first autofocus in doc order wins")
 
 
@@ -133,7 +133,7 @@ func test_first_tabbable_skips_trapped_and_tab_skip() -> void:
 	var r := _root()
 	var skip := _focusable(r, -1, true)
 	var trap := Control.new()
-	trap.set_meta("_gml_focus_trap", true)
+	trap.set_meta("_gtml_focus_trap", true)
 	r.add_child(trap)
 	var trapped := _focusable(trap)
 	var root_btn := _focusable(r)

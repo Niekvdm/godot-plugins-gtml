@@ -2,7 +2,7 @@ extends GutTest
 
 ## v0.4: form value collection on submit + @keydown event attribute.
 ##
-## GmlView.get_form_data() walks the registered inputs and returns
+## GtmlView.get_form_data() walks the registered inputs and returns
 ## {id: value} for text inputs, checkboxes, radios (only the selected
 ## one per group), sliders, and selects. Submit buttons trigger the
 ## form_submitted signal with that dict.
@@ -10,10 +10,10 @@ extends GutTest
 ## @keydown="handler" on an input fires the key_pressed signal with the
 ## handler name + the InputEventKey.
 
-const GmlViewScript = preload("res://addons/gtml/src/GmlView.gd")
+const GtmlViewScript = preload("res://addons/gtml/src/GtmlView.gd")
 
 
-func _build_view(html: String) -> GmlView:
+func _build_view(html: String) -> GtmlView:
 	var dir := "res://tests/snapshots/.actual/forms_keys_fixture"
 	var html_path := dir + "/index.html"
 	var css_path := dir + "/style.css"
@@ -25,7 +25,7 @@ func _build_view(html: String) -> GmlView:
 	fc.store_string("")
 	fc.close()
 
-	var view: GmlView = GmlViewScript.new()
+	var view: GtmlView = GtmlViewScript.new()
 	view.html_path = html_path
 	view.css_path = css_path
 	view.size = Vector2(400, 300)
@@ -43,7 +43,7 @@ func test_get_form_data_collects_text_inputs() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 
-	assert_true(view.has_method("get_form_data"), "GmlView should expose get_form_data()")
+	assert_true(view.has_method("get_form_data"), "GtmlView should expose get_form_data()")
 	var data: Dictionary = view.get_form_data()
 	assert_eq(data.get("name"), "Ada")
 	assert_eq(data.get("email"), "ada@example.com")
@@ -117,7 +117,7 @@ func test_keydown_attribute_emits_key_pressed() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 
-	assert_true(view.has_signal("key_pressed"), "GmlView should expose key_pressed signal")
+	assert_true(view.has_signal("key_pressed"), "GtmlView should expose key_pressed signal")
 
 	var emitted := []
 	view.key_pressed.connect(func(handler: String, key: InputEvent):
