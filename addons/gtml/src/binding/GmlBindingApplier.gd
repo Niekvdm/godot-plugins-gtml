@@ -275,7 +275,7 @@ static func _values_equal(a: Variant, b: Variant) -> bool:
 ## interpolated spans, register a binding so the label.text refreshes
 ## whenever any dep changes. Scope (from v-for) is captured at register
 ## time so loop variables resolve against the right element.
-static func register_text_interpolation(label: Label, spans: Array, registry: GmlBindingRegistry, state: GmlState, scope: Dictionary = {}) -> void:
+static func register_text_interpolation(label: Label, spans: Array, registry: GmlBindingRegistry, state: GmlState, scope: Dictionary = {}, tag: String = "") -> void:
 	var deps: Array = _collect_text_deps(spans)
 	var ref: WeakRef = weakref(label)
 	var apply := func():
@@ -287,7 +287,7 @@ static func register_text_interpolation(label: Label, spans: Array, registry: Gm
 		"deps": deps,
 		"apply": apply,
 		"control_ref": ref,
-	})
+	}, tag)
 	apply.call()
 
 
@@ -347,7 +347,7 @@ static func _render_spans(spans: Array, state: GmlState, scope: Dictionary) -> S
 
 ## Wire a single :attr="expr" binding on the control. Initial apply runs
 ## synchronously; subsequent state changes re-apply via the registry.
-static func register_attr_binding(control: Control, target: String, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState, scope: Dictionary = {}) -> void:
+static func register_attr_binding(control: Control, target: String, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState, scope: Dictionary = {}, tag: String = "") -> void:
 	var ref: WeakRef = weakref(control)
 	var apply := func():
 		var ctl = ref.get_ref()
@@ -360,7 +360,7 @@ static func register_attr_binding(control: Control, target: String, expr: Dictio
 		"deps": deps,
 		"apply": apply,
 		"control_ref": ref,
-	})
+	}, tag)
 	apply.call()
 
 
@@ -373,7 +373,7 @@ static func register_attr_binding(control: Control, target: String, expr: Dictio
 ## Dynamic class addition affects only the meta; the Control's existing
 ## stylebox is not updated. Static styling (declared on classes present
 ## at build time) still works. Document the limitation in docs/bindings.md.
-static func register_class_binding(control: Control, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState, scope: Dictionary = {}) -> void:
+static func register_class_binding(control: Control, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState, scope: Dictionary = {}, tag: String = "") -> void:
 	var ref: WeakRef = weakref(control)
 	var apply := func():
 		var ctl = ref.get_ref()
@@ -397,14 +397,14 @@ static func register_class_binding(control: Control, expr: Dictionary, registry:
 		"deps": deps,
 		"apply": apply,
 		"control_ref": ref,
-	})
+	}, tag)
 	apply.call()
 
 
 ## Wire v-show. Initial visibility set from expr; subsequent state
 ## changes flip control.visible. Does NOT remove the control from the
 ## tree (that's v-if's job at the renderer level).
-static func register_v_show(control: Control, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState, scope: Dictionary = {}) -> void:
+static func register_v_show(control: Control, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState, scope: Dictionary = {}, tag: String = "") -> void:
 	var ref: WeakRef = weakref(control)
 	var apply := func():
 		var ctl = ref.get_ref()
@@ -417,7 +417,7 @@ static func register_v_show(control: Control, expr: Dictionary, registry: GmlBin
 		"deps": deps,
 		"apply": apply,
 		"control_ref": ref,
-	})
+	}, tag)
 	apply.call()
 
 
@@ -457,7 +457,7 @@ static func parse_v_for(source: String) -> Variant:
 ##
 ## Reentry guard: state→control writes compare-then-write so the
 ## control's *_changed signal doesn't fire back into state.
-static func register_v_model(control: Control, key: String, registry: GmlBindingRegistry, state: GmlState, _scope: Dictionary = {}) -> void:
+static func register_v_model(control: Control, key: String, registry: GmlBindingRegistry, state: GmlState, _scope: Dictionary = {}, tag: String = "") -> void:
 	var ref: WeakRef = weakref(control)
 	var apply_state_to_control := func():
 		var ctl = ref.get_ref()
@@ -491,7 +491,7 @@ static func register_v_model(control: Control, key: String, registry: GmlBinding
 		"deps": [key],
 		"apply": apply_state_to_control,
 		"control_ref": ref,
-	})
+	}, tag)
 	apply_state_to_control.call()
 
 	# Control → state (event-driven)
@@ -512,7 +512,7 @@ static func register_v_model(control: Control, key: String, registry: GmlBinding
 ## Wire @event with args. Captures the parsed call AST + current scope
 ## on the control and connects gui_input → view.item_clicked(handler, args).
 ## Re-evaluates args at click time so latest state is used.
-static func register_event_with_args(control: Control, event: String, call_expr: Dictionary, state: GmlState, scope: Dictionary, view) -> void:
+static func register_event_with_args(control: Control, event: String, call_expr: Dictionary, state: GmlState, scope: Dictionary, view, tag: String = "") -> void:
 	if event != "click":
 		_warn("GmlBindingApplier: @event(args) currently supports only 'click', got '%s'" % event)
 		return

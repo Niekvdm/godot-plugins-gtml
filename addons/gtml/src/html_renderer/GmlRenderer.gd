@@ -90,6 +90,12 @@ func _build_node(node) -> Control:
 	# Post-build: register Vue-style bindings on the resolved control.
 	_register_bindings_for_node(node, control, inner)
 
+	# For v-for clones, stash the scope dict on the built Control so move
+	# ops can mutate the index_var in place and _fire_clone_bindings re-applies.
+	if node.has_meta("_vfor_key"):
+		var clone_scope: Dictionary = node.get_meta("_binding_scope", {})
+		control.set_meta("_vfor_scope", clone_scope)
+
 	return control
 
 
@@ -107,6 +113,7 @@ func _register_bindings_for_node(node, control: Control, inner: Control = null) 
 	if state == null:
 		return
 	var scope: Dictionary = node.get_meta("_binding_scope", {})
+	var binding_tag: String = node.get_meta("_vfor_tag", "")
 
 	for attr_name in node.attrs:
 		var cls: Dictionary = GmlBindingParserScript.classify_attribute(attr_name)
@@ -114,18 +121,18 @@ func _register_bindings_for_node(node, control: Control, inner: Control = null) 
 			"v-bind":
 				var expr: Dictionary = GmlBindingExprScript.parse(node.attrs[attr_name])
 				if cls["target"] == "class":
-					GmlBindingApplierScript.register_class_binding(control, expr, registry, state, scope)
+					GmlBindingApplierScript.register_class_binding(control, expr, registry, state, scope, binding_tag)
 				else:
-					GmlBindingApplierScript.register_attr_binding(control, cls["target"], expr, registry, state, scope)
+					GmlBindingApplierScript.register_attr_binding(control, cls["target"], expr, registry, state, scope, binding_tag)
 			"v-show":
 				var v_show_expr: Dictionary = GmlBindingExprScript.parse(node.attrs[attr_name])
-				GmlBindingApplierScript.register_v_show(control, v_show_expr, registry, state, scope)
+				GmlBindingApplierScript.register_v_show(control, v_show_expr, registry, state, scope, binding_tag)
 			"v-model":
 				# The directive's VALUE is the state key (no expression parsing).
 				# Use the inner control (LineEdit, CheckBox, ...) not the wrapper.
 				var v_model_key: String = node.attrs[attr_name]
 				var target_ctl: Control = inner if inner != null else control
-				GmlBindingApplierScript.register_v_model(target_ctl, v_model_key, registry, state, scope)
+				GmlBindingApplierScript.register_v_model(target_ctl, v_model_key, registry, state, scope, binding_tag)
 			"v-on":
 				# Bare @click="handler" continues through existing element
 				# builders (they emit button_clicked). Only @click="handler(args)"
@@ -133,7 +140,7 @@ func _register_bindings_for_node(node, control: Control, inner: Control = null) 
 				var raw_value: String = node.attrs[attr_name]
 				var raw_ast: Dictionary = GmlBindingExprScript.parse(raw_value)
 				if raw_ast.get("type") == "call":
-					GmlBindingApplierScript.register_event_with_args(control, cls["target"], raw_ast, state, scope, _gml_view)
+					GmlBindingApplierScript.register_event_with_args(control, cls["target"], raw_ast, state, scope, _gml_view, binding_tag)
 			_:
 				pass
 
@@ -146,13 +153,12 @@ func _register_bindings_for_node(node, control: Control, inner: Control = null) 
 				combined += child.text
 		if "{{" in combined:
 			var spans: Array = GmlBindingParserScript.find_interpolations(combined)
-			GmlBindingApplierScript.register_text_interpolation(control as Label, spans, registry, state, scope)
+			GmlBindingApplierScript.register_text_interpolation(control as Label, spans, registry, state, scope, binding_tag)
 
 	# v-for: if this node expanded v-for children, register a binding that
-	# tears down the parent's child controls and rebuilds the full child
-	# list on array change. The target container is `inner` (where the
-	# dispatched builder added children); fall back to `control` if no
-	# separate inner was returned.
+	# reconciles the parent's child controls in-place on array change.
+	# The target container is `inner` (where the dispatched builder added
+	# children); fall back to `control` if no separate inner was returned.
 	if node.has_meta("_v_for_keys"):
 		var v_for_keys: PackedStringArray = node.get_meta("_v_for_keys")
 		if v_for_keys.size() > 0:
@@ -160,24 +166,17 @@ func _register_bindings_for_node(node, control: Control, inner: Control = null) 
 			var renderer = self
 			var parent_node = node
 			var target_ref: WeakRef = weakref(rebuild_target)
-			var rebuild_children := func():
+			var reconcile_children := func():
 				var t = target_ref.get_ref()
 				if t == null:
 					return
-				for ch in t.get_children():
-					t.remove_child(ch)
-					ch.queue_free()
-				renderer._maybe_expand_v_for_children(parent_node)
-				for child_node in parent_node.children:
-					var child_ctl = renderer._build_node(child_node)
-					if child_ctl != null:
-						t.add_child(child_ctl)
+				renderer._reconcile_v_for_region(parent_node, t)
 			var deps: Array = []
 			for k in v_for_keys:
 				deps.append(k)
 			registry.register({
 				"deps": deps,
-				"apply": rebuild_children,
+				"apply": reconcile_children,
 				"control_ref": target_ref,
 			})
 
@@ -223,19 +222,49 @@ func _maybe_expand_v_for_children(parent_node) -> void:
 				v_for_keys.append(spec["array_key"])
 			var arr = state.get(spec["array_key"])
 			if arr == null:
+				_init_vfor_state(parent_node, child, spec, parent_scope, expanded.size())
 				continue
 			if not (arr is Array):
 				push_warning("GmlRenderer: v-for source '%s' is not an Array" % spec["array_key"])
 				continue
+			# Extract :key expression once.
+			var key_expr_src: String = child.attrs.get(":key", "")
+			var key_expr: Variant = null
+			if not key_expr_src.is_empty():
+				key_expr = GmlBindingExprScript.parse(key_expr_src)
+			# Compute keys + detect duplicates.
+			var initial_keys: PackedStringArray = PackedStringArray()
+			var seen_keys: Dictionary = {}
+			var dup: bool = false
 			for i in (arr as Array).size():
 				var item = arr[i]
+				var k: String = _compute_vfor_key(key_expr, item, i, spec, state, parent_scope)
+				if seen_keys.has(k):
+					GmlBindingApplierScript._warn("v-for duplicate key on initial render: %s" % k)
+					dup = true
+					break
+				seen_keys[k] = true
+				initial_keys.append(k)
+			if dup:
+				_init_vfor_state(parent_node, child, spec, parent_scope, expanded.size())
+				continue
+			# Initialize per-host state.
+			var first_child_index: int = expanded.size()
+			_init_vfor_state(parent_node, child, spec, parent_scope, first_child_index, key_expr, initial_keys)
+			# Materialize clones into the expanded list.
+			var template_id: int = child.get_instance_id()
+			for i in (arr as Array).size():
+				var item2 = arr[i]
 				var clone = _clone_dom_node(child)
 				clone.attrs.erase("v-for")
+				clone.attrs.erase(":key")
 				var scope: Dictionary = parent_scope.duplicate()
-				scope[spec["loop_var"]] = item
+				scope[spec["loop_var"]] = item2
 				if spec["index_var"] != "":
 					scope[spec["index_var"]] = i
-				_stamp_scope(clone, scope)
+				var clone_tag: String = _make_vfor_tag(template_id, initial_keys[i])
+				_stamp_scope(clone, scope, clone_tag)
+				clone.set_meta("_vfor_key", initial_keys[i])
 				expanded.append(clone)
 		else:
 			expanded.append(child)
@@ -270,10 +299,12 @@ func _clone_dom_node(node):
 ## Stamp the given scope dict onto a cloned node + every descendant. Used
 ## by v-for so {{ item.name }} in a text child resolves against the loop
 ## variable rather than the global state.
-func _stamp_scope(node, scope: Dictionary) -> void:
+func _stamp_scope(node, scope: Dictionary, tag: String = "") -> void:
 	node.set_meta("_binding_scope", scope)
+	if not tag.is_empty():
+		node.set_meta("_vfor_tag", tag)
 	for child in node.children:
-		_stamp_scope(child, scope)
+		_stamp_scope(child, scope, tag)
 
 
 ## Tag → element builder dispatch table.
@@ -348,8 +379,9 @@ func _build_text_node(node) -> Control:
 		var registry = _gml_view._binding_registry
 		if registry != null:
 			var scope: Dictionary = node.get_meta("_binding_scope", {})
+			var tag: String = node.get_meta("_vfor_tag", "")
 			var spans: Array = GmlBindingParserScript.find_interpolations(text)
-			GmlBindingApplierScript.register_text_interpolation(label, spans, registry, _gml_view.state, scope)
+			GmlBindingApplierScript.register_text_interpolation(label, spans, registry, _gml_view.state, scope, tag)
 
 	return label
 
@@ -420,3 +452,239 @@ func _apply_background_color(control: Control, color: Color) -> void:
 ## Thin shim around GmlWrap so element builders keep their existing call site.
 func _wrap_with_margin_padding(control: Control, style: Dictionary) -> Control:
 	return GmlWrap.apply(control, style)
+
+
+## Compute the :key string for a v-for clone. Returns a stable string
+## suitable for Dictionary lookup. Null/missing expression falls back to
+## the index (string-coerced). Parse errors also fall back.
+func _compute_vfor_key(key_expr: Variant, item: Variant, index: int, spec: Dictionary, state, parent_scope: Dictionary) -> String:
+	if key_expr == null:
+		return str(index)
+	if key_expr is Dictionary and key_expr.get("type") == "error":
+		GmlBindingApplierScript._warn("v-for :key parse error: %s" % key_expr.get("message", ""))
+		return str(index)
+	var item_scope: Dictionary = parent_scope.duplicate()
+	item_scope[spec["loop_var"]] = item
+	if spec["index_var"] != "":
+		item_scope[spec["index_var"]] = index
+	var v = GmlBindingApplierScript.eval(key_expr, state, item_scope)
+	if v == null:
+		# A null :key result for EVERY item would collapse to the same
+		# empty string and trip the duplicate-key detector, blanking the
+		# whole list. Fall back to the index so a missing key degrades to
+		# default-index reconciliation rather than rendering nothing.
+		GmlBindingApplierScript._warn("v-for :key resolved to null at index %d; falling back to index" % index)
+		return str(index)
+	return str(v)
+
+
+## Initialize per-template-node state on the parent DOM node so the
+## reconciler has a baseline to diff against.
+##
+## LIMITATION (v0.8.1): first_child_index is captured once and assumed
+## stable. If a parent holds MULTIPLE v-for regions as siblings
+## (<div><li v-for="a in arr1"/><li v-for="b in arr2"/></div>) and an
+## earlier region changes size, the later region's first_child_index
+## goes stale and its move/insert offsets drift. Single v-for per parent
+## (the common case — the inventory sample's grid and hotbar live in
+## separate parents) is unaffected. Multiple sibling v-fors in one parent
+## are not fully supported until a future release reworks region tracking
+## around sentinel marker nodes.
+func _init_vfor_state(parent_node, template_node, spec: Dictionary, parent_scope: Dictionary, first_child_index: int, key_expr: Variant = null, initial_keys: PackedStringArray = PackedStringArray()) -> void:
+	var state_map: Dictionary = parent_node.get_meta("_vfor_state", {})
+	state_map[template_node.get_instance_id()] = {
+		"current_keys": initial_keys,
+		"controls": {},
+		"binding_tags": {},
+		"first_child_index": first_child_index,
+		"key_expr": key_expr,
+		"spec": spec,
+		"template_node": template_node,
+		"binding_scope_parent": parent_scope.duplicate(),
+		"populated": false,
+	}
+	parent_node.set_meta("_vfor_state", state_map)
+
+
+func _make_vfor_tag(template_id: int, key: String) -> String:
+	return "vfor_%d_%s" % [template_id, key]
+
+
+static func _packed_strings_equal(a: PackedStringArray, b: PackedStringArray) -> bool:
+	if a.size() != b.size():
+		return false
+	for i in a.size():
+		if a[i] != b[i]:
+			return false
+	return true
+
+
+## Reconcile every v-for region attached to parent_node against the
+## current state of its bound array. Called by the v-for binding when
+## any of its array keys change.
+func _reconcile_v_for_region(parent_node, container: Control) -> void:
+	if _gml_view == null or _gml_view.state == null:
+		return
+	var state = _gml_view.state
+	var state_map: Dictionary = parent_node.get_meta("_vfor_state", {})
+	if state_map.is_empty():
+		return
+	var registry = _gml_view._binding_registry
+	if registry == null:
+		return
+
+	for template_id in state_map.keys():
+		var entry: Dictionary = state_map[template_id]
+		var spec: Dictionary = entry["spec"]
+		var template_node = entry["template_node"]
+		var parent_scope: Dictionary = entry["binding_scope_parent"]
+		var arr = state.get(spec["array_key"])
+		if arr == null or not (arr is Array):
+			continue
+		var key_expr: Variant = entry["key_expr"]
+
+		# On first call after initial expansion, populate controls + binding_tags
+		# from the children already present.
+		if not entry.get("populated", false):
+			var fci: int = entry["first_child_index"]
+			var initial_keys: PackedStringArray = entry["current_keys"]
+			var controls_map: Dictionary = {}
+			var tags_map: Dictionary = {}
+			for i in initial_keys.size():
+				var ctl = container.get_child(fci + i) if (fci + i) < container.get_child_count() else null
+				if ctl == null:
+					continue
+				controls_map[initial_keys[i]] = ctl
+				var tag: String = _make_vfor_tag(template_id, initial_keys[i])
+				tags_map[initial_keys[i]] = tag
+			entry["controls"] = controls_map
+			entry["binding_tags"] = tags_map
+			entry["populated"] = true
+
+		# Compute new keys + detect duplicates.
+		var new_keys: PackedStringArray = PackedStringArray()
+		var seen_keys: Dictionary = {}
+		var has_dup: bool = false
+		for i in (arr as Array).size():
+			var item = arr[i]
+			var k: String = _compute_vfor_key(key_expr, item, i, spec, state, parent_scope)
+			if seen_keys.has(k):
+				GmlBindingApplierScript._warn("v-for duplicate key during reconcile: %s" % k)
+				has_dup = true
+				break
+			seen_keys[k] = true
+			new_keys.append(k)
+		if has_dup:
+			# Abort only THIS template's reconcile, leaving its DOM
+			# untouched; other v-for regions in the same parent still
+			# reconcile.
+			continue
+
+		var old_keys: PackedStringArray = entry["current_keys"]
+		if _packed_strings_equal(old_keys, new_keys):
+			# Keys unchanged — but item values may have changed. Handle below.
+			pass
+		else:
+			var ops: Array = GmlVForReconciler.diff(old_keys, new_keys)
+			if ops.is_empty() and new_keys.size() != old_keys.size():
+				continue  # reconciler aborted (e.g. dup keys)
+
+			_apply_vfor_ops(entry, ops, arr, container, registry, spec, parent_scope, state, template_id)
+
+		# Re-fire reused clones whose item value OR index changed. Covers two
+		# cases:
+		#   1. Array values mutated in-place at the same key (item != stored).
+		#   2. Item stayed at the same key but moved to a new index position
+		#      via LIS (no move op was emitted, so index_var must be patched here).
+		for i in new_keys.size():
+			var k: String = new_keys[i]
+			var ctl_check: Control = entry["controls"].get(k)
+			if ctl_check == null:
+				continue
+			var scope_check: Dictionary = ctl_check.get_meta("_vfor_scope", {})
+			var stored_item = scope_check.get(spec["loop_var"], null)
+			var new_item = (arr as Array)[i]
+			var item_changed: bool = stored_item != new_item
+			var index_changed: bool = spec["index_var"] != "" and scope_check.get(spec["index_var"], i) != i
+			if item_changed or index_changed:
+				scope_check[spec["loop_var"]] = new_item
+				if spec["index_var"] != "":
+					scope_check[spec["index_var"]] = i
+				var refire_tag: String = entry["binding_tags"].get(k, "")
+				if not refire_tag.is_empty():
+					_fire_clone_bindings(registry, refire_tag)
+
+		entry["current_keys"] = new_keys
+
+	parent_node.set_meta("_vfor_state", state_map)
+
+
+## Apply a reconciler ops list to the rendered children of container.
+## Updates entry["controls"] and entry["binding_tags"] in place.
+func _apply_vfor_ops(entry: Dictionary, ops: Array, arr: Array, container: Control, registry, spec: Dictionary, parent_scope: Dictionary, state, template_id: int) -> void:
+	var fci: int = entry["first_child_index"]
+	var controls_map: Dictionary = entry["controls"]
+	var tags_map: Dictionary = entry["binding_tags"]
+	var renderer = self
+
+	for op in ops:
+		match op["op"]:
+			"remove":
+				var key: String = op["key"]
+				var tag: String = tags_map.get(key, "")
+				if not tag.is_empty():
+					registry.prune_tag(tag)
+				var ctl: Control = controls_map.get(key)
+				if ctl != null:
+					container.remove_child(ctl)
+					ctl.queue_free()
+				controls_map.erase(key)
+				tags_map.erase(key)
+			"insert":
+				var ins_key: String = op["key"]
+				var to_idx: int = op["to_index"]
+				var item = arr[to_idx]
+				var clone = renderer._clone_dom_node(entry["template_node"])
+				clone.attrs.erase("v-for")
+				clone.attrs.erase(":key")
+				var scope: Dictionary = parent_scope.duplicate()
+				scope[spec["loop_var"]] = item
+				if spec["index_var"] != "":
+					scope[spec["index_var"]] = to_idx
+				var new_tag: String = renderer._make_vfor_tag(template_id, ins_key)
+				renderer._stamp_scope(clone, scope, new_tag)
+				clone.set_meta("_vfor_key", ins_key)
+				var new_ctl = renderer._build_node(clone)
+				if new_ctl != null:
+					new_ctl.set_meta("_vfor_scope", scope)
+					container.add_child(new_ctl)
+					container.move_child(new_ctl, fci + to_idx)
+					controls_map[ins_key] = new_ctl
+					tags_map[ins_key] = new_tag
+			"move":
+				var mv_key: String = op["key"]
+				var mv_to: int = op["to_index"]
+				var mv_ctl: Control = controls_map.get(mv_key)
+				if mv_ctl == null:
+					continue
+				container.move_child(mv_ctl, fci + mv_to)
+				if spec["index_var"] != "":
+					var clone_scope: Dictionary = mv_ctl.get_meta("_vfor_scope", {})
+					if clone_scope.has(spec["index_var"]):
+						clone_scope[spec["index_var"]] = mv_to
+					var mv_tag: String = tags_map.get(mv_key, "")
+					if not mv_tag.is_empty():
+						renderer._fire_clone_bindings(registry, mv_tag)
+
+	entry["controls"] = controls_map
+	entry["binding_tags"] = tags_map
+
+
+## Re-fire every binding registered under this tag. Used after a move
+## when the clone's scope dict (index_var) was mutated.
+func _fire_clone_bindings(registry, tag: String) -> void:
+	if not registry._by_tag.has(tag):
+		return
+	for b in registry._by_tag[tag]:
+		if GmlBindingRegistry._is_alive(b):
+			b["apply"].call()

@@ -283,3 +283,219 @@ func test_class_binding_with_ternary() -> void:
 	await get_tree().process_frame
 	classes = label.get_meta("dynamic_classes", PackedStringArray())
 	assert_true("rare" in classes)
+
+
+# ─── v-for :key reconciliation (v0.8.1) ────────────────────
+
+func test_vfor_key_preserves_control_identity_on_reorder() -> void:
+	var view := _build_view('<ul><li v-for="item in items" :key="item.id">{{ item.name }}</li></ul>')
+	view.state.set("items", [
+		{"id": "a", "name": "Alpha"},
+		{"id": "b", "name": "Beta"},
+		{"id": "c", "name": "Charlie"},
+	])
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	# Capture references to all built Labels by their initial text.
+	var labels_before: Dictionary = {}
+	var collected: Array = []
+	_collect_label_nodes(view, collected)
+	for l in collected:
+		labels_before[(l as Label).text] = l
+
+	# Reorder.
+	view.state.set("items", [
+		{"id": "c", "name": "Charlie"},
+		{"id": "a", "name": "Alpha"},
+		{"id": "b", "name": "Beta"},
+	])
+	await get_tree().process_frame
+
+	# Verify the SAME Label objects survive — identity preservation.
+	var labels_after: Dictionary = {}
+	collected.clear()
+	_collect_label_nodes(view, collected)
+	for l in collected:
+		labels_after[(l as Label).text] = l
+
+	assert_eq(labels_after.get("Alpha"), labels_before.get("Alpha"), "Alpha Label must be the same object")
+	assert_eq(labels_after.get("Beta"),  labels_before.get("Beta"),  "Beta Label must be the same object")
+	assert_eq(labels_after.get("Charlie"), labels_before.get("Charlie"), "Charlie Label must be the same object")
+
+
+func test_vfor_key_remove_frees_only_that_clones_bindings() -> void:
+	var view := _build_view('<ul><li v-for="item in items" :key="item.id">{{ item.name }}</li></ul>')
+	view.state.set("items", [
+		{"id": "a", "name": "Alpha"},
+		{"id": "b", "name": "Beta"},
+	])
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	# Capture Alpha's Label.
+	var alpha_label: Label = null
+	var collected: Array = []
+	_collect_label_nodes(view, collected)
+	for l in collected:
+		if (l as Label).text == "Alpha":
+			alpha_label = l
+			break
+	assert_not_null(alpha_label)
+
+	# Remove Beta.
+	view.state.set("items", [{"id": "a", "name": "Alpha"}])
+	await get_tree().process_frame
+
+	# Alpha label must still exist + be the same object.
+	collected.clear()
+	_collect_label_nodes(view, collected)
+	var alpha_still: Label = null
+	for l in collected:
+		if (l as Label).text == "Alpha":
+			alpha_still = l
+			break
+	assert_eq(alpha_still, alpha_label, "Alpha Label survives Beta's removal")
+
+
+func test_vfor_indexed_form_updates_index_on_reorder() -> void:
+	var view := _build_view('<ul><li v-for="item, i in items" :key="item.id">{{ i }}: {{ item.name }}</li></ul>')
+	view.state.set("items", [
+		{"id": "a", "name": "Alpha"},
+		{"id": "b", "name": "Beta"},
+	])
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	view.state.set("items", [
+		{"id": "b", "name": "Beta"},
+		{"id": "a", "name": "Alpha"},
+	])
+	await get_tree().process_frame
+
+	var texts: Array = []
+	_collect_label_texts(view, texts)
+	# After reorder: i=0 paired with Beta, i=1 paired with Alpha.
+	assert_true("0: Beta" in texts, "expected '0: Beta' in %s" % str(texts))
+	assert_true("1: Alpha" in texts, "expected '1: Alpha' in %s" % str(texts))
+
+
+func test_vfor_default_index_key_still_reconciles() -> void:
+	# No :key attribute — default to index. Reordering still produces
+	# the correct final DOM (texts), but identity preservation is by
+	# POSITION, not by item — items at same index reuse the Control.
+	var view := _build_view('<ul><li v-for="item in items">{{ item }}</li></ul>')
+	view.state.set("items", ["a", "b", "c"])
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	view.state.set("items", ["x", "y", "z"])
+	await get_tree().process_frame
+
+	var texts: Array = []
+	_collect_label_texts(view, texts)
+	assert_true("x" in texts and "y" in texts and "z" in texts, "expected x,y,z in %s" % str(texts))
+	assert_false("a" in texts, "old items should be replaced")
+
+
+func test_vfor_key_insert_in_middle_only_inserts_one() -> void:
+	# Verify the reconciler does the right thing — insert "b" between
+	# "a" and "c" reuses both endpoints.
+	var view := _build_view('<ul><li v-for="item in items" :key="item.id">{{ item.name }}</li></ul>')
+	view.state.set("items", [
+		{"id": "a", "name": "Alpha"},
+		{"id": "c", "name": "Charlie"},
+	])
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	# Capture Alpha + Charlie's Labels.
+	var labels_before: Dictionary = {}
+	var collected: Array = []
+	_collect_label_nodes(view, collected)
+	for l in collected:
+		labels_before[(l as Label).text] = l
+
+	# Insert Beta in the middle.
+	view.state.set("items", [
+		{"id": "a", "name": "Alpha"},
+		{"id": "b", "name": "Beta"},
+		{"id": "c", "name": "Charlie"},
+	])
+	await get_tree().process_frame
+
+	collected.clear()
+	_collect_label_nodes(view, collected)
+	var labels_after: Dictionary = {}
+	for l in collected:
+		labels_after[(l as Label).text] = l
+
+	# Alpha + Charlie are the SAME objects.
+	assert_eq(labels_after.get("Alpha"), labels_before.get("Alpha"))
+	assert_eq(labels_after.get("Charlie"), labels_before.get("Charlie"))
+	# Beta is new (no entry in labels_before, but exists now).
+	assert_true(labels_after.has("Beta"))
+
+
+func test_vfor_key_duplicate_warns_and_aborts() -> void:
+	var captured: Array = []
+	GmlBindingApplier._on_warning = func(m): captured.append(m)
+
+	var view := _build_view('<ul><li v-for="item in items" :key="item.id">{{ item.name }}</li></ul>')
+	view.state.set("items", [
+		{"id": "a", "name": "Alpha"},
+		{"id": "b", "name": "Beta"},
+	])
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	# Capture initial state.
+	var texts_before: Array = []
+	_collect_label_texts(view, texts_before)
+
+	# Set to duplicate keys.
+	view.state.set("items", [
+		{"id": "a", "name": "Alpha"},
+		{"id": "a", "name": "Apple"},   # duplicate id
+	])
+	await get_tree().process_frame
+
+	var dup_warns: Array = captured.filter(func(m): return "duplicate" in m)
+	assert_gt(dup_warns.size(), 0, "expected duplicate-key warning")
+
+	# DOM must be UNCHANGED (reconcile aborted).
+	var texts_after: Array = []
+	_collect_label_texts(view, texts_after)
+	assert_true("Alpha" in texts_after)
+	assert_true("Beta" in texts_after, "Beta must still render — reconcile aborted")
+
+	GmlBindingApplier._on_warning = Callable()
+
+
+func test_vfor_key_null_falls_back_to_index_not_blank() -> void:
+	# When :key evaluates to null for every item (missing field), the
+	# list must NOT collapse to blank via duplicate-empty-key detection.
+	# Null keys fall back to the index.
+	var view := _build_view('<ul><li v-for="item in items" :key="item.id">{{ item.name }}</li></ul>')
+	view.state.set("items", [
+		{"name": "Alpha"},   # no id field → :key resolves null
+		{"name": "Beta"},
+	])
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var texts: Array = []
+	_collect_label_texts(view, texts)
+	assert_true("Alpha" in texts, "null-key list must still render (index fallback); got %s" % str(texts))
+	assert_true("Beta" in texts)
+
+
+# Helper: collect Label NODES (not just their text).
+# Excludes list-marker Labels — markers are direct children of an HBoxContainer
+# (the list-item row) while content Labels live inside a VBoxContainer child.
+# Using the parent-type check is more stable than text-content filtering since
+# list-style-type symbols vary (•, ○, 1., etc.).
+func _collect_label_nodes(node: Node, out: Array) -> void:
+	if node is Label and not (node.get_parent() is HBoxContainer):
+		out.append(node)
+	for c in node.get_children():
+		_collect_label_nodes(c, out)
