@@ -1,6 +1,7 @@
 /* Font: Courier Prime is supplied as the scene Theme's default_font (see
    foundry_theme.tres), so every Label/Button inherits monospace without
-   relying on GTML font-family resolution (which text nodes don't apply). */
+   relying on GTML font-family resolution (which text nodes don't apply).
+   Dense, sharp-cornered terminal scale. */
 .app {
 	display: flex;
 	flex-direction: column;
@@ -11,118 +12,108 @@
 .hud {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
-	padding: 18px;
+	gap: 3px;
+	padding: 12px;
 	background-color: #04140a;
 	border-bottom: 1px solid #1f7a45;
 }
-.prompt { color: #0e6b3a; font-size: 13px; }
-.counts { display: flex; flex-direction: row; align-items: flex-end; gap: 10px; }
-.commits { color: #39ff8a; font-size: 38px; font-weight: bold; text-shadow: 0px 0px 8px #2bd673; }
-.unit { color: #1faf5f; font-size: 14px; }
-.rate { color: #1faf5f; font-size: 14px; }
+.prompt { color: #0e6b3a; font-size: 12px; }
+.counts { display: flex; flex-direction: row; align-items: baseline; gap: 8px; }
+.commits { color: #39ff8a; font-size: 24px; font-weight: bold; text-shadow: 0px 0px 6px #2bd673; }
+.unit { color: #1faf5f; font-size: 12px; }
+.rate { color: #1faf5f; font-size: 12px; }
 
-.actions { display: flex; flex-direction: row; gap: 12px; }
+.actions { display: flex; flex-direction: row; gap: 8px; margin-top: 4px; }
 .tap-btn {
 	color: #aaffcc;
-	font-size: 18px;
+	font-size: 14px;
 	font-weight: bold;
-	padding: 12px;
+	padding: 7px;
 	background-color: #04210f;
 	border: 1px solid #39ff8a;
-	border-radius: 2px;
-	transition: background-color 0.12s;
+	transition: background-color 0.1s;
 }
-.tap-btn:hover, .tap-btn:focus { background-color: #0a3a1c; box-shadow: 0px 0px 12px #2bd673; }
+.tap-btn:hover, .tap-btn:focus { background-color: #0a3a1c; box-shadow: 0px 0px 8px #2bd673; }
 
 .refactor-btn {
 	color: #ffcf4d;
-	font-size: 14px;
-	padding: 12px;
+	font-size: 12px;
+	padding: 7px;
 	background-color: #1a1405;
 	border: 1px solid #7a5e1f;
-	border-radius: 2px;
-	transition: background-color 0.12s;
+	transition: background-color 0.1s;
 }
-.refactor-btn:hover, .refactor-btn:focus { background-color: #2a2208; box-shadow: 0px 0px 12px #b8902f; }
+.refactor-btn:hover, .refactor-btn:focus { background-color: #2a2208; box-shadow: 0px 0px 8px #b8902f; }
 
-.meta { display: flex; flex-direction: row; gap: 16px; }
-.insight { color: #ffcf4d; font-size: 14px; }
-.mult { color: #ffcf4d; font-size: 14px; }
+.meta { display: flex; flex-direction: row; gap: 12px; margin-top: 4px; }
+.insight { color: #ffcf4d; font-size: 12px; }
+.mult { color: #ffcf4d; font-size: 12px; }
 
-.body { overflow-y: auto; padding: 18px; }
+.body { overflow-y: auto; padding: 12px; }
 
-.panel { margin-bottom: 22px; }
+.panel { margin-bottom: 14px; }
 .panel-title {
 	color: #39ff8a;
-	font-size: 14px;
+	font-size: 12px;
 	font-weight: bold;
-	margin-bottom: 10px;
-	text-shadow: 0px 0px 6px #2bd673;
+	margin-bottom: 6px;
+	text-shadow: 0px 0px 5px #2bd673;
 }
 
-.rows { display: flex; flex-direction: column; gap: 8px; }
+.rows { display: flex; flex-direction: column; gap: 3px; }
 .row {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	gap: 12px;
-	padding: 12px;
+	gap: 10px;
+	padding: 7px;
 	background-color: #021006;
-	border: 1px solid #1f7a45;
-	border-radius: 2px;
+	border: 1px solid #123d24;
 }
-.row-info { display: flex; flex-direction: column; gap: 3px; }
-.row-name { color: #39ff8a; font-size: 15px; font-weight: bold; }
-.row-desc { color: #1faf5f; font-size: 12px; }
-.row-stat { color: #0e6b3a; font-size: 12px; }
+.row-info { display: flex; flex-direction: column; gap: 1px; flex-grow: 1; }
+.row-name { color: #39ff8a; font-size: 13px; font-weight: bold; }
+.row-desc { color: #1faf5f; font-size: 11px; }
+.row-stat { color: #0e6b3a; font-size: 11px; }
 
 .buy-btn {
-	color: #0e6b3a;
-	font-size: 14px;
-	font-weight: bold;
-	padding: 10px;
+	color: #1faf5f;
+	font-size: 13px;
+	padding: 6px;
 	background-color: #04140a;
 	border: 1px solid #1f5e38;
-	border-radius: 2px;
-	transition: background-color 0.12s;
+	transition: background-color 0.1s;
 }
 .buy-btn.affordable {
 	color: #021006;
 	background-color: #39ff8a;
 	border: 1px solid #39ff8a;
 }
-.buy-btn.affordable:hover { background-color: #5effa3; box-shadow: 0px 0px 12px #2bd673; }
+.buy-btn.affordable:hover { background-color: #5effa3; box-shadow: 0px 0px 8px #2bd673; }
 
-.badges { display: flex; flex-direction: column; gap: 6px; }
+.badges { display: flex; flex-direction: column; gap: 2px; }
 .badge {
 	display: flex;
 	flex-direction: row;
 	align-items: baseline;
-	gap: 10px;
-	padding: 8px;
-	background-color: #021006;
-	border: 1px solid #0e3a22;
-	border-radius: 2px;
+	gap: 8px;
+	padding: 4px;
+	background-color: #020d05;
+	border: 1px solid #0c2d1b;
 }
-/* earned flips via dynamic :class — set on the element itself so the restyler
-   handles it (border-color + color propagated to the child labels). */
-.badge.earned { border: 1px solid #7a5e1f; color: #ffcf4d; }
-.badge-mark { color: #0e6b3a; font-size: 14px; font-weight: bold; }
-.badge-name { color: #1faf5f; font-size: 14px; font-weight: bold; }
-.badge-desc { color: #0e6b3a; font-size: 12px; }
+.badge.earned { border: 1px solid #5a4717; color: #ffcf4d; }
+.badge-mark { color: #0e6b3a; font-size: 12px; }
+.badge-name { color: #1faf5f; font-size: 12px; }
+.badge-desc { color: #0e6b3a; font-size: 11px; flex-grow: 1; }
 
-.empty { color: #0e6b3a; font-size: 13px; }
+.empty { color: #0e6b3a; font-size: 12px; }
 
 .toast {
 	color: #ffcf4d;
-	font-size: 15px;
-	font-weight: bold;
-	padding: 12px;
+	font-size: 12px;
+	padding: 8px;
 	background-color: #1a1405;
 	border: 1px solid #7a5e1f;
-	border-radius: 2px;
-	text-shadow: 0px 0px 6px #b8902f;
+	text-shadow: 0px 0px 5px #b8902f;
 	transition: opacity 0.2s;
 }
 
@@ -132,38 +123,35 @@
 	align-items: center;
 	justify-content: center;
 	flex-grow: 1;
-	padding: 40px;
+	padding: 30px;
 	background-color: #020600;
 }
 .confirm-box {
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
-	padding: 32px;
+	gap: 12px;
+	padding: 20px;
 	background-color: #04140a;
 	border: 1px solid #39ff8a;
-	border-radius: 2px;
-	box-shadow: 0px 0px 18px #1c8a4d;
+	box-shadow: 0px 0px 14px #1c8a4d;
 }
-.confirm-title { color: #39ff8a; font-size: 26px; font-weight: bold; text-shadow: 0px 0px 8px #2bd673; }
-.confirm-text { color: #1faf5f; font-size: 14px; }
-.confirm-actions { display: flex; flex-direction: row; gap: 14px; }
+.confirm-title { color: #39ff8a; font-size: 18px; font-weight: bold; text-shadow: 0px 0px 6px #2bd673; }
+.confirm-text { color: #1faf5f; font-size: 12px; }
+.confirm-actions { display: flex; flex-direction: row; gap: 10px; }
 .confirm-btn {
 	color: #021006;
-	font-size: 15px;
+	font-size: 13px;
 	font-weight: bold;
-	padding: 12px;
+	padding: 8px;
 	background-color: #39ff8a;
 	border: 1px solid #39ff8a;
-	border-radius: 2px;
-	transition: background-color 0.12s;
+	transition: background-color 0.1s;
 }
-.confirm-btn:hover, .confirm-btn:focus { background-color: #5effa3; box-shadow: 0px 0px 12px #2bd673; }
+.confirm-btn:hover, .confirm-btn:focus { background-color: #5effa3; box-shadow: 0px 0px 8px #2bd673; }
 .cancel-btn {
 	color: #1faf5f;
-	font-size: 15px;
-	padding: 12px;
+	font-size: 13px;
+	padding: 8px;
 	background-color: #04140a;
 	border: 1px solid #1f5e38;
-	border-radius: 2px;
 }
