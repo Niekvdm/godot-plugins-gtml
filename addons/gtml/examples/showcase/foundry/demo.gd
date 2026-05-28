@@ -187,7 +187,12 @@ func _ach_name(id: String) -> String:
 func build_achievements_view() -> Array:
 	var out := []
 	for a in ACHIEVEMENTS:
-		out.append({"id": a.id, "name": a.name, "desc": a.desc, "earned": earned.has(a.id)})
+		var is_earned: bool = earned.has(a.id)
+		out.append({
+			"id": a.id, "name": a.name, "desc": a.desc,
+			"earned": is_earned,
+			"mark": "[x]" if is_earned else "[ ]",
+		})
 	return out
 
 
@@ -280,7 +285,7 @@ func _derive() -> void:
 
 
 func _show_toast(text: String) -> void:
-	view.state.set("toast", text)
+	view.state.set("toast", ">> unlocked: " + text)
 	view.state.set("show_toast", true)
 	await get_tree().create_timer(3.0).timeout
 	if view != null:

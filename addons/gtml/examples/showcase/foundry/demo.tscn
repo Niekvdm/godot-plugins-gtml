@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://foundry_commit_idle"]
+[gd_scene load_steps=4 format=3 uid="uid://foundry_commit_idle"]
 
 [ext_resource type="Script" path="res://addons/gtml/src/GtmlView.gd" id="1_gtmlview"]
 [ext_resource type="Script" path="res://addons/gtml/examples/showcase/foundry/demo.gd" id="2_demo"]
+[ext_resource type="Theme" path="res://addons/gtml/examples/showcase/foundry/foundry_theme.tres" id="3_theme"]
 
 [node name="FoundryDemo" type="Control"]
 layout_mode = 3
@@ -10,6 +11,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("3_theme")
 script = ExtResource("2_demo")
 
 [node name="Background" type="ColorRect" parent="."]
@@ -19,7 +21,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.102, 0.114, 0.137, 1)
+color = Color(0.008, 0.024, 0.0, 1)
 
 [node name="GtmlView" type="Control" parent="."]
 layout_mode = 1

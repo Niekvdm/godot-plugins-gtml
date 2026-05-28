@@ -124,15 +124,17 @@ func test_five_gens_achievement_requires_all_types() -> void:
 	var newly: Array = d._check_achievements()
 	assert_true(newly.has("five_gens"))
 
-func test_achievements_view_reports_earned_flag() -> void:
+func test_achievements_view_reports_earned_flag_and_mark() -> void:
 	var d = _new_demo()
 	d.commits = 1.0
 	d._check_achievements()
 	var by_id := {}
 	for a in d.build_achievements_view():
-		by_id[a.id] = a.earned
-	assert_true(by_id["first"])
-	assert_false(by_id["kilo"])
+		by_id[a.id] = a
+	assert_true(by_id["first"].earned)
+	assert_eq(by_id["first"].mark, "[x]")
+	assert_false(by_id["kilo"].earned)
+	assert_eq(by_id["kilo"].mark, "[ ]")
 
 func test_refactor_gain_formula() -> void:
 	var d = _new_demo()

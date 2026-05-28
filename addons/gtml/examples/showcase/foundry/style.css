@@ -1,133 +1,169 @@
+/* Font: Courier Prime is supplied as the scene Theme's default_font (see
+   foundry_theme.tres), so every Label/Button inherits monospace without
+   relying on GTML font-family resolution (which text nodes don't apply). */
 .app {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
-	background-color: #1a1d23;
-	font-family: sans-serif;
+	background-color: #020600;
 }
 
 .hud {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
-	padding: 20px;
-	background-color: #20242c;
-	border-bottom: 2px solid #2e3440;
+	gap: 6px;
+	padding: 18px;
+	background-color: #04140a;
+	border-bottom: 1px solid #1f7a45;
 }
-.counts { display: flex; flex-direction: row; gap: 16px; }
-.commits { color: #8fd6ff; font-size: 36px; font-weight: bold; }
-.rate { color: #7c8595; font-size: 16px; }
+.prompt { color: #0e6b3a; font-size: 13px; }
+.counts { display: flex; flex-direction: row; align-items: flex-end; gap: 10px; }
+.commits { color: #39ff8a; font-size: 38px; font-weight: bold; text-shadow: 0px 0px 8px #2bd673; }
+.unit { color: #1faf5f; font-size: 14px; }
+.rate { color: #1faf5f; font-size: 14px; }
 
+.actions { display: flex; flex-direction: row; gap: 12px; }
 .tap-btn {
-	background-color: #3a7bd5;
-	color: #ffffff;
-	font-size: 22px;
-	padding: 16px;
-	border-radius: 8px;
+	color: #aaffcc;
+	font-size: 18px;
+	font-weight: bold;
+	padding: 12px;
+	background-color: #04210f;
+	border: 1px solid #39ff8a;
+	border-radius: 2px;
 	transition: background-color 0.12s;
 }
-.tap-btn:hover { background-color: #4d8de0; }
+.tap-btn:hover, .tap-btn:focus { background-color: #0a3a1c; box-shadow: 0px 0px 12px #2bd673; }
+
+.refactor-btn {
+	color: #ffcf4d;
+	font-size: 14px;
+	padding: 12px;
+	background-color: #1a1405;
+	border: 1px solid #7a5e1f;
+	border-radius: 2px;
+	transition: background-color 0.12s;
+}
+.refactor-btn:hover, .refactor-btn:focus { background-color: #2a2208; box-shadow: 0px 0px 12px #b8902f; }
 
 .meta { display: flex; flex-direction: row; gap: 16px; }
-.insight { color: #ffd479; font-size: 15px; }
-.mult { color: #b6e58a; font-size: 15px; }
-.refactor-btn {
-	background-color: #5a3a6e;
-	color: #f0e6ff;
-	padding: 10px;
-	border-radius: 6px;
-	transition: background-color 0.12s;
+.insight { color: #ffcf4d; font-size: 14px; }
+.mult { color: #ffcf4d; font-size: 14px; }
+
+.body { overflow-y: auto; padding: 18px; }
+
+.panel { margin-bottom: 22px; }
+.panel-title {
+	color: #39ff8a;
+	font-size: 14px;
+	font-weight: bold;
+	margin-bottom: 10px;
+	text-shadow: 0px 0px 6px #2bd673;
 }
-.refactor-btn:hover { background-color: #6e4a85; }
-
-.body { overflow-y: auto; padding: 20px; }
-
-.panel { margin-bottom: 20px; }
-.panel-title { color: #c8ced8; font-size: 18px; margin-bottom: 8px; }
 
 .rows { display: flex; flex-direction: column; gap: 8px; }
 .row {
 	display: flex;
 	flex-direction: row;
+	align-items: center;
 	gap: 12px;
 	padding: 12px;
-	background-color: #252932;
-	border-radius: 8px;
-	border: 1px solid #2e3440;
+	background-color: #021006;
+	border: 1px solid #1f7a45;
+	border-radius: 2px;
 }
-.row-info { display: flex; flex-direction: column; gap: 2px; }
-.row-name { color: #e6eaf0; font-size: 16px; font-weight: bold; }
-.row-desc { color: #7c8595; font-size: 13px; }
-.row-stat { color: #9aa3b2; font-size: 13px; }
+.row-info { display: flex; flex-direction: column; gap: 3px; }
+.row-name { color: #39ff8a; font-size: 15px; font-weight: bold; }
+.row-desc { color: #1faf5f; font-size: 12px; }
+.row-stat { color: #0e6b3a; font-size: 12px; }
 
 .buy-btn {
-	background-color: #33384a;
-	color: #6b7280;
-	padding: 14px;
-	border-radius: 6px;
-	font-size: 15px;
+	color: #0e6b3a;
+	font-size: 14px;
+	font-weight: bold;
+	padding: 10px;
+	background-color: #04140a;
+	border: 1px solid #1f5e38;
+	border-radius: 2px;
 	transition: background-color 0.12s;
 }
-.buy-btn.affordable { background-color: #2f7d4f; color: #ffffff; }
-.buy-btn.affordable:hover { background-color: #38935d; }
+.buy-btn.affordable {
+	color: #021006;
+	background-color: #39ff8a;
+	border: 1px solid #39ff8a;
+}
+.buy-btn.affordable:hover { background-color: #5effa3; box-shadow: 0px 0px 12px #2bd673; }
 
-.badges { display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; }
+.badges { display: flex; flex-direction: column; gap: 6px; }
 .badge {
 	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	padding: 12px;
-	background-color: #20242c;
-	border-radius: 8px;
-	border: 1px solid #2e3440;
-	opacity: 0.45;
+	flex-direction: row;
+	align-items: baseline;
+	gap: 10px;
+	padding: 8px;
+	background-color: #021006;
+	border: 1px solid #0e3a22;
+	border-radius: 2px;
 }
-.badge.earned { opacity: 1.0; border-color: #ffd479; }
-.badge-name { color: #e6eaf0; font-size: 14px; font-weight: bold; }
-.badge-desc { color: #7c8595; font-size: 12px; }
+/* earned flips via dynamic :class — set on the element itself so the restyler
+   handles it (border-color + color propagated to the child labels). */
+.badge.earned { border: 1px solid #7a5e1f; color: #ffcf4d; }
+.badge-mark { color: #0e6b3a; font-size: 14px; font-weight: bold; }
+.badge-name { color: #1faf5f; font-size: 14px; font-weight: bold; }
+.badge-desc { color: #0e6b3a; font-size: 12px; }
 
-.empty { color: #7c8595; font-size: 14px; }
+.empty { color: #0e6b3a; font-size: 13px; }
 
 .toast {
-	background-color: #ffd479;
-	color: #1a1d23;
-	padding: 16px;
-	border-radius: 8px;
-	font-size: 16px;
+	color: #ffcf4d;
+	font-size: 15px;
 	font-weight: bold;
+	padding: 12px;
+	background-color: #1a1405;
+	border: 1px solid #7a5e1f;
+	border-radius: 2px;
+	text-shadow: 0px 0px 6px #b8902f;
 	transition: opacity 0.2s;
 }
 
-.modal-overlay {
-	background-color: #000000;
-	opacity: 0.92;
+.confirm {
 	display: flex;
 	flex-direction: column;
-	padding: 80px;
+	align-items: center;
+	justify-content: center;
+	flex-grow: 1;
+	padding: 40px;
+	background-color: #020600;
 }
-.modal {
-	background-color: #252932;
-	border: 2px solid #5a3a6e;
-	border-radius: 12px;
-	padding: 28px;
+.confirm-box {
 	display: flex;
 	flex-direction: column;
-	gap: 14px;
+	gap: 16px;
+	padding: 32px;
+	background-color: #04140a;
+	border: 1px solid #39ff8a;
+	border-radius: 2px;
+	box-shadow: 0px 0px 18px #1c8a4d;
 }
-.modal-title { color: #f0e6ff; font-size: 24px; }
-.modal-text { color: #c8ced8; font-size: 15px; }
-.modal-actions { display: flex; flex-direction: row; gap: 12px; }
+.confirm-title { color: #39ff8a; font-size: 26px; font-weight: bold; text-shadow: 0px 0px 8px #2bd673; }
+.confirm-text { color: #1faf5f; font-size: 14px; }
+.confirm-actions { display: flex; flex-direction: row; gap: 14px; }
 .confirm-btn {
-	background-color: #5a3a6e;
-	color: #ffffff;
-	padding: 16px;
-	border-radius: 8px;
+	color: #021006;
+	font-size: 15px;
+	font-weight: bold;
+	padding: 12px;
+	background-color: #39ff8a;
+	border: 1px solid #39ff8a;
+	border-radius: 2px;
 	transition: background-color 0.12s;
 }
-.confirm-btn:hover, .confirm-btn:focus { background-color: #7a4f95; }
+.confirm-btn:hover, .confirm-btn:focus { background-color: #5effa3; box-shadow: 0px 0px 12px #2bd673; }
 .cancel-btn {
-	background-color: #33384a;
-	color: #c8ced8;
-	padding: 16px;
-	border-radius: 8px;
+	color: #1faf5f;
+	font-size: 15px;
+	padding: 12px;
+	background-color: #04140a;
+	border: 1px solid #1f5e38;
+	border-radius: 2px;
 }
