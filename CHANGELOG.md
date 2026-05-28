@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.8.4
+
+### Tooling — Performance benchmark harness
+
+Adds `tests/perf/test_perf_bench.gd`, an informational benchmark that
+times GTML's hot paths and prints a ms/op + ops/sec table. It answers
+the long-standing "perf at scale — never measured" known unknown from
+the v0.7/v0.8 specs.
+
+- **Excluded from the default suite** (gutconfig scopes to `tests/unit/`);
+  run on demand with `-gtest=res://tests/perf/test_perf_bench.gd`.
+- **No wall-clock budgets / assertions** — never flaky on a slow machine.
+- Measures: pure `GmlVForReconciler.diff`, v-for build at scale
+  (10/100/500/1000), reconcile ops (append/prepend/replace/shuffle),
+  `state.set` fan-out (K=10/100/500), and full `renderer.build`.
+- A single self-check test verifies the `_bench` helper times only the
+  operation (excludes setup/cleanup).
+
+Measurement only — no engine changes. Any alarming number is a separate
+follow-up.
+
+This completes the v0.8 production-readiness line (expression operators,
+v-for `:key` reconciliation, dynamic `:class` re-resolution, focus
+traversal, and now the perf harness).
+
+### Tests
+
+Default suite unchanged at 408 (the perf file is not collected). The
+bench file adds 5 on-demand bench tests (1 with assertions).
+
+### Docs
+
+New `docs/perf.md` — how to run + what each group measures + caveats.
+
 ## 0.8.3
 
 ### Features — Focus traversal (keyboard / gamepad navigation)
