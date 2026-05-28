@@ -82,9 +82,9 @@
    green caret (set on the LineEdit in demo.gd) is the only cursor. */
 .cmdline {
 	flex-grow: 1;
+	width: 100%;
 	color: #c0caf5;
 	font-size: 16px;
-	padding: 6px;
 	background-color: #16161e;
 	border: 0px solid #16161e;
 }
