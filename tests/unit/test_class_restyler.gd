@@ -149,3 +149,33 @@ func test_restyle_layout_prop_in_dynamic_class_warns() -> void:
 	var layout_warns: Array = captured.filter(func(m): return "layout prop" in m)
 	assert_gt(layout_warns.size(), 0, "layout prop in dynamic class must warn")
 	GtmlBindingApplier._on_warning = Callable()
+
+
+func test_changed_layout_keys_detects_only_real_changes() -> void:
+	# Unchanged layout value (present in both) → not reported.
+	assert_eq(GtmlClassRestyler.changed_layout_keys({"padding": 14, "color": "x"}, {"padding": 14}), [])
+	# Different value → reported.
+	assert_eq(GtmlClassRestyler.changed_layout_keys({"padding": 40}, {"padding": 14}), ["padding"])
+	# Same value → not reported.
+	assert_eq(GtmlClassRestyler.changed_layout_keys({"display": "flex"}, {"display": "flex"}), [])
+	# Newly introduced by the dynamic class → reported.
+	assert_eq(GtmlClassRestyler.changed_layout_keys({"display": "flex"}, {}), ["display"])
+	# Non-layout keys never reported.
+	assert_eq(GtmlClassRestyler.changed_layout_keys({"color": "a"}, {"color": "b"}), [])
+
+
+func test_restyle_no_warn_when_layout_prop_unchanged() -> void:
+	# The element HAS padding in its base rule, and the dynamic class only
+	# changes color. Padding does not change → must NOT warn (regression for
+	# the foundry buy-btn false positive).
+	var captured: Array = []
+	GtmlBindingApplier._on_warning = func(m): captured.append(m)
+	var rules := _rules(".buy { padding: 14px; color: #aaa; } .buy.on { color: #fff; }")
+	var n = _node("button", "buy")
+	var ctrl := Button.new()
+	add_child_autofree(ctrl)
+	var base: Dictionary = GtmlClassRestyler.resolve_visual_props(n, [n], PackedStringArray(["buy"]), rules)
+	GtmlClassRestyler.restyle(ctrl, n, [n], PackedStringArray(["buy", "on"]), rules, base, null)
+	var layout_warns: Array = captured.filter(func(m): return "layout prop" in m)
+	assert_eq(layout_warns.size(), 0, "unchanged layout prop must not warn")
+	GtmlBindingApplier._on_warning = Callable()

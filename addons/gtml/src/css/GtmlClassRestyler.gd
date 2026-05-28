@@ -52,16 +52,27 @@ static func resolve_visual_props(node, ancestor_chain: Array, class_list: Packed
 	return out
 
 
-## Warn (once per control) if the recomputed full style introduces a
-## layout key the dynamic class set changed. Called by restyle().
-static func _warn_layout_props(control: Control, full_style: Dictionary) -> void:
+## Layout keys whose value the dynamic class actually changed relative to the
+## base (static-only) style. A key is "changed" if its value differs — merely
+## being present in both (e.g. a padded element that also has a color-only
+## dynamic class) is NOT a change and must not warn.
+static func changed_layout_keys(full_style: Dictionary, base_style: Dictionary) -> Array:
+	var out: Array = []
+	for k in LAYOUT_KEYS:
+		if full_style.get(k, null) != base_style.get(k, null):
+			out.append(k)
+	return out
+
+
+## Warn (once per control) only if the dynamic class set actually changed a
+## layout key relative to the base style. Called by restyle().
+static func _warn_layout_props(control: Control, full_style: Dictionary, base_style: Dictionary) -> void:
 	if control.get_meta("_layout_warn_done", false):
 		return
-	for k in LAYOUT_KEYS:
-		if full_style.has(k):
-			GtmlBindingApplier._warn("dynamic :class changed layout prop '%s' — ignored; v0.8.2 re-resolves visual props only (color/bg/border/opacity/font-size)" % k)
-			control.set_meta("_layout_warn_done", true)
-			return
+	var changed: Array = changed_layout_keys(full_style, base_style)
+	if not changed.is_empty():
+		GtmlBindingApplier._warn("dynamic :class changed layout prop '%s' — ignored; v0.8.2 re-resolves visual props only (color/bg/border/opacity/font-size)" % changed[0])
+		control.set_meta("_layout_warn_done", true)
 
 
 ## Recompute the bound element's visual style for the active dynamic
@@ -89,7 +100,10 @@ static func restyle(control: Control, node, ancestor_chain: Array, dynamic_class
 	var full: Dictionary = resolver._compute_style(node, ancestor_chain, css_rules, {})
 	node.attrs["class"] = original_class
 
-	_warn_layout_props(control, full)
+	# Base (static-only) style: warn only when the dynamic class actually
+	# changes a layout key, not merely because the element has one.
+	var base_full: Dictionary = resolver._compute_style(node, ancestor_chain, css_rules, {})
+	_warn_layout_props(control, full, base_full)
 
 	# Target visual props: start from base, overlay recomputed visual keys.
 	var target: Dictionary = {}
