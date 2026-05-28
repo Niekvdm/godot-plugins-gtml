@@ -58,3 +58,42 @@ func fmt(n: float) -> String:
 		v /= 1000.0
 		idx += 1
 	return "%.2f%s" % [v, units[idx]]
+
+
+func _gen_def(id: String) -> Dictionary:
+	for g in GENERATORS:
+		if g.id == id:
+			return g
+	return {}
+
+func _owned(id: String) -> int:
+	return int(gen_owned.get(id, 0))
+
+func cost_of(id: String) -> int:
+	var base: float = float(_gen_def(id).get("cost", 0))
+	return int(floor(base * pow(1.15, _owned(id))))
+
+func global_mult() -> float:
+	return 1.0 + insight * 0.02
+
+func _gen_factor(id: String) -> float:
+	var f := 1.0
+	for u in UPGRADES:
+		if u.kind == "gen" and u.get("target", "") == id and purchased.has(u.id):
+			f *= float(u.factor)
+	return f
+
+func effective_rate(id: String) -> float:
+	return float(_gen_def(id).get("rate", 0.0)) * _owned(id) * _gen_factor(id) * global_mult()
+
+func per_sec() -> float:
+	var s := 0.0
+	for g in GENERATORS:
+		s += effective_rate(g.id)
+	return s
+
+func click_value() -> float:
+	return per_click * global_mult()
+
+func can_afford(amount: float) -> bool:
+	return commits >= amount
