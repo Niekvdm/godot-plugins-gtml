@@ -61,3 +61,106 @@ static func _warn_layout_props(control: Control, full_style: Dictionary) -> void
 			GmlBindingApplier._warn("dynamic :class changed layout prop '%s' — ignored; v0.8.2 re-resolves visual props only (color/bg/border/opacity/font-size)" % k)
 			control.set_meta("_layout_warn_done", true)
 			return
+
+
+## Recompute the bound element's visual style for the active dynamic
+## class set and apply the deltas in place. When dynamic_classes is empty
+## the target is exactly base_snapshot (clean revert). transition_manager
+## may be null (snap directly).
+static func restyle(control: Control, node, ancestor_chain: Array, dynamic_classes: PackedStringArray, css_rules: Array, base_snapshot: Dictionary, transition_manager) -> void:
+	if control == null or node == null:
+		return
+
+	# Merge static (node's own) + dynamic classes for the recompute.
+	var static_classes: PackedStringArray = node.get_classes()
+	var merged: PackedStringArray = PackedStringArray()
+	for c in static_classes:
+		if not merged.has(c):
+			merged.append(c)
+	for c in dynamic_classes:
+		if not merged.has(c):
+			merged.append(c)
+
+	# Full recompute (for layout-warn detection) + visual subset.
+	var resolver = GmlStyleResolver.new()
+	var original_class: String = node.get_attr("class", "")
+	node.attrs["class"] = " ".join(merged)
+	var full: Dictionary = resolver._compute_style(node, ancestor_chain, css_rules, {})
+	node.attrs["class"] = original_class
+
+	_warn_layout_props(control, full)
+
+	# Target visual props: start from base, overlay recomputed visual keys.
+	var target: Dictionary = {}
+	for k in VISUAL_KEYS:
+		if base_snapshot.has(k):
+			target[k] = base_snapshot[k]
+	for k in VISUAL_KEYS:
+		if full.has(k):
+			target[k] = full[k]
+
+	_apply_visual(control, target, full, transition_manager)
+
+
+## Apply visual props to the control in place. Stylebox-bearing controls
+## (PanelContainer/Button) get bg/border mutated on their existing
+## stylebox; Labels get font_color; all controls get opacity via modulate.
+static func _apply_visual(control: Control, target: Dictionary, full_style: Dictionary, transition_manager) -> void:
+	# Opacity → modulate.a
+	if target.has("opacity"):
+		var a = target["opacity"]
+		if a is float or a is int:
+			control.modulate.a = float(a)
+
+	# Font color → theme override (Label / RichTextLabel / Button)
+	if target.has("color"):
+		var col = target["color"]
+		if col is Color:
+			if control is RichTextLabel:
+				control.add_theme_color_override("default_color", col)
+			else:
+				control.add_theme_color_override("font_color", col)
+
+	# Font size
+	if target.has("font-size"):
+		var fs = target["font-size"]
+		if fs is int or fs is float:
+			control.add_theme_font_size_override("font_size", int(fs))
+
+	# Stylebox-borne props: bg / border / outline / radius.
+	var box: StyleBoxFlat = _get_stylebox(control)
+	if box != null:
+		if target.has("background-color") and target["background-color"] is Color:
+			box.bg_color = target["background-color"]
+		if target.has("border-color") and target["border-color"] is Color:
+			box.border_color = target["border-color"]
+		if target.has("border-width"):
+			var bw = target["border-width"]
+			if bw is int or bw is float:
+				box.border_width_left = int(bw)
+				box.border_width_top = int(bw)
+				box.border_width_right = int(bw)
+				box.border_width_bottom = int(bw)
+		if target.has("border-radius"):
+			var br = target["border-radius"]
+			if br is int or br is float:
+				box.corner_radius_top_left = int(br)
+				box.corner_radius_top_right = int(br)
+				box.corner_radius_bottom_left = int(br)
+				box.corner_radius_bottom_right = int(br)
+
+
+## Return the StyleBoxFlat a control renders its background through, or
+## null if it has none (e.g. a plain Label).
+static func _get_stylebox(control: Control) -> StyleBoxFlat:
+	var key: String = ""
+	if control is Button:
+		key = "normal"
+	elif control.has_theme_stylebox("panel"):
+		key = "panel"
+	if key.is_empty():
+		return null
+	var box = control.get_theme_stylebox(key)
+	if box is StyleBoxFlat:
+		return box
+	return null

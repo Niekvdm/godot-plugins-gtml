@@ -58,3 +58,76 @@ func test_resolve_visual_props_restores_node_class_attr() -> void:
 	var n = _node("span", "base")
 	GmlClassRestyler.resolve_visual_props(n, [n], PackedStringArray(["base", "rare"]), rules)
 	assert_eq(n.get_attr("class", ""), "base", "original class attr must be restored")
+
+
+# ─── restyle() apply path (Task 3) ─────────────────────────
+
+func _panel_with_box() -> PanelContainer:
+	var p := PanelContainer.new()
+	var box := StyleBoxFlat.new()
+	box.bg_color = Color(0.1, 0.1, 0.1)
+	p.add_theme_stylebox_override("panel", box)
+	add_child_autofree(p)
+	return p
+
+
+func test_restyle_applies_background_color_to_panel() -> void:
+	var rules := _rules(".active { background-color: #ffcc00; }")
+	var n = _node("div", "card")
+	var p := _panel_with_box()
+	var base: Dictionary = GmlClassRestyler.resolve_visual_props(n, [n], PackedStringArray(["card"]), rules)
+	GmlClassRestyler.restyle(p, n, [n], PackedStringArray(["card", "active"]), rules, base, null)
+	var box: StyleBoxFlat = p.get_theme_stylebox("panel")
+	assert_almost_eq(box.bg_color.r, 1.0, 0.02)
+	assert_almost_eq(box.bg_color.g, 0.8, 0.05)
+
+
+func test_restyle_applies_font_color_to_label() -> void:
+	var rules := _rules(".rare { color: #b59aff; }")
+	var n = _node("span", "name")
+	var label := Label.new()
+	add_child_autofree(label)
+	var base: Dictionary = GmlClassRestyler.resolve_visual_props(n, [n], PackedStringArray(["name"]), rules)
+	GmlClassRestyler.restyle(label, n, [n], PackedStringArray(["name", "rare"]), rules, base, null)
+	var c: Color = label.get_theme_color("font_color")
+	assert_almost_eq(c.r, 0.71, 0.05)
+	assert_almost_eq(c.b, 1.0, 0.05)
+
+
+func test_restyle_applies_opacity() -> void:
+	var rules := _rules(".dim { opacity: 0.5; }")
+	var n = _node("div", "box")
+	var ctrl := Control.new()
+	add_child_autofree(ctrl)
+	var base: Dictionary = GmlClassRestyler.resolve_visual_props(n, [n], PackedStringArray(["box"]), rules)
+	GmlClassRestyler.restyle(ctrl, n, [n], PackedStringArray(["box", "dim"]), rules, base, null)
+	assert_almost_eq(ctrl.modulate.a, 0.5, 0.02)
+
+
+func test_restyle_removing_class_reverts_to_base_snapshot() -> void:
+	var rules := _rules(".base { color: #ffffff; } .rare { color: #b59aff; }")
+	var n = _node("span", "base")
+	var label := Label.new()
+	add_child_autofree(label)
+	var base: Dictionary = GmlClassRestyler.resolve_visual_props(n, [n], PackedStringArray(["base"]), rules)
+	# Add rare → purple.
+	GmlClassRestyler.restyle(label, n, [n], PackedStringArray(["base", "rare"]), rules, base, null)
+	# Remove rare → revert to base white.
+	GmlClassRestyler.restyle(label, n, [n], PackedStringArray(["base"]), rules, base, null)
+	var c: Color = label.get_theme_color("font_color")
+	assert_almost_eq(c.r, 1.0, 0.02)
+	assert_almost_eq(c.b, 1.0, 0.02)
+
+
+func test_restyle_layout_prop_in_dynamic_class_warns() -> void:
+	var captured: Array = []
+	GmlBindingApplier._on_warning = func(m): captured.append(m)
+	var rules := _rules(".grow { display: flex; color: #fff; }")
+	var n = _node("div", "box")
+	var ctrl := Control.new()
+	add_child_autofree(ctrl)
+	var base: Dictionary = GmlClassRestyler.resolve_visual_props(n, [n], PackedStringArray(["box"]), rules)
+	GmlClassRestyler.restyle(ctrl, n, [n], PackedStringArray(["box", "grow"]), rules, base, null)
+	var layout_warns: Array = captured.filter(func(m): return "layout prop" in m)
+	assert_gt(layout_warns.size(), 0, "layout prop in dynamic class must warn")
+	GmlBindingApplier._on_warning = Callable()
