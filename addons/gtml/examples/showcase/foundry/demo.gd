@@ -244,6 +244,7 @@ func _ready() -> void:
 		"show_toast": false,
 		"show_refactor": false,
 		"refactor_gain": str(refactor_gain()),
+		"can_refactor": refactor_gain() >= 1,
 	})
 	view.button_clicked.connect(_on_button)
 	view.item_clicked.connect(_on_item)
@@ -282,6 +283,7 @@ func _derive() -> void:
 		view.state.set("upgrades_count", ups.size())
 	view.state.set("per_click_display", fmt(click_value()))
 	view.state.set("refactor_gain", str(refactor_gain()))
+	view.state.set("can_refactor", refactor_gain() >= 1)
 	var newly := _check_achievements()
 	if not newly.is_empty():
 		view.state.set("achievements", build_achievements_view())

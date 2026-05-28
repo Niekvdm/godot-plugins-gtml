@@ -36,14 +36,19 @@
 .tap-btn:hover, .tap-btn:focus { background-color: #0a3a1c; box-shadow: 0px 0px 8px #2bd673; }
 
 .refactor-btn {
-	color: #ffcf4d;
+	color: #6b561f;
 	font-size: 12px;
 	padding: 7px;
-	background-color: #1a1405;
-	border: 1px solid #7a5e1f;
+	background-color: #100c03;
+	border: 1px solid #3a2e10;
 	transition: background-color 0.1s;
 }
-.refactor-btn:hover, .refactor-btn:focus { background-color: #2a2208; box-shadow: 0px 0px 8px #b8902f; }
+.refactor-btn.ready {
+	color: #ffcf4d;
+	background-color: #1a1405;
+	border: 1px solid #7a5e1f;
+}
+.refactor-btn.ready:hover, .refactor-btn.ready:focus { background-color: #2a2208; box-shadow: 0px 0px 8px #b8902f; }
 
 .meta { display: flex; flex-direction: row; gap: 12px; margin-top: 4px; }
 .insight { color: #ffcf4d; font-size: 12px; }

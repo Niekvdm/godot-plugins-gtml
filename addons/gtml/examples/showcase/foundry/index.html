@@ -8,7 +8,7 @@
 		</div>
 		<div class="actions">
 			<button class="tap-btn" @click="tap">[ COMMIT +{{ per_click_display }} ]</button>
-			<button class="refactor-btn" @click="open_refactor">[ REFACTOR ]</button>
+			<button class="refactor-btn" :class="{ ready: can_refactor }" :disabled="!can_refactor" @click="open_refactor">[ REFACTOR +{{ refactor_gain }} ]</button>
 		</div>
 		<div class="meta">
 			<span class="insight">Insight: {{ insight }}</span>
