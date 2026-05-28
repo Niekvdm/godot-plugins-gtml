@@ -1,27 +1,27 @@
 extends GutTest
 
-## Tests for GmlState — the per-view reactive store.
+## Tests for GtmlState — the per-view reactive store.
 
 func test_set_then_get_returns_value() -> void:
-	var s := GmlState.new()
+	var s := GtmlState.new()
 	s.set("score", 42)
 	assert_eq(s.get("score"), 42)
 
 
 func test_get_missing_key_returns_null() -> void:
-	var s := GmlState.new()
+	var s := GtmlState.new()
 	assert_null(s.get("nope"))
 
 
 func test_has_returns_true_when_set_false_when_not() -> void:
-	var s := GmlState.new()
+	var s := GtmlState.new()
 	assert_false(s.has("x"))
 	s.set("x", 1)
 	assert_true(s.has("x"))
 
 
 func test_set_emits_state_changed_with_old_and_new() -> void:
-	var s := GmlState.new()
+	var s := GtmlState.new()
 	s.set("score", 10)
 	var captured: Array = []
 	s.state_changed.connect(func(k, n, o): captured.append([k, n, o]))
@@ -31,7 +31,7 @@ func test_set_emits_state_changed_with_old_and_new() -> void:
 
 
 func test_set_same_value_does_not_emit() -> void:
-	var s := GmlState.new()
+	var s := GtmlState.new()
 	s.set("score", 10)
 	var captured: Array = []
 	s.state_changed.connect(func(k, n, o): captured.append(k))
@@ -40,7 +40,7 @@ func test_set_same_value_does_not_emit() -> void:
 
 
 func test_first_set_emits_with_null_old() -> void:
-	var s := GmlState.new()
+	var s := GtmlState.new()
 	var captured: Array = []
 	s.state_changed.connect(func(k, n, o): captured.append([k, n, o]))
 	s.set("new_key", "v")
@@ -48,7 +48,7 @@ func test_first_set_emits_with_null_old() -> void:
 
 
 func test_set_state_batched_emits_per_changed_key() -> void:
-	var s := GmlState.new()
+	var s := GtmlState.new()
 	s.set("a", 1)
 	var captured: Array = []
 	s.state_changed.connect(func(k, _n, _o): captured.append(k))
@@ -60,7 +60,7 @@ func test_set_state_batched_emits_per_changed_key() -> void:
 
 
 func test_keys_returns_set_keys() -> void:
-	var s := GmlState.new()
+	var s := GtmlState.new()
 	s.set("a", 1)
 	s.set("player.health", 100)
 	var keys: PackedStringArray = s.keys()

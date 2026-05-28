@@ -3,25 +3,25 @@ extends GutTest
 ## Tests for the v0.2 selector engine: compound selectors, combinators
 ## (descendant, child), attribute matching, and specificity-based cascade.
 
-const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
-const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
-const GmlStyleResolverScript = preload("res://addons/gtml/src/css/GmlStyleResolver.gd")
-const GmlSelectorScript = preload("res://addons/gtml/src/css/GmlSelector.gd")
+const GtmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GtmlHtmlParser.gd")
+const GtmlCssParserScript = preload("res://addons/gtml/src/css/GtmlCssParser.gd")
+const GtmlStyleResolverScript = preload("res://addons/gtml/src/css/GtmlStyleResolver.gd")
+const GtmlSelectorScript = preload("res://addons/gtml/src/css/GtmlSelector.gd")
 
 
 func _dom(html: String):
-	return GmlHtmlParserScript.new().parse(html)
+	return GtmlHtmlParserScript.new().parse(html)
 
 
 func _rules(css: String) -> Array:
-	return GmlCssParserScript.new().parse(css)
+	return GtmlCssParserScript.new().parse(css)
 
 
 func _resolve(html: String, css: String) -> Array:
 	# Returns [{node, style}] flattened tuples for the whole tree.
 	var dom = _dom(html)
 	var rules := _rules(css)
-	var styles: Dictionary = GmlStyleResolverScript.new().resolve(dom, rules)
+	var styles: Dictionary = GtmlStyleResolverScript.new().resolve(dom, rules)
 	var out: Array = []
 	_walk(dom, styles, out)
 	return out
@@ -39,7 +39,7 @@ func _walk(node, styles: Dictionary, out: Array) -> void:
 func _style_for_id(html: String, css: String, id: String) -> Dictionary:
 	var dom = _dom(html)
 	var rules := _rules(css)
-	var styles: Dictionary = GmlStyleResolverScript.new().resolve(dom, rules)
+	var styles: Dictionary = GtmlStyleResolverScript.new().resolve(dom, rules)
 	var found = _find_by_id(dom, id)
 	if found == null:
 		return {}
@@ -62,13 +62,13 @@ func _find_by_id(node, id: String):
 
 
 func test_selector_parses_tag() -> void:
-	var sel = GmlSelectorScript.parse("div")
+	var sel = GtmlSelectorScript.parse("div")
 	assert_eq(sel.compounds.size(), 1)
 	assert_eq(sel.compounds[0].tag, "div")
 
 
 func test_selector_parses_compound_tag_class_id() -> void:
-	var sel = GmlSelectorScript.parse("div.foo#bar")
+	var sel = GtmlSelectorScript.parse("div.foo#bar")
 	assert_eq(sel.compounds.size(), 1)
 	var c = sel.compounds[0]
 	assert_eq(c.tag, "div")
@@ -77,20 +77,20 @@ func test_selector_parses_compound_tag_class_id() -> void:
 
 
 func test_selector_parses_descendant() -> void:
-	var sel = GmlSelectorScript.parse(".a .b")
+	var sel = GtmlSelectorScript.parse(".a .b")
 	assert_eq(sel.compounds.size(), 2)
 	assert_eq(sel.combinators.size(), 1)
 	assert_eq(sel.combinators[0], " ")
 
 
 func test_selector_parses_child() -> void:
-	var sel = GmlSelectorScript.parse(".a > .b")
+	var sel = GtmlSelectorScript.parse(".a > .b")
 	assert_eq(sel.compounds.size(), 2)
 	assert_eq(sel.combinators[0], ">")
 
 
 func test_selector_parses_attribute_presence() -> void:
-	var sel = GmlSelectorScript.parse("input[disabled]")
+	var sel = GtmlSelectorScript.parse("input[disabled]")
 	var c = sel.compounds[0]
 	assert_eq(c.tag, "input")
 	assert_eq(c.attrs.size(), 1)
@@ -99,7 +99,7 @@ func test_selector_parses_attribute_presence() -> void:
 
 
 func test_selector_parses_attribute_equality() -> void:
-	var sel = GmlSelectorScript.parse('input[type="text"]')
+	var sel = GtmlSelectorScript.parse('input[type="text"]')
 	var c = sel.compounds[0]
 	assert_eq(c.attrs.size(), 1)
 	assert_eq(c.attrs[0].name, "type")
@@ -108,7 +108,7 @@ func test_selector_parses_attribute_equality() -> void:
 
 
 func test_selector_parses_pseudo() -> void:
-	var sel = GmlSelectorScript.parse("button:hover")
+	var sel = GtmlSelectorScript.parse("button:hover")
 	assert_eq(sel.compounds[0].tag, "button")
 	assert_eq(sel.compounds[0].pseudos, PackedStringArray(["hover"]))
 

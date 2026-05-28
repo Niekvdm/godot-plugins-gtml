@@ -7,16 +7,16 @@ extends GutTest
 ## toggled signal and apply the bucket's properties as a Godot "pressed"
 ## stylebox so the checked state is visually distinct.
 
-const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
-const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
-const GmlStyleResolverScript = preload("res://addons/gtml/src/css/GmlStyleResolver.gd")
-const GmlViewScript = preload("res://addons/gtml/src/GmlView.gd")
+const GtmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GtmlHtmlParser.gd")
+const GtmlCssParserScript = preload("res://addons/gtml/src/css/GtmlCssParser.gd")
+const GtmlStyleResolverScript = preload("res://addons/gtml/src/css/GtmlStyleResolver.gd")
+const GtmlViewScript = preload("res://addons/gtml/src/GtmlView.gd")
 
 
 func _resolved_style(html: String, css: String, id: String) -> Dictionary:
-	var dom = GmlHtmlParserScript.new().parse(html)
-	var rules := GmlCssParserScript.new().parse(css)
-	var styles: Dictionary = GmlStyleResolverScript.new().resolve(dom, rules)
+	var dom = GtmlHtmlParserScript.new().parse(html)
+	var rules := GtmlCssParserScript.new().parse(css)
+	var styles: Dictionary = GtmlStyleResolverScript.new().resolve(dom, rules)
 	var node = _find_by_id(dom, id)
 	if node == null:
 		return {}
@@ -70,7 +70,7 @@ func test_checked_bucket_in_runtime_view() -> void:
 	fc.store_string('input:checked { background-color: rgb(155, 126, 255); }')
 	fc.close()
 
-	var view: GmlView = GmlViewScript.new()
+	var view: GtmlView = GtmlViewScript.new()
 	view.html_path = html_path
 	view.css_path = css_path
 	view.size = Vector2(200, 100)

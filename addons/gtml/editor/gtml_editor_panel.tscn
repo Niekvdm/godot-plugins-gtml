@@ -1,0 +1,183 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/gtml/editor/gtml_editor_panel.gd" id="1_script"]
+
+[node name="GtmlEditorPanel" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_script")
+
+[node name="MainContainer" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+offset_left = 5.0
+offset_top = 5.0
+offset_right = -5.0
+offset_bottom = -5.0
+
+[node name="Toolbar" type="HBoxContainer" parent="MainContainer"]
+layout_mode = 2
+
+[node name="FileLabel" type="Label" parent="MainContainer/Toolbar"]
+layout_mode = 2
+text = "GtmlView: (none)"
+
+[node name="Spacer" type="Control" parent="MainContainer/Toolbar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SaveButton" type="Button" parent="MainContainer/Toolbar"]
+layout_mode = 2
+text = "Save"
+tooltip_text = "Save changes (Ctrl+S)"
+
+[node name="ReloadButton" type="Button" parent="MainContainer/Toolbar"]
+layout_mode = 2
+text = "Reload"
+tooltip_text = "Reload files from disk"
+
+[node name="SearchBar" type="HBoxContainer" parent="MainContainer"]
+visible = false
+layout_mode = 2
+
+[node name="SearchLabel" type="Label" parent="MainContainer/SearchBar"]
+layout_mode = 2
+text = "Find:"
+
+[node name="SearchInput" type="LineEdit" parent="MainContainer/SearchBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Search..."
+clear_button_enabled = true
+
+[node name="MatchCaseCheck" type="CheckBox" parent="MainContainer/SearchBar"]
+layout_mode = 2
+text = "Aa"
+tooltip_text = "Match case"
+
+[node name="RegexCheck" type="CheckBox" parent="MainContainer/SearchBar"]
+layout_mode = 2
+text = ".*"
+tooltip_text = "Use regular expression"
+
+[node name="PrevButton" type="Button" parent="MainContainer/SearchBar"]
+layout_mode = 2
+text = "◀"
+tooltip_text = "Previous match (Shift+Enter)"
+
+[node name="NextButton" type="Button" parent="MainContainer/SearchBar"]
+layout_mode = 2
+text = "▶"
+tooltip_text = "Next match (Enter)"
+
+[node name="MatchCountLabel" type="Label" parent="MainContainer/SearchBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = ""
+
+[node name="CloseSearchButton" type="Button" parent="MainContainer/SearchBar"]
+layout_mode = 2
+text = "✕"
+tooltip_text = "Close search (Escape)"
+
+[node name="ReplaceBar" type="HBoxContainer" parent="MainContainer"]
+visible = false
+layout_mode = 2
+
+[node name="ReplaceLabel" type="Label" parent="MainContainer/ReplaceBar"]
+layout_mode = 2
+text = "Replace:"
+
+[node name="ReplaceInput" type="LineEdit" parent="MainContainer/ReplaceBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Replace with..."
+clear_button_enabled = true
+
+[node name="ReplaceButton" type="Button" parent="MainContainer/ReplaceBar"]
+layout_mode = 2
+text = "Replace"
+tooltip_text = "Replace current match"
+
+[node name="ReplaceAllButton" type="Button" parent="MainContainer/ReplaceBar"]
+layout_mode = 2
+text = "Replace All"
+tooltip_text = "Replace all matches"
+
+[node name="TabContainer" type="TabContainer" parent="MainContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HTML" type="MarginContainer" parent="MainContainer/TabContainer"]
+layout_mode = 2
+
+[node name="HtmlCodeEdit" type="CodeEdit" parent="MainContainer/TabContainer/HTML"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CSS" type="MarginContainer" parent="MainContainer/TabContainer"]
+layout_mode = 2
+
+[node name="CssCodeEdit" type="CodeEdit" parent="MainContainer/TabContainer/CSS"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="StatusBar" type="HBoxContainer" parent="MainContainer"]
+layout_mode = 2
+
+[node name="HtmlPathLabel" type="Label" parent="MainContainer/StatusBar"]
+layout_mode = 2
+text = "HTML: (none)"
+
+[node name="Separator" type="VSeparator" parent="MainContainer/StatusBar"]
+layout_mode = 2
+
+[node name="CssPathLabel" type="Label" parent="MainContainer/StatusBar"]
+layout_mode = 2
+text = "CSS: (none)"
+
+[node name="NoSelectionContainer" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="NoSelectionContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="NoSelectionContainer/VBoxContainer"]
+layout_mode = 2
+text = "Select a GtmlView node to edit its HTML/CSS files"
+horizontal_alignment = 1
+
+[node name="GotoLineDialog" type="AcceptDialog" parent="."]
+title = "Go to Line"
+size = Vector2i(250, 100)
+visible = false
+
+[node name="VBox" type="VBoxContainer" parent="GotoLineDialog"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 242.0
+offset_bottom = 60.0
+
+[node name="Label" type="Label" parent="GotoLineDialog/VBox"]
+layout_mode = 2
+text = "Line number:"
+
+[node name="LineInput" type="SpinBox" parent="GotoLineDialog/VBox"]
+layout_mode = 2
+min_value = 1.0
+max_value = 99999.0
+value = 1.0

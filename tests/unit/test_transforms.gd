@@ -6,12 +6,12 @@ extends GutTest
 ## left-to-right. pivot_offset defaults to size/2 so scale/rotate behave
 ## like CSS's default transform-origin: 50% 50%.
 
-const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
-const GmlViewScript = preload("res://addons/gtml/src/GmlView.gd")
+const GtmlCssParserScript = preload("res://addons/gtml/src/css/GtmlCssParser.gd")
+const GtmlViewScript = preload("res://addons/gtml/src/GtmlView.gd")
 
 
 func _parse(css: String) -> Array:
-	return GmlCssParserScript.new().parse(css)
+	return GtmlCssParserScript.new().parse(css)
 
 
 #region Transform value parsing
@@ -63,7 +63,7 @@ func test_multiple_transforms_combine() -> void:
 #region Runtime application
 
 
-func _build_view_with(html: String, css: String) -> GmlView:
+func _build_view_with(html: String, css: String) -> GtmlView:
 	var dir := "res://tests/snapshots/.actual/transform_fixture"
 	var html_path := dir + "/index.html"
 	var css_path := dir + "/style.css"
@@ -75,7 +75,7 @@ func _build_view_with(html: String, css: String) -> GmlView:
 	fc.store_string(css)
 	fc.close()
 
-	var view: GmlView = GmlViewScript.new()
+	var view: GtmlView = GtmlViewScript.new()
 	view.html_path = html_path
 	view.css_path = css_path
 	view.size = Vector2(400, 300)

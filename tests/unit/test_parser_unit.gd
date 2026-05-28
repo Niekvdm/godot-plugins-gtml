@@ -4,16 +4,16 @@ extends GutTest
 ## (entity handling, self-closing tags, attribute parsing) that snapshot tests
 ## would catch only indirectly.
 
-const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
-const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
+const GtmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GtmlHtmlParser.gd")
+const GtmlCssParserScript = preload("res://addons/gtml/src/css/GtmlCssParser.gd")
 
 
 func _parse_html(s: String):
-	return GmlHtmlParserScript.new().parse(s)
+	return GtmlHtmlParserScript.new().parse(s)
 
 
 func _parse_css(s: String) -> Array:
-	return GmlCssParserScript.new().parse(s)
+	return GtmlCssParserScript.new().parse(s)
 
 
 func test_single_element() -> void:

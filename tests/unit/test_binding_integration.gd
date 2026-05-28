@@ -1,11 +1,11 @@
 extends GutTest
 
-## End-to-end tests: instantiate GmlView, set state, verify DOM reacts.
+## End-to-end tests: instantiate GtmlView, set state, verify DOM reacts.
 
-const GmlViewScript = preload("res://addons/gtml/src/GmlView.gd")
+const GtmlViewScript = preload("res://addons/gtml/src/GtmlView.gd")
 
 
-func _build_view(html: String, css: String = "") -> GmlView:
+func _build_view(html: String, css: String = "") -> GtmlView:
 	var dir := "res://tests/snapshots/.actual/binding_fixture"
 	var html_path := dir + "/index.html"
 	var css_path := dir + "/style.css"
@@ -17,7 +17,7 @@ func _build_view(html: String, css: String = "") -> GmlView:
 	fc.store_string(css)
 	fc.close()
 
-	var view: GmlView = GmlViewScript.new()
+	var view: GtmlView = GtmlViewScript.new()
 	view.html_path = html_path
 	view.css_path = css_path
 	view.size = Vector2(400, 200)
@@ -439,7 +439,7 @@ func test_vfor_key_insert_in_middle_only_inserts_one() -> void:
 
 func test_vfor_key_duplicate_warns_and_aborts() -> void:
 	var captured: Array = []
-	GmlBindingApplier._on_warning = func(m): captured.append(m)
+	GtmlBindingApplier._on_warning = func(m): captured.append(m)
 
 	var view := _build_view('<ul><li v-for="item in items" :key="item.id">{{ item.name }}</li></ul>')
 	view.state.set("items", [
@@ -469,7 +469,7 @@ func test_vfor_key_duplicate_warns_and_aborts() -> void:
 	assert_true("Alpha" in texts_after)
 	assert_true("Beta" in texts_after, "Beta must still render — reconcile aborted")
 
-	GmlBindingApplier._on_warning = Callable()
+	GtmlBindingApplier._on_warning = Callable()
 
 
 func test_vfor_key_null_falls_back_to_index_not_blank() -> void:
@@ -512,7 +512,7 @@ func test_view_retains_css_rules_after_build() -> void:
 
 # ─── v0.8.2: dynamic :class CSS re-resolution ──────────────
 
-func _find_first_span_label(view: GmlView) -> Label:
+func _find_first_span_label(view: GtmlView) -> Label:
 	var out: Array = []
 	_collect_label_nodes(view, out)
 	return out[0] if out.size() > 0 else null
@@ -651,7 +651,7 @@ func test_clickable_span_gets_focus_mode_all() -> void:
 	var stack: Array = [view]
 	while not stack.is_empty():
 		var nd = stack.pop_back()
-		if nd is Control and (nd as Control).get_meta("_gml_focusable", false):
+		if nd is Control and (nd as Control).get_meta("_gtml_focusable", false):
 			if (nd as Control).focus_mode == Control.FOCUS_ALL:
 				found = true
 				break
@@ -693,7 +693,7 @@ func test_autofocus_grabs_focus() -> void:
 	await get_tree().process_frame
 	var focused = get_viewport().gui_get_focus_owner()
 	assert_not_null(focused, "autofocus should grab a control")
-	assert_true(focused.get_meta("_gml_focusable", false), "focused control is the autofocus target")
+	assert_true(focused.get_meta("_gtml_focusable", false), "focused control is the autofocus target")
 
 
 func test_focus_trap_wraps() -> void:
@@ -758,9 +758,9 @@ func test_vfor_append_keeps_focus_and_chains_new_clone() -> void:
 	assert_eq(inputs2.size(), 3, "third input clone added")
 
 
-# Helper: collect controls carrying _gml_focusable, in document order.
+# Helper: collect controls carrying _gtml_focusable, in document order.
 func _collect_focusables(node: Node, out: Array) -> void:
-	if node is Control and (node as Control).get_meta("_gml_focusable", false):
+	if node is Control and (node as Control).get_meta("_gtml_focusable", false):
 		out.append(node)
 	for c in node.get_children():
 		_collect_focusables(c, out)

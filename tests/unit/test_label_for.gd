@@ -7,13 +7,13 @@ extends GutTest
 ##
 ## We exercise _activate_for_target directly through a tiny proxy so the
 ## tests don't need to simulate gui_input mouse events or instantiate the
-## full GmlView pipeline.
+## full GtmlView pipeline.
 
-const GmlTextBuilderScript = preload("res://addons/gtml/src/html_renderer/elements/GmlTextBuilder.gd")
+const GtmlTextBuilderScript = preload("res://addons/gtml/src/html_renderer/elements/GtmlTextBuilder.gd")
 
 
 func _activate(target) -> void:
-	GmlTextBuilderScript._activate_for_target(target)
+	GtmlTextBuilderScript._activate_for_target(target)
 
 
 func test_checkbox_toggles_on_label_click() -> void:
@@ -29,7 +29,7 @@ func test_checkbox_toggles_on_label_click() -> void:
 func test_button_activation_grabs_focus() -> void:
 	# Matches HTML semantics — clicking a label of a checkbox focuses the
 	# checkbox so keyboard nav can take over from there. CSS :focus rules
-	# control the visual indicator (see GmlInputBuilder focus stylebox path).
+	# control the visual indicator (see GtmlInputBuilder focus stylebox path).
 	var cb := CheckBox.new()
 	add_child_autofree(cb)
 	await get_tree().process_frame
@@ -73,16 +73,16 @@ func test_text_input_grabs_focus_on_label_click() -> void:
 func test_label_with_for_attribute_carries_meta() -> void:
 	# Smoke test that a label with for="x" sets meta so the renderer
 	# pipeline can re-discover it later (e.g. for accessibility tooling).
-	var Parser = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
+	var Parser = preload("res://addons/gtml/src/html_parser/GtmlHtmlParser.gd")
 	var dom = Parser.new().parse('<label for="x">click</label>')
 	assert_eq(dom.get_attr("for", ""), "x")
 
 
-func test_label_click_focuses_input_through_gml_view() -> void:
+func test_label_click_focuses_input_through_gtml_view() -> void:
 	# Integration test for the gui_input wiring inside build_label_inner:
-	# build a real GmlView containing a <label for="x"> + <input id="x">,
+	# build a real GtmlView containing a <label for="x"> + <input id="x">,
 	# synthesize a left-click on the label, and assert the input receives focus.
-	var GmlViewScript = preload("res://addons/gtml/src/GmlView.gd")
+	var GtmlViewScript = preload("res://addons/gtml/src/GtmlView.gd")
 	var fixture_dir := "res://tests/snapshots/.actual/label_for_fixture"
 	var html_path := fixture_dir + "/index.html"
 	var css_path := fixture_dir + "/style.css"
@@ -94,7 +94,7 @@ func test_label_click_focuses_input_through_gml_view() -> void:
 	fc.store_string("div { display: flex; flex-direction: column; }")
 	fc.close()
 
-	var view: GmlView = GmlViewScript.new()
+	var view: GtmlView = GtmlViewScript.new()
 	view.html_path = html_path
 	view.css_path = css_path
 	view.size = Vector2(400, 200)
@@ -144,7 +144,7 @@ func test_label_with_element_children_becomes_container() -> void:
 	# builder should produce a container (HBox/VBox), not a Label widget,
 	# so the entire row — padding, sibling spans, surrounding chrome —
 	# activates the for-target on click.
-	var GmlViewScript = preload("res://addons/gtml/src/GmlView.gd")
+	var GtmlViewScript = preload("res://addons/gtml/src/GtmlView.gd")
 	var dir := "res://tests/snapshots/.actual/label_container_fixture"
 	var html_path := dir + "/index.html"
 	var css_path := dir + "/style.css"
@@ -156,7 +156,7 @@ func test_label_with_element_children_becomes_container() -> void:
 	fc.store_string("")
 	fc.close()
 
-	var view: GmlView = GmlViewScript.new()
+	var view: GtmlView = GtmlViewScript.new()
 	view.html_path = html_path
 	view.css_path = css_path
 	view.size = Vector2(400, 200)

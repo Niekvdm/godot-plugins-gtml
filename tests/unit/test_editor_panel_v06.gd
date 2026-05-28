@@ -4,7 +4,7 @@ extends GutTest
 ## drives state directly, asserts the new wiring is alive without requiring
 ## the Godot editor host.
 
-const EditorPanelScene = preload("res://addons/gtml/editor/gml_editor_panel.tscn")
+const EditorPanelScene = preload("res://addons/gtml/editor/gtml_editor_panel.tscn")
 
 
 func _panel() -> Control:

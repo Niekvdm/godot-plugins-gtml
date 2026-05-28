@@ -1,0 +1,542 @@
+@tool
+extends Control
+class_name GtmlView
+
+## GtmlView - Godot Markup Language View
+## Builds Godot UI from HTML files with external CSS styling.
+## Supports live preview in editor and @click handlers for buttons.
+
+# Preload dependencies (use preload for scripts without class_name inner classes)
+const GtmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GtmlHtmlParser.gd")
+const GtmlNodeScript = preload("res://addons/gtml/src/html_parser/GtmlNode.gd")
+const GtmlRendererScript = preload("res://addons/gtml/src/html_renderer/GtmlRenderer.gd")
+const GtmlStateScript = preload("res://addons/gtml/src/binding/GtmlState.gd")
+const GtmlBindingRegistryScript = preload("res://addons/gtml/src/binding/GtmlBindingRegistry.gd")
+const GtmlFocusManagerScript = preload("res://addons/gtml/src/focus/GtmlFocusManager.gd")
+# Note: GtmlCssParser and GtmlStyleResolver are accessed via their class_name directly
+# because they have inner classes that cause issues with preload().new()
+
+#region Exports
+
+@export_file("*.html") var html_path: String = "":
+	set(value):
+		html_path = value
+		_queue_rebuild()
+
+@export_file("*.css") var css_path: String = "":
+	set(value):
+		css_path = value
+		_queue_rebuild()
+
+@export var auto_reload_in_editor: bool = true
+
+@export_group("Debug")
+## When enabled, generated nodes appear in the Scene dock for inspection.
+@export var show_nodes_in_editor: bool = false:
+	set(value):
+		show_nodes_in_editor = value
+		if Engine.is_editor_hint():
+			_queue_rebuild()
+
+@export_group("Tag Defaults")
+@export var h1_font_size: int = 32
+@export var h2_font_size: int = 24
+@export var h3_font_size: int = 20
+@export var p_font_size: int = 16
+@export var default_font_color: Color = Color.WHITE
+@export var default_gap: int = 8
+@export var default_margin: int = 0
+@export var default_padding: int = 0
+
+@export_group("Fonts")
+## Dictionary mapping font family names to Font resources.
+## Example: {"Orbitron": preload("res://assets/Fonts/Orbitron-Regular.ttf")}
+@export var fonts: Dictionary = {}
+
+#endregion
+
+
+#region Signals
+
+## Emitted when a button with @click attribute is pressed.
+## The method_name parameter contains the value of the @click attribute.
+signal button_clicked(method_name: String)
+
+## Emitted when an anchor/link is clicked.
+## Contains the href value or method_name from @click.
+signal link_clicked(href: String)
+
+## Emitted when an input value changes.
+## Contains the input id/name and new value.
+signal input_changed(input_id: String, value: String)
+
+## Emitted when a select option changes.
+## Contains the select id/name and selected value.
+signal selection_changed(select_id: String, value: String)
+
+## Emitted when a form is submitted (button type="submit" clicked).
+## Contains a dictionary of all input values keyed by id/name.
+signal form_submitted(form_data: Dictionary)
+
+## Emitted when an input with an @keydown handler receives a key press.
+## ``handler`` is the value of the @keydown attribute; ``event`` is the
+## raw InputEventKey so listeners can inspect keycode / modifiers.
+signal key_pressed(handler: String, event: InputEvent)
+
+## Emitted when an @event="handler(args...)" with arguments triggers.
+## Bare @event="handler" continues to fire button_clicked / link_clicked.
+signal item_clicked(handler: String, args: Array)
+
+#endregion
+
+
+#region Internal State
+
+var _html_last_modified: int = 0
+var _css_last_modified: int = 0
+var _rebuild_queued: bool = false
+## Dictionary mapping element IDs to their inner Control nodes (the actual content control)
+var _elements_by_id: Dictionary = {}
+## Dictionary mapping element IDs to their wrapper Control nodes (for visibility control)
+var _wrappers_by_id: Dictionary = {}
+## Dictionary mapping radio group names to ButtonGroup instances
+var _radio_groups: Dictionary = {}
+
+## Per-view reactive state store. Set via state.set("key", value); reads
+## via state.get("key"). Listeners on state.state_changed are wired
+## through to the binding registry so DOM updates fire automatically.
+var state: GtmlState
+## Reverse-index of state keys → registered bindings. Cleared each rebuild.
+var _binding_registry: GtmlBindingRegistry
+## Parsed CSS rules retained after _rebuild so runtime :class
+## re-resolution (GtmlClassRestyler) can recompute styles. Repopulated
+## each rebuild; empty when the view has no CSS.
+var _css_rules: Array = []
+## Style resolver instance retained for runtime re-resolution.
+var _style_resolver = null
+## The attached content root of the last build. Stable handle so v-for
+## reconciliation can re-run focus wiring without re-deriving it.
+var _content_root: Control = null
+## Whether autofocus has been granted for the current build. Reset on
+## _rebuild so autofocus fires once per rebuild, not on every reconcile.
+var _focus_initialized: bool = false
+
+#endregion
+
+
+func _init() -> void:
+	state = GtmlStateScript.new()
+	_binding_registry = GtmlBindingRegistryScript.new()
+	state.state_changed.connect(func(k, _n, _o): _binding_registry.fire(k))
+
+
+func _ready() -> void:
+	# Always rebuild on ready - clear any editor-created children and rebuild fresh
+	# This ensures runtime behavior is consistent
+	if not Engine.is_editor_hint():
+		# At runtime, wait a frame for size to be set properly before building
+		await get_tree().process_frame
+	_rebuild()
+	_subscribe_to_filesystem_changes()
+
+
+## Hot reload via signal instead of per-frame mtime polling. Editor-only —
+## EditorInterface is not available at runtime. The polling fallback in
+## _process still runs so authors editing files outside Godot (the usual
+## case for HTML/CSS) get picked up even if the editor's filesystem scan
+## hasn't fired yet.
+func _subscribe_to_filesystem_changes() -> void:
+	if not Engine.is_editor_hint() or not auto_reload_in_editor:
+		return
+	var efs = EditorInterface.get_resource_filesystem() if Engine.is_editor_hint() else null
+	if efs != null and efs.has_signal("filesystem_changed"):
+		if not efs.filesystem_changed.is_connected(_check_files_changed):
+			efs.filesystem_changed.connect(_check_files_changed)
+
+
+func _process(_delta: float) -> void:
+	if Engine.is_editor_hint() and auto_reload_in_editor:
+		_check_files_changed()
+
+
+func _queue_rebuild() -> void:
+	if _rebuild_queued:
+		return
+	_rebuild_queued = true
+	call_deferred("_rebuild")
+
+
+func _rebuild() -> void:
+	_rebuild_queued = false
+	_clear_children()
+	if _binding_registry != null:
+		_binding_registry.clear()
+	_focus_initialized = false
+	# Drop the stale handle: _clear_children() freed the old tree. Early
+	# returns below (no html, parse failure) leave it null so focus_first()
+	# won't touch a freed Control.
+	_content_root = null
+
+	if html_path.is_empty():
+		_show_placeholder("No HTML file assigned")
+		if not Engine.is_editor_hint():
+			print("GtmlView: No HTML file assigned")
+		return
+
+	var html_content := _load_file(html_path)
+	if html_content.is_empty():
+		_show_placeholder("Failed to load HTML file")
+		push_error("GtmlView: Failed to load HTML content from %s" % html_path)
+		return
+
+	if not Engine.is_editor_hint():
+		print("GtmlView: Loaded HTML (%d chars) from %s" % [html_content.length(), html_path])
+
+	var css_content := ""
+	if not css_path.is_empty():
+		css_content = _load_file(css_path)
+		if not Engine.is_editor_hint() and not css_content.is_empty():
+			print("GtmlView: Loaded CSS (%d chars) from %s" % [css_content.length(), css_path])
+
+	# Parse HTML
+	var parser = GtmlHtmlParserScript.new()
+	var dom_root = parser.parse(html_content)
+	if dom_root == null:
+		_show_placeholder("Failed to parse HTML")
+		push_error("GtmlView: Failed to parse HTML from %s" % html_path)
+		return
+
+	# Parse CSS
+	var styles: Dictionary = {}
+	_css_rules = []
+	_style_resolver = null
+	if not css_content.is_empty():
+		var css_parser = GtmlCssParser.new()
+		var css_rules = css_parser.parse(css_content)
+		var style_resolver = GtmlStyleResolver.new()
+		styles = style_resolver.resolve(dom_root, css_rules)
+		_css_rules = css_rules
+		_style_resolver = style_resolver
+
+	# Build UI
+	var renderer = GtmlRendererScript.new()
+	var ui_root = renderer.build(dom_root, styles, self)
+	if ui_root != null:
+		# Check if root or its single child has percentage dimensions that need centering
+		# The _root virtual node creates a wrapper, so check its child too
+		var width_percent = ui_root.get_meta("width_percent", -1.0)
+		var height_percent = ui_root.get_meta("height_percent", -1.0)
+		var target_control = ui_root
+
+		# If root has no percentage but has exactly one child, check that child
+		if width_percent < 0 and height_percent < 0 and ui_root.get_child_count() == 1:
+			var first_child = ui_root.get_child(0)
+			if first_child is Control:
+				var child_width_pct = first_child.get_meta("width_percent", -1.0)
+				var child_height_pct = first_child.get_meta("height_percent", -1.0)
+				if (child_width_pct > 0 and child_width_pct < 1.0) or (child_height_pct > 0 and child_height_pct < 1.0):
+					# Use the child as the target and remove it from the root
+					width_percent = child_width_pct
+					height_percent = child_height_pct
+					target_control = first_child
+					ui_root.remove_child(first_child)
+					# The empty root wrapper is no longer needed
+					ui_root.queue_free()
+
+		var needs_centering = (width_percent > 0 and width_percent < 1.0) or (height_percent > 0 and height_percent < 1.0)
+
+		if needs_centering:
+			# Create a centering wrapper that fills the GtmlView
+			var centering_wrapper := CenterContainer.new()
+			centering_wrapper.set_anchors_preset(Control.PRESET_FULL_RECT)
+			centering_wrapper.set_offsets_preset(Control.PRESET_FULL_RECT)
+			centering_wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			centering_wrapper.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+			add_child(centering_wrapper)
+			centering_wrapper.add_child(target_control)
+			_set_owner_recursive(centering_wrapper)
+
+			# Set up percentage sizing that updates with GtmlView resize
+			_setup_root_percent_sizing(target_control, width_percent, height_percent)
+		else:
+			add_child(target_control)
+			_set_owner_recursive(target_control)
+			# Make the root fill the GtmlView
+			if target_control is Control:
+				# Use anchors and offsets to properly fill parent
+				target_control.set_anchors_preset(Control.PRESET_FULL_RECT)
+				target_control.set_offsets_preset(Control.PRESET_FULL_RECT)
+				target_control.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				target_control.size_flags_vertical = Control.SIZE_EXPAND_FILL
+				# For ScrollContainer, set the size using set_deferred to avoid anchor conflict warning
+				if target_control is ScrollContainer:
+					target_control.set_deferred("size", size)
+
+		if target_control != null:
+			_content_root = target_control
+			GtmlFocusManagerScript.wire_focus(target_control)
+			# Don't steal the editor's keyboard focus on hot-reload: a @tool
+			# GtmlView rebuilds on every HTML/CSS save, and a deferred
+			# grab_focus would yank focus out of the author's code editor.
+			if not Engine.is_editor_hint():
+				var autofocus_ctl: Control = GtmlFocusManagerScript.find_autofocus(target_control)
+				if autofocus_ctl != null and not _focus_initialized:
+					_focus_initialized = true
+					autofocus_ctl.call_deferred("grab_focus")
+	else:
+		push_error("GtmlView: Renderer returned null ui_root")
+
+
+## Set up percentage-based sizing for root control.
+## This connects to GtmlView resize and updates the control's size.
+func _setup_root_percent_sizing(control: Control, width_pct: float, height_pct: float) -> void:
+	# Connect to our own resize signal
+	if not resized.is_connected(_on_self_resized_for_percent.bind(control, width_pct, height_pct)):
+		resized.connect(_on_self_resized_for_percent.bind(control, width_pct, height_pct))
+
+	# Apply initial size
+	_update_root_percent_size(control, width_pct, height_pct)
+
+
+## Called when GtmlView resizes - update the root control's percentage-based size.
+func _on_self_resized_for_percent(control: Control, width_pct: float, height_pct: float) -> void:
+	if is_instance_valid(control):
+		_update_root_percent_size(control, width_pct, height_pct)
+
+
+## Update a root control's size based on percentage of GtmlView size.
+## Respects max-width/max-height constraints stored as metadata.
+func _update_root_percent_size(control: Control, width_pct: float, height_pct: float) -> void:
+	if not is_instance_valid(control):
+		return
+
+	var new_size := control.custom_minimum_size
+
+	if width_pct > 0 and width_pct < 1.0:
+		new_size.x = size.x * width_pct
+	if height_pct > 0 and height_pct < 1.0:
+		new_size.y = size.y * height_pct
+
+	# Respect max-width constraint (stored as metadata)
+	var max_width = control.get_meta("max_width", -1.0)
+	var max_width_pct = control.get_meta("max_width_percent", -1.0)
+	if max_width_pct > 0:
+		var pct_max = size.x * max_width_pct
+		if max_width > 0:
+			max_width = minf(max_width, pct_max)
+		else:
+			max_width = pct_max
+	if max_width > 0 and new_size.x > max_width:
+		new_size.x = max_width
+
+	# Respect max-height constraint (stored as metadata)
+	var max_height = control.get_meta("max_height", -1.0)
+	var max_height_pct = control.get_meta("max_height_percent", -1.0)
+	if max_height_pct > 0:
+		var pct_max = size.y * max_height_pct
+		if max_height > 0:
+			max_height = minf(max_height, pct_max)
+		else:
+			max_height = pct_max
+	if max_height > 0 and new_size.y > max_height:
+		new_size.y = max_height
+
+	control.custom_minimum_size = new_size
+	control.size = new_size
+
+
+func _clear_children() -> void:
+	_elements_by_id.clear()
+	_wrappers_by_id.clear()
+	_radio_groups.clear()
+	# Iterate a local copy of the child list. Godot 4 already returns a fresh
+	# Array from get_children(), but assigning to a named local makes the
+	# remove-while-iterating intent explicit at the call site.
+	var children := get_children()
+	for child in children:
+		remove_child(child)
+		child.queue_free()
+
+
+func _show_placeholder(message: String) -> void:
+	if not Engine.is_editor_hint():
+		return
+
+	var label := Label.new()
+	label.text = message
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(label)
+	_set_owner_recursive(label)
+
+
+## Set owner on a node and all its children recursively.
+## This makes dynamically created nodes visible in the editor's Scene dock.
+func _set_owner_recursive(node: Node) -> void:
+	if not Engine.is_editor_hint() or not show_nodes_in_editor:
+		return
+
+	var scene_root = get_tree().edited_scene_root if get_tree() else null
+	if scene_root == null:
+		return
+
+	node.owner = scene_root
+	for child in node.get_children():
+		_set_owner_recursive(child)
+
+
+func _load_file(path: String) -> String:
+	# Try to open the file directly - FileAccess.open works for res:// paths
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		var error = FileAccess.get_open_error()
+		push_error("GtmlView: Could not open file: %s (error code: %d)" % [path, error])
+		return ""
+
+	var content = file.get_as_text()
+	file.close()
+	return content
+
+
+func _check_files_changed() -> void:
+	var needs_rebuild := false
+
+	if not html_path.is_empty() and FileAccess.file_exists(html_path):
+		var html_mod_time := FileAccess.get_modified_time(html_path)
+		if html_mod_time != _html_last_modified:
+			_html_last_modified = html_mod_time
+			needs_rebuild = true
+
+	if not css_path.is_empty() and FileAccess.file_exists(css_path):
+		var css_mod_time := FileAccess.get_modified_time(css_path)
+		if css_mod_time != _css_last_modified:
+			_css_last_modified = css_mod_time
+			needs_rebuild = true
+
+	if needs_rebuild:
+		_queue_rebuild()
+
+
+#region Public API
+
+## Get the default configuration as a dictionary.
+## Used by GtmlRenderer to apply tag defaults.
+func get_tag_defaults() -> Dictionary:
+	return {
+		"h1_font_size": h1_font_size,
+		"h2_font_size": h2_font_size,
+		"h3_font_size": h3_font_size,
+		"p_font_size": p_font_size,
+		"default_font_color": default_font_color,
+		"default_gap": default_gap,
+		"default_margin": default_margin,
+		"default_padding": default_padding,
+		"fonts": fonts
+	}
+
+
+## Get an element by its ID attribute.
+## Returns the inner Control node (e.g., Label, Button), or null if not found.
+## Use this to access the content control's properties like text, disabled, etc.
+func get_element_by_id(element_id: String) -> Control:
+	return _elements_by_id.get(element_id, null)
+
+
+## Grab the first Tab-order focusable in the view — the first element in
+## the root group's tab order (tabindex-aware, trap subtrees excluded).
+## Returns false if nothing is focusable. For game code seizing focus
+## when a menu opens.
+func focus_first() -> bool:
+	if _content_root == null:
+		return false
+	var first: Control = GtmlFocusManagerScript.first_tabbable(_content_root)
+	if first == null:
+		return false
+	first.grab_focus()
+	return true
+
+
+## Get the wrapper control for an element by its ID.
+## Returns the outermost wrapper (MarginContainer, PanelContainer, etc.) that contains the element.
+## Use this to control visibility with display:none style.
+## If the element has no wrapper, returns the inner control itself.
+func get_wrapper_by_id(element_id: String) -> Control:
+	return _wrappers_by_id.get(element_id, _elements_by_id.get(element_id, null))
+
+
+## Register an element with an ID for later retrieval.
+## Called by GtmlRenderer when building elements with id attributes.
+## inner_control: The actual content control (e.g., Label, Button)
+## wrapper_control: The outermost wrapper (e.g., MarginContainer), or null if same as inner
+func register_element(element_id: String, inner_control: Control, wrapper_control: Control = null) -> void:
+	_elements_by_id[element_id] = inner_control
+	if wrapper_control != null and wrapper_control != inner_control:
+		_wrappers_by_id[element_id] = wrapper_control
+	else:
+		_wrappers_by_id[element_id] = inner_control
+
+
+## Clear the element registry (called before rebuild).
+func clear_element_registry() -> void:
+	_elements_by_id.clear()
+	_wrappers_by_id.clear()
+
+
+## Get or create a ButtonGroup for radio inputs with the given name.
+## Radio inputs with the same name share a ButtonGroup so only one can be selected.
+func get_radio_group(group_name: String) -> ButtonGroup:
+	if not _radio_groups.has(group_name):
+		_radio_groups[group_name] = ButtonGroup.new()
+	return _radio_groups[group_name]
+
+
+## Collect all registered input values into a single dictionary, keyed by the
+## input's id (or by the radio group's name for radios). Returned types:
+##   - LineEdit / TextEdit -> String
+##   - CheckBox (no group) -> bool (button_pressed)
+##   - CheckBox in a group (radio) -> the selected radio's value attribute,
+##     keyed by the group name; unselected radios are absent
+##   - HSlider -> float
+##   - OptionButton (select) -> the selected item text
+##
+## Used by submit-button handlers to populate the form_submitted signal,
+## but also callable directly by consumers that want the current snapshot.
+func get_form_data() -> Dictionary:
+	var out: Dictionary = {}
+	var seen_groups: Dictionary = {}
+
+	for id in _elements_by_id.keys():
+		var control = _elements_by_id[id]
+		if not is_instance_valid(control):
+			continue
+		if control is LineEdit:
+			out[id] = (control as LineEdit).text
+		elif control is TextEdit:
+			out[id] = (control as TextEdit).text
+		elif control is HSlider:
+			out[id] = (control as HSlider).value
+		elif control is OptionButton:
+			var ob: OptionButton = control
+			out[id] = ob.get_item_text(ob.selected) if ob.selected >= 0 else ""
+		elif control is CheckBox:
+			var cb: CheckBox = control
+			if cb.button_group != null:
+				# Radio — keyed by group name, only the selected one. Track
+				# the group so we don't overwrite once we've found the winner.
+				continue
+			out[id] = cb.button_pressed
+
+	# Radios: find the pressed one per group, key by group name.
+	for group_name in _radio_groups.keys():
+		var bg: ButtonGroup = _radio_groups[group_name]
+		var pressed = bg.get_pressed_button()
+		if pressed != null:
+			out[group_name] = pressed.get_meta("value", "on")
+
+	return out
+
+
+#endregion

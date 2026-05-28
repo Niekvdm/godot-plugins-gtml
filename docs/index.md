@@ -2,8 +2,6 @@
 
 *Build reactive Godot 4 UI with HTML, CSS, and a Vue-style binding layer.*
 
-> ⚠ **API rename in progress.** The addon is **GTML**; its classes are migrating from `Gml*` to `Gtml*`. These docs use the target `Gtml*` names. If your installed build still registers `GmlView`, use that name until the rename ships.
-
 GTML builds Godot Control trees from HTML and CSS, so you write UI as markup instead of wiring nodes by hand. A reactive `state` layer drives the view — set a value, and only the affected nodes re-render. Use it for menus, HUDs, inventories, dialog trees, and anything else that needs keyboard or gamepad focus traversal.
 
 ## Guide

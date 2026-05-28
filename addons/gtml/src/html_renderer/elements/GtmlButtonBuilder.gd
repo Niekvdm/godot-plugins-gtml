@@ -1,0 +1,601 @@
+class_name GtmlButtonBuilder
+extends RefCounted
+
+## Static utility class for building button elements.
+
+
+## Build a button element.
+## Supports both text-only buttons and buttons with child elements (like SVG icons).
+static func build_button(node, ctx: Dictionary) -> Dictionary:
+	var style = ctx.get_style.call(node)
+	var defaults: Dictionary = ctx.defaults
+	var gtml_view = ctx.gtml_view
+
+	# Check if button has complex children (not just text)
+	var has_complex_children := false
+	for child in node.children:
+		if not child.is_text_node:
+			has_complex_children = true
+			break
+
+	if has_complex_children:
+		return _build_complex_button(node, ctx, style, defaults, gtml_view)
+	else:
+		return _build_simple_button(node, ctx, style, defaults, gtml_view)
+
+
+static func _build_complex_button(node, ctx: Dictionary, style: Dictionary, defaults: Dictionary, gtml_view) -> Dictionary:
+	var button := Button.new()
+	button.text = ""
+
+	# Handle disabled attribute
+	if node.has_attr("disabled"):
+		button.disabled = true
+
+	# Handle type attribute (submit, reset, button - default is submit per HTML5 spec)
+	var button_type = node.get_attr("type", "submit")
+	button.set_meta("button_type", button_type)
+
+	# Determine layout direction from flex-direction
+	var flex_direction = style.get("flex-direction", "row")
+	var is_row = flex_direction == "row"
+
+	# Create container to hold the button's children
+	var content_container: BoxContainer
+	if is_row:
+		content_container = HBoxContainer.new()
+	else:
+		content_container = VBoxContainer.new()
+
+	# Apply justify-content (main-axis alignment)
+	var justify = style.get("justify-content", "center")
+	content_container.alignment = GtmlStyles.parse_box_alignment(justify)
+
+	content_container.add_theme_constant_override("separation", style.get("gap", 4))
+	content_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Button doesn't respect size flags - use anchors to fill the button rect
+	content_container.set_anchors_preset(Control.PRESET_FULL_RECT)
+
+	# Get align-items for cross-axis alignment
+	var align_items = style.get("align-items", "center")
+
+	# Build children
+	for child in node.children:
+		var child_control = ctx.build_node.call(child)
+		if child_control != null:
+			child_control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			# Apply cross-axis alignment to children
+			var child_style = ctx.get_style.call(child) if not child.is_text_node else {}
+			GtmlStyles.apply_cross_axis_alignment(child_control, align_items, is_row, child_style)
+			content_container.add_child(child_control)
+
+	button.add_child(content_container)
+
+	# Wire up @click handler
+	if node.has_attr("@click"):
+		var method_name = node.get_attr("@click")
+		if gtml_view != null:
+			var view_ref = weakref(gtml_view)
+			button.pressed.connect(func():
+				var view = view_ref.get_ref()
+				if view != null:
+					view.button_clicked.emit(method_name)
+			)
+
+	# Try to set up transitions first, fall back to regular styles
+	if not _setup_button_transitions(button, style, defaults, ctx, false):
+		_apply_button_styles(button, style, defaults, false)
+
+	if not style.has("width") and not style.has("min-width"):
+		button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+
+	# Apply text decoration (underline, strikethrough, overline)
+	var decorated = _apply_text_decoration(button, style)
+	var wrapped = _wrap_with_button_margin(decorated, style)
+	return {"control": wrapped, "inner": button}
+
+
+static func _build_simple_button(node, ctx: Dictionary, style: Dictionary, defaults: Dictionary, gtml_view) -> Dictionary:
+	var button := Button.new()
+	button.text = node.get_text_content()
+
+	# Handle disabled attribute
+	if node.has_attr("disabled"):
+		button.disabled = true
+
+	# Handle type attribute (submit, reset, button - default is submit per HTML5 spec)
+	var button_type = node.get_attr("type", "submit")
+	button.set_meta("button_type", button_type)
+
+	# Wire up @click handler
+	if node.has_attr("@click"):
+		var method_name = node.get_attr("@click")
+		if gtml_view != null:
+			var view_ref = weakref(gtml_view)
+			button.pressed.connect(func():
+				var view = view_ref.get_ref()
+				if view != null:
+					view.button_clicked.emit(method_name)
+			)
+
+	# Try to set up transitions first, fall back to regular styles
+	if not _setup_button_transitions(button, style, defaults, ctx):
+		_apply_button_styles(button, style, defaults)
+
+	if not style.has("width") and not style.has("min-width"):
+		button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+
+	# Apply text decoration (underline, strikethrough, overline)
+	var decorated = _apply_text_decoration(button, style)
+	var wrapped = _wrap_with_button_margin(decorated, style)
+	return {"control": wrapped, "inner": button}
+
+
+## Set up transitions for a button using the shared state-bucket engine in
+## GtmlTransitionSetup. Returns true if transitions were wired, false if the
+## button should fall back to the static-style path.
+##
+## v0.3: button transitions now honor combined-state buckets like
+## ``button:hover:focus`` because GtmlTransitionSetup.setup_with_signals picks
+## up every ``_*`` key on the resolved style — not just the legacy flat trio.
+static func _setup_button_transitions(button: Button, style: Dictionary, defaults: Dictionary, ctx: Dictionary, skip_padding: bool = false) -> bool:
+	var transitions: Array = style.get("transition", [])
+	if transitions.is_empty():
+		return false
+
+	var transition_manager: GtmlTransitionManager = ctx.get("transition_manager")
+	if transition_manager == null:
+		return false
+
+	# Bail out if no state buckets exist — no point wiring transitions that
+	# will never fire. We check the same keys GtmlTransitionSetup would see.
+	var has_state_bucket := false
+	for key in style.keys():
+		if str(key).begins_with("_"):
+			has_state_bucket = true
+			break
+	if not has_state_bucket:
+		return false
+
+	# Build a base stylebox up front. Godot needs all four button states
+	# (normal/hover/pressed/focus) overridden so it doesn't paint its theme
+	# defaults between transition frames.
+	var base_stylebox := StyleBoxFlat.new()
+	if style.has("background-color"):
+		base_stylebox.bg_color = style["background-color"]
+	else:
+		base_stylebox.bg_color = Color(0.2, 0.2, 0.2, 1.0)
+	if not skip_padding:
+		var base_padding: int = style.get("padding", 8)
+		base_stylebox.content_margin_top = style.get("padding-top", base_padding)
+		base_stylebox.content_margin_right = style.get("padding-right", base_padding)
+		base_stylebox.content_margin_bottom = style.get("padding-bottom", base_padding)
+		base_stylebox.content_margin_left = style.get("padding-left", base_padding)
+	GtmlStyles.apply_border_to_stylebox(base_stylebox, style)
+
+	button.add_theme_stylebox_override("normal", base_stylebox)
+	button.add_theme_stylebox_override("hover", base_stylebox.duplicate())
+	button.add_theme_stylebox_override("pressed", base_stylebox.duplicate())
+	button.add_theme_stylebox_override("focus", base_stylebox.duplicate())
+
+	if style.has("color"):
+		button.add_theme_color_override("font_color", style["color"])
+		button.add_theme_color_override("font_hover_color", style["color"])
+		button.add_theme_color_override("font_pressed_color", style["color"])
+		button.add_theme_color_override("font_focus_color", style["color"])
+
+	# Hand off bucket-driven event wiring to the shared engine. Buttons track
+	# three states: hover (mouse_entered/exited), active (button_down/up),
+	# focus (focus_entered/exited). Combined buckets like _active+hover or
+	# _focus+hover layer correctly on top of the singles.
+	var signals: Array = [
+		{"state": "hover", "on_enter": button.mouse_entered, "on_exit": button.mouse_exited},
+		{"state": "active", "on_enter": button.button_down, "on_exit": button.button_up},
+		{"state": "focus", "on_enter": button.focus_entered, "on_exit": button.focus_exited},
+	]
+	GtmlTransitionSetup.setup_with_signals(button, style, transition_manager, signals)
+
+	_apply_button_text_styles(button, style, defaults)
+	return true
+
+
+## Apply text-related styles to a button (font, transform, etc.)
+static func _apply_button_text_styles(button: Button, style: Dictionary, defaults: Dictionary) -> void:
+	# Font family
+	if style.has("font-family"):
+		var font_name: String = style["font-family"]
+		var fonts_dict: Dictionary = defaults.get("fonts", {})
+		if fonts_dict.has(font_name):
+			var font = fonts_dict[font_name]
+			if font is Font:
+				button.add_theme_font_override("font", font)
+
+	# Font size
+	if style.has("font-size"):
+		var font_size: int = style["font-size"]
+		button.add_theme_font_size_override("font_size", font_size)
+
+	# Font weight
+	if style.has("font-weight"):
+		var weight: int = style["font-weight"]
+		if weight >= 600:
+			var outline_size: int
+			if weight >= 900:
+				outline_size = 7
+			elif weight >= 800:
+				outline_size = 4
+			else:
+				outline_size = 1
+			button.add_theme_constant_override("outline_size", outline_size)
+			var font_color: Color = style.get("color", Color.WHITE)
+			button.add_theme_color_override("font_outline_color", font_color)
+
+	# Text transform
+	if style.has("text-transform") and not button.text.is_empty():
+		var transform: String = style["text-transform"]
+		match transform:
+			"uppercase":
+				button.text = button.text.to_upper()
+			"lowercase":
+				button.text = button.text.to_lower()
+			"capitalize":
+				button.text = _capitalize_words(button.text)
+
+
+## Apply styles directly to a button's StyleBox.
+static func _apply_button_styles(button: Button, style: Dictionary, defaults: Dictionary, skip_padding: bool = false) -> void:
+	var style_box := StyleBoxFlat.new()
+
+	# Background color
+	if style.has("background-color"):
+		style_box.bg_color = style["background-color"]
+	else:
+		style_box.bg_color = Color(0.2, 0.2, 0.2, 1.0)
+
+	# Padding
+	if skip_padding:
+		style_box.content_margin_top = 0
+		style_box.content_margin_right = 0
+		style_box.content_margin_bottom = 0
+		style_box.content_margin_left = 0
+	else:
+		var base_padding: int = style.get("padding", 8)
+		style_box.content_margin_top = style.get("padding-top", base_padding)
+		style_box.content_margin_right = style.get("padding-right", base_padding)
+		style_box.content_margin_bottom = style.get("padding-bottom", base_padding)
+		style_box.content_margin_left = style.get("padding-left", base_padding)
+
+	# Apply dimensions
+	if style.has("width"):
+		var width_dim = style["width"]
+		if width_dim is Dictionary:
+			match width_dim.get("unit", ""):
+				"px":
+					button.custom_minimum_size.x = width_dim["value"]
+				"%":
+					if width_dim["value"] >= 100:
+						button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	if style.has("height"):
+		var height_dim = style["height"]
+		if height_dim is Dictionary:
+			match height_dim.get("unit", ""):
+				"px":
+					button.custom_minimum_size.y = height_dim["value"]
+				"%":
+					if height_dim["value"] >= 100:
+						button.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+	if style.has("min-width"):
+		var dim = style["min-width"]
+		if dim is Dictionary and dim.get("unit", "") == "px":
+			button.custom_minimum_size.x = maxf(button.custom_minimum_size.x, dim["value"])
+
+	if style.has("min-height"):
+		var dim = style["min-height"]
+		if dim is Dictionary and dim.get("unit", "") == "px":
+			button.custom_minimum_size.y = maxf(button.custom_minimum_size.y, dim["value"])
+
+	# Border and border-radius
+	GtmlStyles.apply_border_to_stylebox(style_box, style)
+
+	# Apply to normal state
+	button.add_theme_stylebox_override("normal", style_box)
+
+	# Create hover state
+	var hover_box := style_box.duplicate()
+	var hover_style: Dictionary = style.get("_hover", {})
+	if not hover_style.is_empty():
+		GtmlStyles.apply_pseudo_style_to_stylebox(hover_box, hover_style)
+	elif hover_box.bg_color.a > 0:
+		hover_box.bg_color = hover_box.bg_color.lightened(0.1)
+	button.add_theme_stylebox_override("hover", hover_box)
+
+	# Create pressed state
+	var pressed_box := style_box.duplicate()
+	var active_style: Dictionary = style.get("_active", {})
+	if not active_style.is_empty():
+		GtmlStyles.apply_pseudo_style_to_stylebox(pressed_box, active_style)
+	elif pressed_box.bg_color.a > 0:
+		pressed_box.bg_color = pressed_box.bg_color.darkened(0.1)
+	button.add_theme_stylebox_override("pressed", pressed_box)
+
+	# Focus state
+	var focus_box := style_box.duplicate()
+	var focus_style: Dictionary = style.get("_focus", {})
+	if not focus_style.is_empty():
+		GtmlStyles.apply_pseudo_style_to_stylebox(focus_box, focus_style)
+	else:
+		focus_box = hover_box.duplicate()
+	button.add_theme_stylebox_override("focus", focus_box)
+
+	# Disabled state
+	var disabled_box := style_box.duplicate()
+	var disabled_style: Dictionary = style.get("_disabled", {})
+	if not disabled_style.is_empty():
+		GtmlStyles.apply_pseudo_style_to_stylebox(disabled_box, disabled_style)
+	else:
+		disabled_box.bg_color = disabled_box.bg_color.darkened(0.3)
+		disabled_box.bg_color.a *= 0.6
+	button.add_theme_stylebox_override("disabled", disabled_box)
+
+	# Text colors
+	if style.has("color"):
+		var color: Color = style["color"]
+		button.add_theme_color_override("font_color", color)
+
+	if hover_style.has("color"):
+		button.add_theme_color_override("font_hover_color", hover_style["color"])
+	elif style.has("color"):
+		button.add_theme_color_override("font_hover_color", style["color"])
+
+	if active_style.has("color"):
+		button.add_theme_color_override("font_pressed_color", active_style["color"])
+	elif style.has("color"):
+		button.add_theme_color_override("font_pressed_color", style["color"])
+
+	if focus_style.has("color"):
+		button.add_theme_color_override("font_focus_color", focus_style["color"])
+	elif style.has("color"):
+		button.add_theme_color_override("font_focus_color", style["color"])
+
+	if disabled_style.has("color"):
+		button.add_theme_color_override("font_disabled_color", disabled_style["color"])
+	elif style.has("color"):
+		var disabled_color: Color = style["color"]
+		disabled_color.a *= 0.5
+		button.add_theme_color_override("font_disabled_color", disabled_color)
+
+	# Font family
+	if style.has("font-family"):
+		var font_name: String = style["font-family"]
+		var fonts_dict: Dictionary = defaults.get("fonts", {})
+		if fonts_dict.has(font_name):
+			var font = fonts_dict[font_name]
+			if font is Font:
+				button.add_theme_font_override("font", font)
+
+	# Font size
+	if style.has("font-size"):
+		var font_size: int = style["font-size"]
+		button.add_theme_font_size_override("font_size", font_size)
+
+	# Font weight
+	if style.has("font-weight"):
+		var weight: int = style["font-weight"]
+		if weight >= 600:
+			var outline_size: int
+			if weight >= 900:
+				outline_size = 7
+			elif weight >= 800:
+				outline_size = 4
+			else:
+				outline_size = 1
+			button.add_theme_constant_override("outline_size", outline_size)
+			var font_color: Color = style.get("color", Color.WHITE)
+			button.add_theme_color_override("font_outline_color", font_color)
+			button.add_theme_color_override("font_hover_outline_color", hover_style.get("color", font_color))
+			button.add_theme_color_override("font_pressed_outline_color", active_style.get("color", font_color))
+			button.add_theme_color_override("font_focus_outline_color", focus_style.get("color", font_color))
+			var disabled_outline_color: Color = disabled_style.get("color", font_color)
+			disabled_outline_color.a *= 0.5
+			button.add_theme_color_override("font_disabled_outline_color", disabled_outline_color)
+
+	# Text transform (uppercase, lowercase, capitalize)
+	if style.has("text-transform") and not button.text.is_empty():
+		var transform: String = style["text-transform"]
+		match transform:
+			"uppercase":
+				button.text = button.text.to_upper()
+			"lowercase":
+				button.text = button.text.to_lower()
+			"capitalize":
+				button.text = _capitalize_words(button.text)
+
+	# Word spacing
+	if style.has("word-spacing"):
+		var spacing: int = style["word-spacing"]
+		if spacing > 0 and not button.text.is_empty():
+			var space_char := ""
+			if spacing >= 8:
+				space_char = "  "
+			elif spacing >= 4:
+				space_char = " "
+			elif spacing >= 2:
+				space_char = "\u2002"
+			else:
+				space_char = "\u2009"
+			var num_extra := maxi(1, spacing / 4)
+			var words := button.text.split(" ")
+			var extra_spacing := ""
+			for _i in range(num_extra):
+				extra_spacing += space_char
+			button.text = (extra_spacing + " ").join(words)
+
+	# Letter spacing
+	if style.has("letter-spacing"):
+		var spacing: float = style["letter-spacing"]
+		if spacing > 0.0 and not button.text.is_empty():
+			var original_text: String = button.text
+			var spaced_text := ""
+			var space_char := ""
+			if spacing >= 4.0:
+				space_char = " "
+			elif spacing >= 2.0:
+				space_char = "\u2002"
+			elif spacing >= 1.0:
+				space_char = "\u2009"
+			else:
+				space_char = "\u200A"
+
+			for i in range(original_text.length()):
+				spaced_text += original_text[i]
+				if i < original_text.length() - 1:
+					var num_spaces := maxi(1, int(spacing / 2.0))
+					for _j in range(num_spaces):
+						spaced_text += space_char
+			button.text = spaced_text
+
+
+## Capitalize first letter of each word.
+static func _capitalize_words(text: String) -> String:
+	var words := text.split(" ")
+	var result := PackedStringArray()
+	for word in words:
+		if word.length() > 0:
+			result.append(word[0].to_upper() + word.substr(1))
+		else:
+			result.append(word)
+	return " ".join(result)
+
+
+## Apply text-decoration to a button by wrapping it with a custom draw container.
+static func _apply_text_decoration(button: Button, style: Dictionary) -> Control:
+	if not style.has("text-decoration"):
+		return button
+
+	var decoration = style["text-decoration"]
+	if not decoration is Dictionary:
+		return button
+
+	var has_decoration: bool = decoration.get("underline", false) or decoration.get("line_through", false) or decoration.get("overline", false)
+	if not has_decoration or decoration.get("none", false):
+		return button
+
+	var color: Color = style.get("color", Color.WHITE)
+	var container := ButtonDecorationContainer.new()
+	container.setup(button, decoration, color)
+	return container
+
+
+## Custom container that draws text decorations over a button.
+class ButtonDecorationContainer extends Control:
+	var _button: Button
+	var _decoration: Dictionary
+	var _color: Color
+
+	func setup(button: Button, decoration: Dictionary, color: Color) -> void:
+		_button = button
+		_decoration = decoration
+		_color = color
+
+		add_child(button)
+
+		# Match button sizing
+		custom_minimum_size = button.custom_minimum_size
+		size_flags_horizontal = button.size_flags_horizontal
+		size_flags_vertical = button.size_flags_vertical
+
+		# Connect to resize events
+		resized.connect(_on_resized)
+		button.resized.connect(_on_button_resized)
+
+	func _ready() -> void:
+		_update_button_layout()
+
+	func _on_resized() -> void:
+		_update_button_layout()
+		queue_redraw()
+
+	func _on_button_resized() -> void:
+		custom_minimum_size = _button.get_combined_minimum_size()
+		queue_redraw()
+
+	func _update_button_layout() -> void:
+		if _button:
+			_button.position = Vector2.ZERO
+			_button.size = size
+
+	func _draw() -> void:
+		if not _button or _button.text.is_empty():
+			return
+
+		var font := _button.get_theme_font("font")
+		var font_size := _button.get_theme_font_size("font_size")
+		var ascent := font.get_ascent(font_size)
+
+		# Get text size
+		var text_size := font.get_string_size(_button.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+
+		# Get button content area (accounting for StyleBox margins)
+		var style_box := _button.get_theme_stylebox("normal")
+		var content_margin_left := style_box.content_margin_left if style_box else 0.0
+		var content_margin_top := style_box.content_margin_top if style_box else 0.0
+		var content_margin_right := style_box.content_margin_right if style_box else 0.0
+		var content_margin_bottom := style_box.content_margin_bottom if style_box else 0.0
+
+		var content_width := size.x - content_margin_left - content_margin_right
+		var content_height := size.y - content_margin_top - content_margin_bottom
+
+		# Calculate text position (centered in content area)
+		var text_x := content_margin_left + (content_width - text_size.x) / 2.0
+		var text_y := content_margin_top + (content_height - text_size.y) / 2.0
+
+		var line_thickness := maxf(2.0, font_size / 8.0)
+
+		# Draw underline
+		if _decoration.get("underline", false):
+			var y := text_y + ascent + line_thickness * 2
+			draw_line(Vector2(text_x, y), Vector2(text_x + text_size.x, y), _color, line_thickness)
+
+		# Draw line-through (strikethrough)
+		if _decoration.get("line_through", false):
+			var y := text_y + ascent * 0.6
+			draw_line(Vector2(text_x, y), Vector2(text_x + text_size.x, y), _color, line_thickness)
+
+		# Draw overline
+		if _decoration.get("overline", false):
+			var y := text_y + line_thickness
+			draw_line(Vector2(text_x, y), Vector2(text_x + text_size.x, y), _color, line_thickness)
+
+
+## Wrap button (or decorated button container) with margin only.
+static func _wrap_with_button_margin(button: Control, style: Dictionary) -> Control:
+	var has_margin = style.has("margin") and style["margin"] > 0 \
+		or style.has("margin-top") or style.has("margin-right") or style.has("margin-bottom") or style.has("margin-left")
+
+	if not has_margin:
+		return button
+
+	var base_margin: int = style.get("margin", 0)
+	var margin_container := MarginContainer.new()
+	margin_container.add_theme_constant_override("margin_left", style.get("margin-left", base_margin))
+	margin_container.add_theme_constant_override("margin_right", style.get("margin-right", base_margin))
+	margin_container.add_theme_constant_override("margin_top", style.get("margin-top", base_margin))
+	margin_container.add_theme_constant_override("margin_bottom", style.get("margin-bottom", base_margin))
+	margin_container.add_child(button)
+
+	return margin_container
+
+
+## Normalize border properties - extract border-color, border-width from border shorthand.
+## This ensures transitions can find the individual properties.
+static func _normalize_border_properties(style: Dictionary) -> void:
+	if style.has("border") and style["border"] is Dictionary:
+		var border_dict: Dictionary = style["border"]
+		# Extract border-color if not already set
+		if not style.has("border-color") and border_dict.has("color"):
+			style["border-color"] = border_dict["color"]
+		# Extract border-width if not already set
+		if not style.has("border-width") and border_dict.has("width"):
+			style["border-width"] = border_dict["width"]

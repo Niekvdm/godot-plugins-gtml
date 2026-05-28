@@ -1,37 +1,37 @@
 @tool
 extends EditorPlugin
 
-## GML Editor Plugin - Registers GmlView custom type and provides main screen editor
-## for editing HTML/CSS files attached to GmlView nodes.
+## GML Editor Plugin - Registers GtmlView custom type and provides main screen editor
+## for editing HTML/CSS files attached to GtmlView nodes.
 
-const GmlEditorPanel = preload("res://addons/gtml/editor/gml_editor_panel.tscn")
+const GtmlEditorPanel = preload("res://addons/gtml/editor/gtml_editor_panel.tscn")
 
 var _editor_panel: Control = null
-var _current_gml_view: WeakRef = weakref(null)
+var _current_gtml_view: WeakRef = weakref(null)
 var _editor_selection: EditorSelection = null
 
 
 func _enter_tree() -> void:
-	# Register GmlView as a custom type
+	# Register GtmlView as a custom type
 	add_custom_type(
-		"GmlView",
+		"GtmlView",
 		"Control",
-		preload("res://addons/gtml/src/GmlView.gd"),
-		preload("res://addons/gtml/icons/gml_view.svg")
+		preload("res://addons/gtml/src/GtmlView.gd"),
+		preload("res://addons/gtml/icons/gtml_view.svg")
 	)
 
 	# Create and add main editor panel
-	_editor_panel = GmlEditorPanel.instantiate()
+	_editor_panel = GtmlEditorPanel.instantiate()
 	EditorInterface.get_editor_main_screen().add_child(_editor_panel)
 	_make_visible(false)
 
-	# Connect to selection changes to track selected GmlView
+	# Connect to selection changes to track selected GtmlView
 	_editor_selection = EditorInterface.get_selection()
 	_editor_selection.selection_changed.connect(_on_selection_changed)
 
 
 func _exit_tree() -> void:
-	remove_custom_type("GmlView")
+	remove_custom_type("GtmlView")
 
 	# Disconnect selection signal
 	if _editor_selection and _editor_selection.selection_changed.is_connected(_on_selection_changed):
@@ -54,7 +54,7 @@ func _get_plugin_name() -> String:
 
 
 func _get_plugin_icon() -> Texture2D:
-	return preload("res://addons/gtml/icons/gml_view.svg")
+	return preload("res://addons/gtml/icons/gtml_view.svg")
 
 
 func _make_visible(next_visible: bool) -> void:
@@ -85,19 +85,19 @@ func _update_panel_with_selection() -> void:
 		return
 
 	var selected_nodes = _editor_selection.get_selected_nodes()
-	var gml_view: GmlView = null
+	var gtml_view: GtmlView = null
 
-	# Find first selected GmlView
+	# Find first selected GtmlView
 	for node in selected_nodes:
-		if node is GmlView:
-			gml_view = node
+		if node is GtmlView:
+			gtml_view = node
 			break
 
-	if gml_view:
-		_current_gml_view = weakref(gml_view)
-		_editor_panel.edit_gml_view(gml_view)
+	if gtml_view:
+		_current_gtml_view = weakref(gtml_view)
+		_editor_panel.edit_gtml_view(gtml_view)
 	else:
-		_current_gml_view = weakref(null)
+		_current_gtml_view = weakref(null)
 		_editor_panel.clear_editor()
 
 #endregion

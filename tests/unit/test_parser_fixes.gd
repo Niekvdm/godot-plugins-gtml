@@ -6,16 +6,16 @@ extends GutTest
 ##   - Multi-pseudo-class selectors (a:hover:focus)
 ##   - Comma-separated CSS selectors must not share nested-dict references
 
-const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
-const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
+const GtmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GtmlHtmlParser.gd")
+const GtmlCssParserScript = preload("res://addons/gtml/src/css/GtmlCssParser.gd")
 
 
 func _parse_html(s: String):
-	return GmlHtmlParserScript.new().parse(s)
+	return GtmlHtmlParserScript.new().parse(s)
 
 
 func _parse_css(s: String) -> Array:
-	return GmlCssParserScript.new().parse(s)
+	return GtmlCssParserScript.new().parse(s)
 
 
 func test_html_entity_amp() -> void:
@@ -109,7 +109,7 @@ func test_css_comma_selectors_no_shared_nested_dict() -> void:
 func test_css_parser_records_line_for_warning() -> void:
 	# Smoke test: parser exposes get_warnings() that returns objects with line numbers.
 	# This is a forward-looking contract: parsers should track line/col on warning emission.
-	var parser = GmlCssParserScript.new()
+	var parser = GtmlCssParserScript.new()
 	parser.parse("div { color red }")  # missing colon
 	if parser.has_method("get_warnings"):
 		var warnings: Array = parser.get_warnings()

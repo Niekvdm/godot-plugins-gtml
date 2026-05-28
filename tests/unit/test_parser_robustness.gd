@@ -5,13 +5,13 @@ extends GutTest
 ## position-non-advancing returns from _parse_node must never lock the
 ## parser into an infinite loop.
 
-const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
+const GtmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GtmlHtmlParser.gd")
 
 
 func _parse(s: String):
 	# Run under a wall-clock budget so a regression doesn't hang the suite.
 	var t0 := Time.get_ticks_msec()
-	var dom = GmlHtmlParserScript.new().parse(s)
+	var dom = GtmlHtmlParserScript.new().parse(s)
 	var dt := Time.get_ticks_msec() - t0
 	assert_true(dt < 1000, "parser took %dms (expected <1000) on input: %s" % [dt, s.substr(0, 80)])
 	return dom
@@ -87,7 +87,7 @@ func test_malformed_empty_closing_tag_terminates() -> void:
 func test_html_parser_records_warnings_with_line_col() -> void:
 	# get_warnings() mirrors the CSS parser's contract: each warning carries
 	# {line, col, msg} so the editor overlay can offer click-to-jump.
-	var parser = GmlHtmlParserScript.new()
+	var parser = GtmlHtmlParserScript.new()
 	parser.parse("<div>\n<p>a</q>\n</div>")
 	var warnings: Array = parser.get_warnings()
 	assert_true(warnings.size() > 0, "expected at least one warning for mismatched </q>")

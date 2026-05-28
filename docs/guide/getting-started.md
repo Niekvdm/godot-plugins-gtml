@@ -2,10 +2,6 @@
 
 *Install GTML, add a GtmlView node, and build your first HTML-driven UI in Godot 4.*
 
-> ⚠ **API rename in progress.** The addon is **GTML**; its classes are migrating from `Gml*`
-> to `Gtml*`. These docs use the target `Gtml*` names. If your installed build still registers
-> `GmlView` (i.e. `class_name GmlView`), use that name until the rename ships.
-
 ## Installation
 
 1. Copy the `addons/gtml/` folder into your project's `addons/` directory.

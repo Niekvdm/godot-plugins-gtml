@@ -3,9 +3,9 @@ extends GutTest
 ## Snapshot tests for HTML + CSS parsers against the examples/ corpus.
 ## Locks current parser output so future refactors can be compared diff-by-diff.
 
-const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
-const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
-const GmlStyleResolverScript = preload("res://addons/gtml/src/css/GmlStyleResolver.gd")
+const GtmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GtmlHtmlParser.gd")
+const GtmlCssParserScript = preload("res://addons/gtml/src/css/GtmlCssParser.gd")
+const GtmlStyleResolverScript = preload("res://addons/gtml/src/css/GtmlStyleResolver.gd")
 const SnapshotHelper = preload("res://tests/unit/snapshot_helper.gd")
 
 ## The curated showcase corpus. Each entry's HTML/CSS lives under
@@ -56,7 +56,7 @@ func test_parser_dom_snapshots() -> void:
 	for example in EXAMPLES:
 		var name: String = example["name"]
 		var html := _load_text("res://addons/gtml/examples/%s/index.html" % example["dir"])
-		var parser = GmlHtmlParserScript.new()
+		var parser = GtmlHtmlParserScript.new()
 		var dom = parser.parse(html)
 		assert_not_null(dom, "parser returned null for %s" % name)
 		_assert_snapshot("dom_%s" % name, GtmlSnapshotHelper.serialize_dom(dom))
@@ -67,10 +67,10 @@ func test_resolver_style_snapshots() -> void:
 		var name: String = example["name"]
 		var html := _load_text("res://addons/gtml/examples/%s/index.html" % example["dir"])
 		var css := _load_text("res://addons/gtml/examples/%s/style.css" % example["dir"])
-		var parser = GmlHtmlParserScript.new()
+		var parser = GtmlHtmlParserScript.new()
 		var dom = parser.parse(html)
-		var css_parser = GmlCssParserScript.new()
+		var css_parser = GtmlCssParserScript.new()
 		var rules = css_parser.parse(css)
-		var resolver = GmlStyleResolverScript.new()
+		var resolver = GtmlStyleResolverScript.new()
 		var styles: Dictionary = resolver.resolve(dom, rules)
 		_assert_snapshot("styles_%s" % name, GtmlSnapshotHelper.serialize_styles(dom, styles))

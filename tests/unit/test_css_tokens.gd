@@ -6,15 +6,15 @@ extends GutTest
 ## resolve time against the cumulative ancestor scope. calc() evaluates
 ## simple arithmetic on numeric values with units.
 
-const GmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GmlHtmlParser.gd")
-const GmlCssParserScript = preload("res://addons/gtml/src/css/GmlCssParser.gd")
-const GmlStyleResolverScript = preload("res://addons/gtml/src/css/GmlStyleResolver.gd")
+const GtmlHtmlParserScript = preload("res://addons/gtml/src/html_parser/GtmlHtmlParser.gd")
+const GtmlCssParserScript = preload("res://addons/gtml/src/css/GtmlCssParser.gd")
+const GtmlStyleResolverScript = preload("res://addons/gtml/src/css/GtmlStyleResolver.gd")
 
 
 func _style_for_id(html: String, css: String, id: String) -> Dictionary:
-	var dom = GmlHtmlParserScript.new().parse(html)
-	var rules := GmlCssParserScript.new().parse(css)
-	var styles: Dictionary = GmlStyleResolverScript.new().resolve(dom, rules)
+	var dom = GtmlHtmlParserScript.new().parse(html)
+	var rules := GtmlCssParserScript.new().parse(css)
+	var styles: Dictionary = GtmlStyleResolverScript.new().resolve(dom, rules)
 	var node = _find_by_id(dom, id)
 	if node == null:
 		return {}
