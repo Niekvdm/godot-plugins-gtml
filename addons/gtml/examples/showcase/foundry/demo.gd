@@ -1,9 +1,9 @@
 extends Control
 
-## Foundry — "Commit Idle". A fully reactive idle game built on GTML.
-## demo.gd is the source of truth; pure functions operate on the fields below
-## and never touch `view`. Only _ready/_process/_derive/_show_toast and the
-## signal handlers push into view.state.
+## Foundry — "Commit Idle" as an interactive terminal (REPL).
+## Game logic lives in pure functions (fmt .. build_*_view, never touch `view`).
+## The view layer renders a scrollback `log` + a live status line; actions run
+## as commands (typed via the <input>, or clicked as command tokens / log lines).
 
 @onready var view: GtmlView = $GtmlView
 
@@ -36,6 +36,7 @@ const ACHIEVEMENTS := [
 ]
 
 const DERIVE_INTERVAL := 0.1
+const LOG_CAP := 28
 
 var commits: float = 0.0
 var total_this_run: float = 0.0
@@ -46,10 +47,11 @@ var gen_owned: Dictionary = {}   # id -> int
 var purchased: Dictionary = {}   # upgrade id -> true
 var earned: Dictionary = {}      # achievement id -> true
 var _derive_accum: float = 0.0
-var _last_gens: Array = []       # last pushed generators view (diff guard)
-var _last_ups: Array = []        # last pushed upgrades view (diff guard)
+var _log_lines: Array = []       # scrollback entries (capped)
+var _log_id: int = 0
 
 
+# ── number formatting ─────────────────────────────────────
 func fmt(n: float) -> String:
 	if absf(n) < 1000.0:
 		return str(int(n))
@@ -62,6 +64,7 @@ func fmt(n: float) -> String:
 	return "%.2f%s" % [v, units[idx]]
 
 
+# ── generators ────────────────────────────────────────────
 func _gen_def(id: String) -> Dictionary:
 	for g in GENERATORS:
 		if g.id == id:
@@ -100,7 +103,6 @@ func click_value() -> float:
 func can_afford(amount: float) -> bool:
 	return commits >= amount
 
-
 func buy_generator(id: String) -> bool:
 	var c := cost_of(id)
 	if not can_afford(c):
@@ -110,6 +112,7 @@ func buy_generator(id: String) -> bool:
 	return true
 
 
+# ── upgrades ───────────────────────────────────────────────
 func _upg_def(id: String) -> Dictionary:
 	for u in UPGRADES:
 		if u.id == id:
@@ -146,14 +149,11 @@ func build_upgrades_view() -> Array:
 	for u in UPGRADES:
 		if not upgrade_unlocked(u):
 			continue
-		var c := upgrade_cost(u.id)
-		out.append({
-			"id": u.id, "name": u.name, "desc": u.desc,
-			"cost_display": fmt(c), "affordable": can_afford(c),
-		})
+		out.append({"id": u.id, "name": u.name, "desc": u.desc, "cost_display": fmt(upgrade_cost(u.id)), "affordable": can_afford(upgrade_cost(u.id))})
 	return out
 
 
+# ── achievements ───────────────────────────────────────────
 func _all_gens_owned() -> bool:
 	for g in GENERATORS:
 		if _owned(g.id) <= 0:
@@ -188,14 +188,11 @@ func build_achievements_view() -> Array:
 	var out := []
 	for a in ACHIEVEMENTS:
 		var is_earned: bool = earned.has(a.id)
-		out.append({
-			"id": a.id, "name": a.name, "desc": a.desc,
-			"earned": is_earned,
-			"mark": "[x]" if is_earned else "[ ]",
-		})
+		out.append({"id": a.id, "name": a.name, "desc": a.desc, "earned": is_earned, "mark": "[x]" if is_earned else "[ ]"})
 	return out
 
 
+# ── prestige ───────────────────────────────────────────────
 func refactor_gain() -> int:
 	return int(floor(sqrt(total_this_run / 10000.0)))
 
@@ -213,41 +210,24 @@ func do_refactor() -> void:
 func build_generators_view() -> Array:
 	var out := []
 	for g in GENERATORS:
-		var c := cost_of(g.id)
-		out.append({
-			"id": g.id, "name": g.name, "desc": g.desc,
-			"owned": _owned(g.id),
-			"cost_display": fmt(c),
-			"rate_display": fmt(effective_rate(g.id)),
-			"affordable": can_afford(c),
-		})
+		out.append({"id": g.id, "name": g.name, "desc": g.desc, "owned": _owned(g.id), "cost_display": fmt(cost_of(g.id)), "rate_display": fmt(effective_rate(g.id)), "affordable": can_afford(cost_of(g.id))})
 	return out
 
 
+# ══ view layer (terminal REPL) ════════════════════════════
 func _ready() -> void:
-	_last_gens = build_generators_view()
-	_last_ups = build_upgrades_view()
 	view.state.set_state({
 		"commits_display": fmt(commits),
 		"per_sec_display": fmt(per_sec()),
 		"per_click_display": fmt(click_value()),
 		"insight": insight,
 		"mult_display": "%.2f" % global_mult(),
-		"generators": _last_gens,
-		"upgrades": _last_ups,
-		"no_upgrades": _last_ups.is_empty(),
-		"upgrades_count": _last_ups.size(),
-		"achievements": build_achievements_view(),
-		"ach_progress": "%d/%d" % [earned.size(), ACHIEVEMENTS.size()],
-		"active_tab": "generators",
-		"toast": "",
-		"show_toast": false,
-		"show_refactor": false,
-		"refactor_gain": str(refactor_gain()),
-		"can_refactor": refactor_gain() >= 1,
+		"log": [],
+		"cmd": "",
 	})
-	view.button_clicked.connect(_on_button)
 	view.item_clicked.connect(_on_item)
+	view.key_pressed.connect(_on_key)
+	_seed_log()
 
 
 func _process(delta: float) -> void:
@@ -262,76 +242,170 @@ func _process(delta: float) -> void:
 	_derive_accum += delta
 	if _derive_accum >= DERIVE_INTERVAL:
 		_derive_accum = 0.0
-		_derive()
+		view.state.set("per_click_display", fmt(click_value()))
+		view.state.set("insight", insight)
+		view.state.set("mult_display", "%.2f" % global_mult())
+		var newly := _check_achievements()
+		if not newly.is_empty():
+			for aid in newly:
+				_log("ok", ">> unlocked: " + _ach_name(aid))
+			_push_log()
 
 
-func _derive() -> void:
-	if view == null:
-		return
-	# Only push the v-for arrays when they actually change. Re-setting them
-	# every tick would re-run list reconciliation (and re-apply :class) 10x/s
-	# for no reason; diffing keeps the reconciler — and the logs — quiet.
-	var gens := build_generators_view()
-	if gens != _last_gens:
-		_last_gens = gens
-		view.state.set("generators", gens)
-	var ups := build_upgrades_view()
-	if ups != _last_ups:
-		_last_ups = ups
-		view.state.set("upgrades", ups)
-		view.state.set("no_upgrades", ups.is_empty())
-		view.state.set("upgrades_count", ups.size())
-	view.state.set("per_click_display", fmt(click_value()))
-	view.state.set("refactor_gain", str(refactor_gain()))
-	view.state.set("can_refactor", refactor_gain() >= 1)
-	var newly := _check_achievements()
-	if not newly.is_empty():
-		view.state.set("achievements", build_achievements_view())
-		view.state.set("ach_progress", "%d/%d" % [earned.size(), ACHIEVEMENTS.size()])
-		_show_toast(_ach_name(newly[0]))
+# ── scrollback log ─────────────────────────────────────────
+func _log(kind: String, text: String, actionable: bool = false, ref: String = "") -> void:
+	_log_id += 1
+	_log_lines.append({"id": _log_id, "kind": kind, "text": text, "actionable": actionable, "ref": ref})
+	while _log_lines.size() > LOG_CAP:
+		_log_lines.pop_front()
 
-
-func _show_toast(text: String) -> void:
-	view.state.set("toast", ">> unlocked: " + text)
-	view.state.set("show_toast", true)
-	await get_tree().create_timer(3.0).timeout
+func _push_log() -> void:
 	if view != null:
-		view.state.set("show_toast", false)
+		view.state.set("log", _log_lines.duplicate())
+
+func _seed_log() -> void:
+	_log("sys", "foundry v0.8 — idle commit console")
+	_log("sys", "type a command and press enter, or click one below")
+	_log("sys", "try: help")
+	_push_log()
 
 
-func _on_button(method: String) -> void:
-	match method:
-		"tap":
-			var v := click_value()
-			commits += v
-			total_this_run += v
-			_derive()
-		"open_refactor":
-			view.state.set("refactor_gain", str(refactor_gain()))
-			view.state.set("show_refactor", true)
-		"confirm_refactor":
-			do_refactor()
-			view.state.set("show_refactor", false)
-			_refresh_all()
-		"cancel_refactor":
-			view.state.set("show_refactor", false)
+# ── command runner ─────────────────────────────────────────
+func _on_key(handler: String, event: InputEvent) -> void:
+	if handler != "submit" or not (event is InputEventKey):
+		return
+	if event.keycode != KEY_ENTER and event.keycode != KEY_KP_ENTER:
+		return
+	var raw: String = str(view.state.get("cmd")).strip_edges()
+	view.state.set("cmd", "")
+	if not raw.is_empty():
+		run_command(raw)
+
+
+func cmd_token(name: String) -> void:
+	run_command(name)
+
+
+func run_command(raw: String) -> void:
+	var parts := raw.strip_edges().split(" ", false)
+	if parts.is_empty():
+		return
+	var cmd: String = parts[0].to_lower()
+	var arg: String = parts[1] if parts.size() > 1 else ""
+	_log("cmd", "$ " + raw)
+	match cmd:
+		"help":
+			_log("info", "commands:")
+			_log("info", "  buy [id]   list generators / buy one")
+			_log("info", "  upgrades   list available upgrades")
+			_log("info", "  ach        list achievements")
+			_log("info", "  stats      show run stats")
+			_log("info", "  prestige   refactor for insight")
+			_log("info", "  clear      clear the screen")
+		"buy":
+			if arg.is_empty():
+				_list_generators()
+			else:
+				_buy_by_id(arg)
+		"upgrades", "upg":
+			_list_upgrades()
+		"ach", "achievements":
+			_list_achievements()
+		"stats":
+			_show_stats()
+		"prestige", "refactor":
+			_show_prestige()
+		"clear":
+			_log_lines.clear()
+		_:
+			_log("warn", "command not found: " + cmd + " — try help")
+	_push_log()
+
+
+func _list_generators() -> void:
+	for g in build_generators_view():
+		_log("buy_gen", "%-16s #%-4d %7s/s  [%s]" % [g.id, g.owned, g.rate_display, g.cost_display], true, g.id)
+
+func _list_upgrades() -> void:
+	var ups := build_upgrades_view()
+	if ups.is_empty():
+		_log("info", "(no upgrades available — unlock more generators first)")
+		return
+	for u in ups:
+		_log("buy_upg", "%-24s [%s]" % [u.id, u.cost_display], true, u.id)
+
+func _list_achievements() -> void:
+	for a in build_achievements_view():
+		_log("ok" if a.earned else "info", "%s %-16s %s" % [a.mark, a.name, a.desc])
+
+func _show_stats() -> void:
+	_log("info", "commits     %s" % fmt(commits))
+	_log("info", "per click   %s" % fmt(click_value()))
+	_log("info", "per second  %s" % fmt(per_sec()))
+	_log("info", "insight     %d  (x%.2f)" % [insight, global_mult()])
+	_log("info", "refactors   %d" % refactored)
+	for g in GENERATORS:
+		_log("info", "  %-16s %d" % [g.id, _owned(g.id)])
+
+func _show_prestige() -> void:
+	var gain := refactor_gain()
+	if gain >= 1:
+		_log("info", "refactor wipes this run for permanent insight (+2%% output each)")
+		_log("confirm", "[ confirm refactor — +%d insight ]" % gain, true, "")
+	else:
+		_log("warn", "not worth refactoring yet (0 insight) — keep committing")
+
+func _buy_by_id(id: String) -> void:
+	if not _gen_def(id).is_empty():
+		_run_buy_gen(id)
+	elif not _upg_def(id).is_empty():
+		_run_buy_upg(id)
+	else:
+		_log("warn", "unknown id: " + id)
+
+
+# ── clickable log-line actions ─────────────────────────────
+func run_line(kind: String, ref: String) -> void:
+	match kind:
+		"buy_gen":
+			_run_buy_gen(ref)
+		"buy_upg":
+			_run_buy_upg(ref)
+		"confirm":
+			_run_refactor()
+		_:
+			return
+	_push_log()
+
+func _run_buy_gen(id: String) -> void:
+	var nm: String = _gen_def(id).get("name", id)
+	var cost := cost_of(id)
+	if buy_generator(id):
+		_log("ok", "> hired %s (#%d) — +%s/s" % [nm, _owned(id), fmt(float(_gen_def(id).rate))])
+	else:
+		_log("warn", "> can't afford %s (need %s)" % [nm, fmt(cost)])
+
+func _run_buy_upg(id: String) -> void:
+	var nm: String = _upg_def(id).get("name", id)
+	if buy_upgrade(id):
+		_log("ok", "> installed %s" % nm)
+	else:
+		_log("warn", "> can't buy %s" % nm)
+
+func _run_refactor() -> void:
+	var gain := refactor_gain()
+	if gain < 1:
+		_log("warn", "> nothing to refactor yet")
+		return
+	do_refactor()
+	_log("ok", "> refactored — +%d insight (now x%.2f)" % [gain, global_mult()])
+	view.state.set("insight", insight)
+	view.state.set("mult_display", "%.2f" % global_mult())
 
 
 func _on_item(handler: String, args: Array) -> void:
-	var id := str(args[0]) if args.size() > 0 else ""
 	match handler:
-		"buy":
-			if buy_generator(id):
-				_derive()
-		"buy_upgrade":
-			if buy_upgrade(id):
-				_derive()
-		"tab":
-			view.state.set("active_tab", id)
-
-
-func _refresh_all() -> void:
-	view.state.set("insight", insight)
-	view.state.set("mult_display", "%.2f" % global_mult())
-	view.state.set("achievements", build_achievements_view())
-	_derive()
+		"run_line":
+			run_line(str(args[0]) if args.size() > 0 else "", str(args[1]) if args.size() > 1 else "")
+		"cmd_token":
+			cmd_token(str(args[0]) if args.size() > 0 else "")

@@ -174,14 +174,61 @@ func test_generators_view_marks_affordability() -> void:
 	assert_true(first.affordable)        # 10 >= 10
 	assert_false(rows[1].affordable)     # compiler costs 120
 
-func test_scene_builds_and_ticks() -> void:
+# ── command runner (REPL) ──────────────────────────────────
+func test_run_command_buy_lists_generators() -> void:
+	var d = _new_demo()
+	d.run_command("buy")
+	var gen_lines: Array = d._log_lines.filter(func(l): return l.kind == "buy_gen")
+	assert_eq(gen_lines.size(), d.GENERATORS.size(), "buy lists every generator as an actionable line")
+	assert_eq(gen_lines[0].ref, "intern")
+	assert_true(gen_lines[0].actionable)
+
+func test_run_command_buy_id_purchases_when_affordable() -> void:
+	var d = _new_demo()
+	d.commits = 10.0
+	d.run_command("buy intern")
+	assert_eq(d._owned("intern"), 1)
+	var ok: Array = d._log_lines.filter(func(l): return l.kind == "ok")
+	assert_gt(ok.size(), 0, "successful buy logs an ok line")
+
+func test_run_command_buy_id_warns_when_too_poor() -> void:
+	var d = _new_demo()
+	d.commits = 0.0
+	d.run_command("buy intern")
+	assert_eq(d._owned("intern"), 0)
+	var warn: Array = d._log_lines.filter(func(l): return l.kind == "warn")
+	assert_gt(warn.size(), 0, "failed buy logs a warn line")
+
+func test_run_command_unknown_warns() -> void:
+	var d = _new_demo()
+	d.run_command("frobnicate")
+	var warn: Array = d._log_lines.filter(func(l): return l.kind == "warn")
+	assert_gt(warn.size(), 0)
+
+func test_run_command_clear_empties_log() -> void:
+	var d = _new_demo()
+	d.run_command("help")
+	assert_gt(d._log_lines.size(), 0)
+	d.run_command("clear")
+	assert_eq(d._log_lines.size(), 0, "clear wipes the scrollback")
+
+func test_log_is_capped() -> void:
+	var d = _new_demo()
+	for i in range(200):
+		d._log("info", "line %d" % i)
+	assert_eq(d._log_lines.size(), d.LOG_CAP, "log holds at most LOG_CAP entries")
+
+
+func test_scene_builds_and_runs_a_command() -> void:
 	var scene = load("res://addons/gtml/examples/showcase/foundry/demo.tscn")
 	var inst = add_child_autofree(scene.instantiate())
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var view = inst.get_node("GtmlView")
 	assert_gt(view.get_child_count(), 0, "GtmlView built a control tree")
-	assert_true(view.state.has("commits_display"), "state seeded in _ready")
-	var before: float = inst.commits
-	inst._on_button("tap")
-	assert_gt(inst.commits, before, "tap adds commits")
+	assert_true(view.state.has("commits_display"), "status seeded in _ready")
+	inst.cmd_token("buy")
+	await get_tree().process_frame
+	var log: Array = view.state.get("log")
+	var has_buy := log.filter(func(l): return l.kind == "buy_gen").size() > 0
+	assert_true(has_buy, "clicking the buy token appends generator lines to the log")

@@ -1,177 +1,114 @@
-/* Modern terminal theme (Tokyo-Night-ish): soft dark surfaces, light neutral
-   text for readability, green = affordable/success, amber = Insight/earned.
-   No glow / text-shadow — easy on the eyes. Courier Prime via foundry_theme.tres. */
+/* Foundry — interactive terminal. Tokyo-Night-ish palette, monospace
+   (Courier Prime via foundry_theme.tres). green = ok/affordable, amber = insight. */
 
-.app {
+.term {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
-	background-color: #1a1b26;
+	background-color: #16161e;
 }
 
-/* ── header ───────────────────────────────────────────── */
-.hud {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	padding: 14px;
-	background-color: #1f2335;
-	border-bottom: 1px solid #2a2e3f;
-}
-.prompt { color: #565f89; font-size: 12px; }
-.counts { display: flex; flex-direction: row; align-items: baseline; gap: 8px; }
-.commits { color: #9ece6a; font-size: 26px; font-weight: bold; }
-.unit { color: #565f89; font-size: 12px; }
-.rate { color: #9aa5ce; font-size: 13px; }
-
-.actions { display: flex; flex-direction: row; gap: 8px; margin-top: 8px; }
-.tap-btn {
-	color: #9ece6a;
-	font-size: 14px;
-	font-weight: bold;
-	padding: 9px;
-	background-color: #1d2a18;
-	border: 1px solid #3d5a2e;
-	transition: background-color 0.15s;
-}
-.tap-btn:hover, .tap-btn:focus { background-color: #243a1d; border: 1px solid #9ece6a; }
-
-.refactor-btn {
-	color: #565f89;
-	font-size: 12px;
-	padding: 9px;
-	background-color: #1f2335;
-	border: 1px solid #2a2e3f;
-	transition: background-color 0.15s;
-}
-.refactor-btn.ready {
-	color: #e0af68;
-	background-color: #2a2310;
-	border: 1px solid #5a4a2a;
-}
-.refactor-btn.ready:hover, .refactor-btn.ready:focus { background-color: #352c14; border: 1px solid #e0af68; }
-
-.meta { display: flex; flex-direction: row; gap: 14px; margin-top: 8px; }
-.insight { color: #e0af68; font-size: 12px; }
-.mult { color: #9aa5ce; font-size: 12px; }
-
-/* ── tabs ─────────────────────────────────────────────── */
-.body { overflow-y: auto; padding: 14px; }
-
-.tabs { display: flex; flex-direction: row; gap: 4px; margin-bottom: 14px; }
-.tab {
-	color: #565f89;
-	font-size: 12px;
-	font-weight: bold;
-	padding: 9px;
-	background-color: #1f2335;
-	border: 1px solid #2a2e3f;
-	transition: background-color 0.15s;
-}
-.tab:hover { background-color: #24283b; }
-.tab.active {
-	color: #c0caf5;
-	background-color: #292e42;
-	border: 1px solid #7aa2f7;
-}
-
-.panel { margin-bottom: 4px; }
-
-/* ── rows (generators / upgrades) ─────────────────────── */
-.rows { display: flex; flex-direction: column; gap: 5px; }
-.row {
+/* ── title bar ─────────────────────────────────────────── */
+.titlebar {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	gap: 12px;
-	padding: 11px;
-	background-color: #1f2335;
-	border: 1px solid #2a2e3f;
-}
-.row.affordable { border: 1px solid #3d5a2e; }
-.row-info { display: flex; flex-direction: column; gap: 3px; flex-grow: 1; }
-.row-name { color: #c0caf5; font-size: 14px; font-weight: bold; }
-.row-desc { color: #565f89; font-size: 12px; }
-.row-stat { color: #9aa5ce; font-size: 12px; }
-
-.buy-btn {
-	color: #565f89;
-	font-size: 13px;
-	padding: 9px;
-	background-color: #1a1b26;
-	border: 1px solid #2a2e3f;
-	transition: background-color 0.15s;
-}
-.buy-btn.affordable {
-	color: #9ece6a;
-	background-color: #1d2a18;
-	border: 1px solid #3d5a2e;
-}
-.buy-btn.affordable:hover { background-color: #243a1d; border: 1px solid #9ece6a; }
-
-/* ── achievements ─────────────────────────────────────── */
-.badges { display: flex; flex-direction: column; gap: 4px; }
-.badge {
-	display: flex;
-	flex-direction: row;
-	align-items: baseline;
 	gap: 10px;
 	padding: 9px;
 	background-color: #1f2335;
-	border: 1px solid #2a2e3f;
+	border-bottom: 1px solid #2a2e3f;
 }
-.badge.earned { border: 1px solid #5a4a2a; color: #e0af68; }
-.badge-mark { color: #565f89; font-size: 13px; }
-.badge-name { color: #9aa5ce; font-size: 13px; }
-.badge-desc { color: #565f89; font-size: 12px; flex-grow: 1; }
-
-.empty { color: #565f89; font-size: 12px; }
-
-/* ── toast ────────────────────────────────────────────── */
-.toast {
-	color: #e0af68;
-	font-size: 13px;
-	padding: 10px;
-	background-color: #2a2310;
-	border: 1px solid #5a4a2a;
-	transition: opacity 0.2s;
+.tb-dot {
+	width: 10px;
+	height: 10px;
+	background-color: #f7768e;
+	border-radius: 5px;
 }
+.tb-name { color: #c0caf5; font-size: 13px; font-weight: bold; }
+.tb-sub { color: #565f89; font-size: 12px; }
 
-/* ── refactor confirm screen ──────────────────────────── */
-.confirm {
+/* ── scrollback screen ─────────────────────────────────── */
+.screen {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	justify-content: center;
 	flex-grow: 1;
-	padding: 30px;
-	background-color: #1a1b26;
+	gap: 1px;
+	padding: 12px;
+	overflow-y: auto;
+	background-color: #16161e;
 }
-.confirm-box {
-	display: flex;
-	flex-direction: column;
-	gap: 14px;
-	padding: 24px;
-	background-color: #1f2335;
-	border: 1px solid #3b4261;
-}
-.confirm-title { color: #c0caf5; font-size: 18px; font-weight: bold; }
-.confirm-text { color: #9aa5ce; font-size: 13px; }
-.confirm-actions { display: flex; flex-direction: row; gap: 12px; }
-.confirm-btn {
-	color: #9ece6a;
-	font-size: 13px;
-	font-weight: bold;
-	padding: 10px;
-	background-color: #1d2a18;
-	border: 1px solid #3d5a2e;
-	transition: background-color 0.15s;
-}
-.confirm-btn:hover, .confirm-btn:focus { background-color: #243a1d; border: 1px solid #9ece6a; }
-.cancel-btn {
+.line {
 	color: #9aa5ce;
 	font-size: 13px;
+	padding: 1px;
+	white-space: pre;
+	transition: opacity 0.18s;
+}
+.line.sys { color: #565f89; }
+.line.cmd { color: #c0caf5; }
+.line.ok { color: #9ece6a; }
+.line.warn { color: #e0af68; }
+.line.info { color: #7aa2f7; }
+.line.act { color: #9ece6a; }
+.line.act:hover { background-color: #1f2a18; color: #b9f27c; }
+
+/* ── live status line ──────────────────────────────────── */
+.status {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 6px;
+	padding: 8px;
+	background-color: #1a1b26;
+	border-top: 1px solid #2a2e3f;
+	border-bottom: 1px solid #2a2e3f;
+}
+.st-key { color: #565f89; font-size: 12px; }
+.st-val { color: #9ece6a; font-size: 13px; font-weight: bold; }
+.st-amber { color: #e0af68; font-size: 13px; font-weight: bold; }
+.st-sep { color: #2a2e3f; font-size: 12px; }
+
+/* ── prompt input ──────────────────────────────────────── */
+.promptbar {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 8px;
 	padding: 10px;
+	background-color: #16161e;
+}
+.ps1 { color: #9ece6a; font-size: 14px; font-weight: bold; }
+.cmdline {
+	flex-grow: 1;
+	color: #c0caf5;
+	font-size: 14px;
+	padding: 8px;
 	background-color: #1f2335;
 	border: 1px solid #2a2e3f;
+	caret-color: #9ece6a;
+}
+.cmdline:focus { border: 1px solid #7aa2f7; background-color: #222538; }
+
+/* ── command palette ───────────────────────────────────── */
+.palette {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 6px;
+	padding: 10px;
+	background-color: #1a1b26;
+	border-top: 1px solid #2a2e3f;
+}
+.token {
+	color: #9aa5ce;
+	font-size: 12px;
+	padding: 7px;
+	background-color: #1f2335;
+	border: 1px solid #2a2e3f;
+	transition: background-color 0.15s;
+}
+.token:hover, .token:focus {
+	color: #c0caf5;
+	background-color: #2a3050;
+	border: 1px solid #7aa2f7;
 }
