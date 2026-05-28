@@ -1,0 +1,60 @@
+extends Control
+
+## Foundry — "Commit Idle". A fully reactive idle game built on GTML.
+## demo.gd is the source of truth; pure functions operate on the fields below
+## and never touch `view`. Only _ready/_process/_derive/_show_toast and the
+## signal handlers push into view.state.
+
+@onready var view: GtmlView = $GtmlView
+
+const GENERATORS := [
+	{"id": "intern",   "name": "Intern",         "desc": "Writes commits while you sleep.", "cost": 10,     "rate": 0.5},
+	{"id": "compiler", "name": "Compiler",       "desc": "Turns coffee into builds.",       "cost": 120,    "rate": 4.0},
+	{"id": "ci_farm",  "name": "CI Farm",        "desc": "Green checks, all day.",          "cost": 1500,   "rate": 25.0},
+	{"id": "render",   "name": "Render Server",  "desc": "Bakes lightmaps on the side.",    "cost": 20000,  "rate": 160.0},
+	{"id": "linter",   "name": "Quantum Linter", "desc": "Fixes bugs in superposition.",    "cost": 250000, "rate": 1000.0},
+]
+
+const UPGRADES := [
+	{"id": "keyboard",  "name": "Mechanical Keyboard", "desc": "Per-click x2.",       "cost": 100,    "kind": "click", "factor": 2.0, "gate_commits": 50},
+	{"id": "hotreload", "name": "Hot Reload",          "desc": "Intern output x2.",   "cost": 500,    "kind": "gen",   "factor": 2.0, "target": "intern",   "gate_gen": "intern",   "gate_n": 5},
+	{"id": "ssd",       "name": "NVMe Array",          "desc": "Compiler output x2.", "cost": 4000,   "kind": "gen",   "factor": 2.0, "target": "compiler", "gate_gen": "compiler", "gate_n": 5},
+	{"id": "distcc",    "name": "Distributed Build",   "desc": "CI Farm output x2.",  "cost": 25000,  "kind": "gen",   "factor": 2.0, "target": "ci_farm",  "gate_gen": "ci_farm",  "gate_n": 5},
+	{"id": "caffeine",  "name": "Infinite Caffeine",   "desc": "Per-click x3.",       "cost": 8000,   "kind": "click", "factor": 3.0, "gate_commits": 5000},
+	{"id": "gpu",       "name": "GPU Cluster",         "desc": "Render output x2.",   "cost": 120000, "kind": "gen",   "factor": 2.0, "target": "render",   "gate_gen": "render",   "gate_n": 5},
+]
+
+const ACHIEVEMENTS := [
+	{"id": "first",          "name": "First Commit",   "desc": "Write your first commit."},
+	{"id": "ten_interns",    "name": "Onboarding",     "desc": "Own 10 Interns."},
+	{"id": "kilo",           "name": "Kilocommit",     "desc": "Reach 1,000 commits."},
+	{"id": "mega",           "name": "Megacommit",     "desc": "Reach 1,000,000 commits."},
+	{"id": "first_refactor", "name": "Tech Debt Paid", "desc": "Refactor once."},
+	{"id": "five_gens",      "name": "Full Stack",     "desc": "Own every generator type."},
+	{"id": "upgrader",       "name": "Optimizer",      "desc": "Buy 3 upgrades."},
+	{"id": "insightful",     "name": "Enlightened",    "desc": "Reach 10 Insight."},
+]
+
+const DERIVE_INTERVAL := 0.1
+
+var commits: float = 0.0
+var total_this_run: float = 0.0
+var per_click: float = 1.0
+var insight: int = 0
+var refactored: int = 0
+var gen_owned: Dictionary = {}   # id -> int
+var purchased: Dictionary = {}   # upgrade id -> true
+var earned: Dictionary = {}      # achievement id -> true
+var _derive_accum: float = 0.0
+
+
+func fmt(n: float) -> String:
+	if absf(n) < 1000.0:
+		return str(int(n))
+	var units := ["K", "M", "B", "T"]
+	var idx := -1
+	var v := n
+	while absf(v) >= 1000.0 and idx < units.size() - 1:
+		v /= 1000.0
+		idx += 1
+	return "%.2f%s" % [v, units[idx]]
