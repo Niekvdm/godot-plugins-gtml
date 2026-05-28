@@ -21,6 +21,11 @@ var _gml_view = null  # GmlView reference
 var _styles: Dictionary = {}
 var _defaults: Dictionary = {}
 var _transition_manager: GmlTransitionManager = null
+## Ancestor chain (Array of GmlNode, root-first) of the node currently
+## being built. Captured so :class re-resolution can re-run the resolver
+## with the correct selector context. Reflects the node whose bindings
+## are registering at any given moment.
+var _current_chain: Array = []
 
 
 ## Build a Control tree from the DOM root.
@@ -45,11 +50,15 @@ func _build_context() -> Dictionary:
 
 
 ## Build a single node and its children. Returns the final wrapped control.
-func _build_node(node) -> Control:
+func _build_node(node, ancestor_chain: Array = []) -> Control:
 	if node == null:
 		return null
 	if node.is_text_node:
 		return _build_text_node(node)
+
+	var node_chain: Array = ancestor_chain.duplicate()
+	node_chain.append(node)
+	_current_chain = node_chain
 
 	# v-if: omit element entirely when falsy. Scope (for v-for clones) is
 	# pulled from the node's meta — empty for the normal build path.
@@ -87,6 +96,10 @@ func _build_node(node) -> Control:
 			transition_target = inner
 		GmlTransitionSetup.setup(transition_target, _get_node_style(node), _transition_manager)
 
+	# Restore this node's chain before registering its bindings —
+	# _dispatch may have recursed into children and reset _current_chain.
+	_current_chain = node_chain
+
 	# Post-build: register Vue-style bindings on the resolved control.
 	_register_bindings_for_node(node, control, inner)
 
@@ -121,7 +134,8 @@ func _register_bindings_for_node(node, control: Control, inner: Control = null) 
 			"v-bind":
 				var expr: Dictionary = GmlBindingExprScript.parse(node.attrs[attr_name])
 				if cls["target"] == "class":
-					GmlBindingApplierScript.register_class_binding(control, expr, registry, state, scope, binding_tag)
+					var restyle_cb := _make_class_restyle_callback(control, node)
+					GmlBindingApplierScript.register_class_binding(control, expr, registry, state, scope, binding_tag, restyle_cb)
 				else:
 					GmlBindingApplierScript.register_attr_binding(control, cls["target"], expr, registry, state, scope, binding_tag)
 			"v-show":
@@ -688,3 +702,27 @@ func _fire_clone_bindings(registry, tag: String) -> void:
 	for b in registry._by_tag[tag]:
 		if GmlBindingRegistry._is_alive(b):
 			b["apply"].call()
+
+
+## Build the on_change callback for a :class binding. Captures the node,
+## its ancestor chain (current at registration), the view's css_rules,
+## the transition manager, and a base snapshot of static-only visual
+## props. Returns Callable(PackedStringArray) that re-resolves + applies.
+func _make_class_restyle_callback(control: Control, node) -> Callable:
+	if _gml_view == null:
+		return Callable()
+	var css_rules: Array = _gml_view._css_rules
+	if css_rules.is_empty():
+		return Callable()
+	var chain: Array = _current_chain.duplicate()
+	var tm = _transition_manager
+	var GmlClassRestylerScript = preload("res://addons/gtml/src/css/GmlClassRestyler.gd")
+	# Base snapshot = static-only visual props.
+	var static_classes: PackedStringArray = node.get_classes()
+	var base_snapshot: Dictionary = GmlClassRestylerScript.resolve_visual_props(node, chain, static_classes, css_rules)
+	var ctrl_ref: WeakRef = weakref(control)
+	return func(dynamic_classes: PackedStringArray):
+		var c = ctrl_ref.get_ref()
+		if c == null:
+			return
+		GmlClassRestylerScript.restyle(c, node, chain, dynamic_classes, css_rules, base_snapshot, tm)

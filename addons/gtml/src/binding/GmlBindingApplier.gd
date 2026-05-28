@@ -373,7 +373,7 @@ static func register_attr_binding(control: Control, target: String, expr: Dictio
 ## Dynamic class addition affects only the meta; the Control's existing
 ## stylebox is not updated. Static styling (declared on classes present
 ## at build time) still works. Document the limitation in docs/bindings.md.
-static func register_class_binding(control: Control, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState, scope: Dictionary = {}, tag: String = "") -> void:
+static func register_class_binding(control: Control, expr: Dictionary, registry: GmlBindingRegistry, state: GmlState, scope: Dictionary = {}, tag: String = "", on_change: Callable = Callable()) -> void:
 	var ref: WeakRef = weakref(control)
 	var apply := func():
 		var ctl = ref.get_ref()
@@ -391,6 +391,8 @@ static func register_class_binding(control: Control, expr: Dictionary, registry:
 			for x in (resolved as String).split(" ", false):
 				classes.append(x)
 		ctl.set_meta("dynamic_classes", classes)
+		if on_change.is_valid():
+			on_change.call(classes)
 	var deps: Array = []
 	_collect_expr_deps(expr, deps)
 	registry.register({
