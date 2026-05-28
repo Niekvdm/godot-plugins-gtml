@@ -147,3 +147,27 @@ func test_perf_pure_diff() -> void:
 		_bench("diff_shuffle", n, 200, func(): GmlVForReconciler.diff(old_keys, reversed))
 
 	assert_true(true)  # keep GUT happy (informational test, no perf assertion)
+
+
+# ─── v-for initial build at scale ──────────────────────────
+
+func test_perf_vfor_build_scale() -> void:
+	_print_header("v-for build at scale (initial populate)")
+	for spec in [[10, 30], [100, 20], [500, 8], [1000, 4]]:
+		var n: int = spec[0]
+		var iters: int = spec[1]
+		var items := make_items(n)
+		# Pre-build + settle ONE view per N (the body can await; lambdas can't).
+		var view := _build_view('<ul><li v-for="item in items" :key="item.id">{{ item.name }}</li></ul>')
+		await get_tree().process_frame
+		await get_tree().process_frame
+		# setup (untimed) clears the list → reconcile removes all → empty.
+		# op (timed) populates → reconcile inserts n clones from empty.
+		# Both are synchronous. Clones from the clear queue_free within the
+		# loop; transient growth, not a leak (settles next frame).
+		_bench("build_initial", n, iters,
+			func(): view.state.set("items", items),
+			func(): view.state.set("items", []),
+			1
+		)
+	assert_true(true)
