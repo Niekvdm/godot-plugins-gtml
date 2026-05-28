@@ -658,3 +658,122 @@ func test_clickable_span_gets_focus_mode_all() -> void:
 		for ch in nd.get_children():
 			stack.append(ch)
 	assert_true(found, "a @click element should be focusable with FOCUS_ALL")
+
+
+# ─── v0.8.3: focus traversal end-to-end (Task 5) ───────────
+
+func test_focus_two_buttons_chain() -> void:
+	var view := _build_view('<div><button @click="a">A</button><button @click="b">B</button></div>')
+	view.state.set("a", null)
+	view.state.set("b", null)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var focusables: Array = []
+	_collect_focusables(view, focusables)
+	assert_gte(focusables.size(), 2, "two buttons focusable; got %d" % focusables.size())
+	var a: Control = focusables[0]
+	var b: Control = focusables[1]
+	assert_eq(a.get_node(a.focus_next), b, "button A.focus_next → B")
+
+
+func test_focus_anchor_is_focusable() -> void:
+	var view := _build_view('<div><a href="x">link</a></div>')
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var focusables: Array = []
+	_collect_focusables(view, focusables)
+	assert_gt(focusables.size(), 0, "anchor should be focusable")
+
+
+func test_autofocus_grabs_focus() -> void:
+	var view := _build_view('<div><input v-model="q" autofocus></div>')
+	view.state.set("q", "")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var focused = get_viewport().gui_get_focus_owner()
+	assert_not_null(focused, "autofocus should grab a control")
+	assert_true(focused.get_meta("_gml_focusable", false), "focused control is the autofocus target")
+
+
+func test_focus_trap_wraps() -> void:
+	var view := _build_view('<div focus-trap><button @click="a">A</button><button @click="b">B</button></div>')
+	view.state.set("a", null)
+	view.state.set("b", null)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var focusables: Array = []
+	_collect_focusables(view, focusables)
+	assert_eq(focusables.size(), 2)
+	var a: Control = focusables[0]
+	var b: Control = focusables[1]
+	assert_eq(b.get_node(b.focus_next), a, "trap: B wraps to A")
+	assert_eq(a.get_node(a.focus_previous), b, "trap: A wraps to B")
+
+
+func test_tabindex_minus_one_skips_tab_chain() -> void:
+	var view := _build_view('<div><button @click="a">A</button><button @click="b" tabindex="-1">B</button><button @click="c">C</button></div>')
+	view.state.set("a", null)
+	view.state.set("b", null)
+	view.state.set("c", null)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var focusables: Array = []
+	_collect_focusables(view, focusables)
+	var a: Control = null
+	var c: Control = null
+	for f in focusables:
+		var t := _button_text(f)
+		if t == "A":
+			a = f
+		elif t == "C":
+			c = f
+	assert_not_null(a)
+	assert_not_null(c)
+	assert_eq(a.get_node(a.focus_next), c, "A skips tabindex=-1 B → C")
+
+
+func test_vfor_append_keeps_focus_and_chains_new_clone() -> void:
+	var view := _build_view('<ul><li v-for="item in items" :key="item.id"><input :value="item.name"></li></ul>')
+	view.state.set("items", [
+		{"id": "a", "name": "A"},
+		{"id": "b", "name": "B"},
+	])
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var inputs: Array = []
+	_collect_line_edits(view, inputs)
+	assert_eq(inputs.size(), 2)
+	inputs[0].grab_focus()
+	assert_eq(get_viewport().gui_get_focus_owner(), inputs[0])
+	view.state.set("items", [
+		{"id": "a", "name": "A"},
+		{"id": "b", "name": "B"},
+		{"id": "c", "name": "C"},
+	])
+	await get_tree().process_frame
+	assert_eq(get_viewport().gui_get_focus_owner(), inputs[0], "focus preserved across append")
+	var inputs2: Array = []
+	_collect_line_edits(view, inputs2)
+	assert_eq(inputs2.size(), 3, "third input clone added")
+
+
+# Helper: collect controls carrying _gml_focusable, in document order.
+func _collect_focusables(node: Node, out: Array) -> void:
+	if node is Control and (node as Control).get_meta("_gml_focusable", false):
+		out.append(node)
+	for c in node.get_children():
+		_collect_focusables(c, out)
+
+
+func _collect_line_edits(node: Node, out: Array) -> void:
+	if node is LineEdit:
+		out.append(node)
+	for c in node.get_children():
+		_collect_line_edits(c, out)
+
+
+func _button_text(c: Control) -> String:
+	if c is Button:
+		return (c as Button).text
+	return ""
