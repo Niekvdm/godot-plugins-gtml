@@ -48,11 +48,11 @@
 
 | Property | Accepted Values | Notes |
 |---|---|---|
-| `width` | `<integer>px`, `<percent>%` | `px` → `custom_minimum_size.x`. `100%` → `SIZE_EXPAND_FILL`. `<100%` → per-frame percent sizing via `GmlPercentSizing`. Height of `0px` hides the control. |
+| `width` | `<integer>px`, `<percent>%` | `px` → `custom_minimum_size.x`. `100%` → `SIZE_EXPAND_FILL`. `<100%` → per-frame percent sizing via `GtmlPercentSizing`. Height of `0px` hides the control. |
 | `height` | `<integer>px`, `<percent>%` | Same as `width` on the vertical axis. |
 | `min-width` | `<integer>px` | Clamps `custom_minimum_size.x` upward. Only `px` units applied; `%` units parsed but not yet applied. |
 | `min-height` | `<integer>px` | Clamps `custom_minimum_size.y` upward. |
-| `max-width` | `<integer>px`, `<percent>%` | Enforced via `GmlPercentSizing.attach_max_size()`. Stored as `max_width` / `max_width_percent` metadata. |
+| `max-width` | `<integer>px`, `<percent>%` | Enforced via `GtmlPercentSizing.attach_max_size()`. Stored as `max_width` / `max_width_percent` metadata. |
 | `max-height` | `<integer>px`, `<percent>%` | Same as `max-width` on the vertical axis. |
 | `flex-grow` | `<number>` | Maps to `size_flags_stretch_ratio` + `SIZE_EXPAND` flag in the parent's main axis direction. Values `<= 0` are ignored. |
 | `flex-shrink` | `<number>` | Only `0` is acted upon (sets `SIZE_SHRINK_BEGIN`); values `> 0` rely on default container shrink behavior. |
@@ -180,7 +180,7 @@ When a `:class` binding updates at runtime, only the **visual subset** is re-res
 
 Layout and structural properties (`display`, `flex-*`, `width`, `height`, `padding`, `margin`, `gap`, etc.) are **ignored** by dynamic re-resolution and produce a warning. A full rebuild is required for layout changes.
 
-`outline` and its sub-properties are also **not re-resolved** by dynamic `:class` (noted in `GmlClassRestyler`).
+`outline` and its sub-properties are also **not re-resolved** by dynamic `:class` (noted in `GtmlClassRestyler`).
 
 ---
 

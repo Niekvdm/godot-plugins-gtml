@@ -18,7 +18,7 @@ view.state.score = 42         # property syntax
 
 | Method | Signature | Description |
 |---|---|---|
-| `set` | `set(key: String, value: Variant) -> bool` | Write a key; emits `state_changed` only when the value differs from the stored one. Routes through `_set` virtual. |
+| `set` | `set(key: String, value: Variant) -> void` | Write a key; emits `state_changed` only when the value differs from the stored one. Routes through `_set` virtual. |
 | `get` | `get(key: String) -> Variant` | Read a key; returns `null` when absent. Routes through `_get` virtual. |
 | `set_state` | `set_state(values: Dictionary) -> void` | Batch-write multiple keys. Emits `state_changed` per **changed** key only; no-op keys are silently skipped. |
 | `has` | `has(key: String) -> bool` | Returns `true` when the key exists in the store. |
