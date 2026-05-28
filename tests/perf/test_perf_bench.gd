@@ -116,3 +116,34 @@ func test_bench_helper_sanity() -> void:
 		_slow_setup
 	)
 	assert_lt(_last_ms_per_op, 1.0, "timed region must exclude the slow setup")
+
+
+# ─── Pure GmlVForReconciler.diff ───────────────────────────
+
+func test_perf_pure_diff() -> void:
+	_print_header("pure GmlVForReconciler.diff")
+	for n in [100, 1000]:
+		var old_keys := make_keys(n)
+
+		# append: new = old + 1 extra key
+		var appended := make_keys(n)
+		appended.append(str(n))
+		_bench("diff_append", n, 1000, func(): GmlVForReconciler.diff(old_keys, appended))
+
+		# prepend: new = [new_key] + old
+		var prepended := PackedStringArray([str(n)])
+		prepended.append_array(old_keys)
+		_bench("diff_prepend", n, 1000, func(): GmlVForReconciler.diff(old_keys, prepended))
+
+		# replace one middle key
+		var replaced := old_keys.duplicate()
+		replaced[n / 2] = "X"
+		_bench("diff_replace", n, 1000, func(): GmlVForReconciler.diff(old_keys, replaced))
+
+		# shuffle: reverse the array (LIS worst-ish case)
+		var reversed := PackedStringArray()
+		for i in range(n - 1, -1, -1):
+			reversed.append(old_keys[i])
+		_bench("diff_shuffle", n, 200, func(): GmlVForReconciler.diff(old_keys, reversed))
+
+	assert_true(true)  # keep GUT happy (informational test, no perf assertion)
