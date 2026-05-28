@@ -46,6 +46,8 @@ var gen_owned: Dictionary = {}   # id -> int
 var purchased: Dictionary = {}   # upgrade id -> true
 var earned: Dictionary = {}      # achievement id -> true
 var _derive_accum: float = 0.0
+var _last_gens: Array = []       # last pushed generators view (diff guard)
+var _last_ups: Array = []        # last pushed upgrades view (diff guard)
 
 
 func fmt(n: float) -> String:
@@ -218,15 +220,17 @@ func build_generators_view() -> Array:
 
 
 func _ready() -> void:
+	_last_gens = build_generators_view()
+	_last_ups = build_upgrades_view()
 	view.state.set_state({
 		"commits_display": fmt(commits),
 		"per_sec_display": fmt(per_sec()),
 		"per_click_display": fmt(click_value()),
 		"insight": insight,
 		"mult_display": "%.2f" % global_mult(),
-		"generators": build_generators_view(),
-		"upgrades": build_upgrades_view(),
-		"no_upgrades": build_upgrades_view().is_empty(),
+		"generators": _last_gens,
+		"upgrades": _last_ups,
+		"no_upgrades": _last_ups.is_empty(),
 		"achievements": build_achievements_view(),
 		"toast": "",
 		"show_toast": false,
@@ -255,10 +259,18 @@ func _process(delta: float) -> void:
 func _derive() -> void:
 	if view == null:
 		return
+	# Only push the v-for arrays when they actually change. Re-setting them
+	# every tick would re-run list reconciliation (and re-apply :class) 10x/s
+	# for no reason; diffing keeps the reconciler — and the logs — quiet.
+	var gens := build_generators_view()
+	if gens != _last_gens:
+		_last_gens = gens
+		view.state.set("generators", gens)
 	var ups := build_upgrades_view()
-	view.state.set("generators", build_generators_view())
-	view.state.set("upgrades", ups)
-	view.state.set("no_upgrades", ups.is_empty())
+	if ups != _last_ups:
+		_last_ups = ups
+		view.state.set("upgrades", ups)
+		view.state.set("no_upgrades", ups.is_empty())
 	view.state.set("per_click_display", fmt(click_value()))
 	view.state.set("refactor_gain", str(refactor_gain()))
 	var newly := _check_achievements()
