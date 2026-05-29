@@ -383,6 +383,16 @@ class TextShadowContainer extends Control:
 	func _ready() -> void:
 		_update_layout()
 
+	func _process(_delta: float) -> void:
+		# The label text may change reactively (interpolation binding). Resize
+		# only fires when the rendered size changes, so same-width updates
+		# (e.g. "37" -> "38") would leave stale shadow copies — ghosting. Keep
+		# the shadow layers in sync every frame when the text differs.
+		if _label == null or _shadow_labels.is_empty():
+			return
+		if _shadow_labels[0].text != _label.text:
+			_update_layout()
+
 	func _on_resized() -> void:
 		_update_layout()
 

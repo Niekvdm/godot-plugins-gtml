@@ -49,6 +49,55 @@ func test_text_interpolation_updates_dom_on_set() -> void:
 	assert_eq(label.text, "Hello, Bob!")
 
 
+func test_interpolation_updates_when_label_is_wrapped() -> void:
+	# text-shadow (also text-decoration / padding) wraps the Label in a
+	# container, so the element's `control` is not a Label. Interpolation must
+	# still bind to the inner Label, not silently render the literal {{ }}.
+	var view := _build_view('<span class="g">{{ name }}</span>', '.g { text-shadow: 0px 0px 4px #00ff00; }')
+	view.state.set("name", "Ada")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var label := _find_first_label(view)
+	assert_not_null(label)
+	assert_eq(label.text, "Ada", "interpolation must resolve even when the label is wrapped")
+
+
+func _all_label_texts(node: Node, out: Array = []) -> Array:
+	if node is Label:
+		out.append(node.text)
+	for c in node.get_children():
+		_all_label_texts(c, out)
+	return out
+
+
+func test_click_handler_makes_children_click_through() -> void:
+	# A label inside an @click element defaults to MOUSE_FILTER_STOP and would
+	# eat clicks on the text; it must be set to PASS so the handler fires across
+	# the whole element.
+	var view := _build_view('<div @click="act(1)"><span>hi</span></div>')
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var lbl := _find_first_label(view)
+	assert_not_null(lbl)
+	assert_eq(lbl.mouse_filter, Control.MOUSE_FILTER_PASS, "text under @click must pass clicks to the handler")
+
+
+func test_text_shadow_copies_track_reactive_text() -> void:
+	# A reactive label with text-shadow is wrapped with shadow-copy Labels.
+	# Same-width updates ("AAA" -> "BBB") don't fire resize, so the copies must
+	# be synced every frame — otherwise stale ghosts remain (counter ghosting).
+	var view := _build_view('<span class="g">{{ n }}</span>', '.g { text-shadow: 0px 0px 4px #00ff00; }')
+	view.state.set("n", "AAA")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	view.state.set("n", "BBB")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var texts := _all_label_texts(view)
+	assert_false(texts.has("AAA"), "no stale shadow copy should remain after a same-width update")
+	assert_true(texts.has("BBB"), "all label layers show the new value")
+
+
 func test_v_if_omits_subtree_when_falsy() -> void:
 	# Empty initial state → v-if="show" reads null → falsy → element omitted.
 	var view := _build_view('<div><span v-if="show">shown</span></div>')

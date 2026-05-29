@@ -97,7 +97,20 @@ static func _build_complex_button(node, ctx: Dictionary, style: Dictionary, defa
 
 static func _build_simple_button(node, ctx: Dictionary, style: Dictionary, defaults: Dictionary, gtml_view) -> Dictionary:
 	var button := Button.new()
-	button.text = node.get_text_content()
+	var text_content: String = node.get_text_content()
+	button.text = text_content
+
+	# Reactive label: if the text holds {{ }} markers, wire an interpolation
+	# binding so the button label tracks state (same mechanism as text nodes).
+	# NOTE: text-transform / letter-spacing are applied once at build and are
+	# not re-applied on later interpolation updates.
+	if "{{" in text_content and gtml_view != null and gtml_view.state != null:
+		var registry = gtml_view._binding_registry
+		if registry != null:
+			var scope: Dictionary = node.get_meta("_binding_scope", {})
+			var tag: String = node.get_meta("_vfor_tag", "")
+			var spans: Array = GtmlBindingParser.find_interpolations(text_content)
+			GtmlBindingApplier.register_text_interpolation(button, spans, registry, gtml_view.state, scope, tag)
 
 	# Handle disabled attribute
 	if node.has_attr("disabled"):

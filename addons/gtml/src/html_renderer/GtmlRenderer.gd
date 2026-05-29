@@ -162,14 +162,18 @@ func _register_bindings_for_node(node, control: Control, inner: Control = null) 
 
 	# Text interpolation on direct text children — only meaningful for
 	# elements whose body is a single text node (e.g. <span>{{ name }}</span>).
-	if control is Label and node.children.size() > 0:
+	# The Label may be wrapped (text-shadow / text-decoration / padding), in
+	# which case `control` is the wrapper and `inner` is the real Label —
+	# bind to the Label so wrapped text still interpolates.
+	var text_label: Control = inner if (inner is Label) else control
+	if text_label is Label and node.children.size() > 0:
 		var combined: String = ""
 		for child in node.children:
 			if child.is_text_node:
 				combined += child.text
 		if "{{" in combined:
 			var spans: Array = GtmlBindingParserScript.find_interpolations(combined)
-			GtmlBindingApplierScript.register_text_interpolation(control as Label, spans, registry, state, scope, binding_tag)
+			GtmlBindingApplierScript.register_text_interpolation(text_label as Label, spans, registry, state, scope, binding_tag)
 
 	# v-for: if this node expanded v-for children, register a binding that
 	# reconciles the parent's child controls in-place on array change.

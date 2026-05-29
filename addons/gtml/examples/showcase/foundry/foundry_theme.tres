@@ -1,0 +1,7 @@
+[gd_resource type="Theme" load_steps=2 format=3]
+
+[ext_resource type="FontFile" path="res://addons/gtml/examples/showcase/foundry/fonts/CourierPrime-Regular.ttf" id="1_font"]
+
+[resource]
+default_font = ExtResource("1_font")
+default_font_size = 13
