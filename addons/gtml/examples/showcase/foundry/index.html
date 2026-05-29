@@ -1,0 +1,40 @@
+<div class="term">
+	<div class="titlebar">
+		<span class="tb-dot"></span>
+		<span class="tb-name">foundry @ godot</span>
+		<span class="tb-sub">idle commit console</span>
+	</div>
+
+	<div class="screen">
+		<div v-for="line in log" :key="line.id" class="line"
+			:class="{ sys: line.kind == 'sys', cmd: line.kind == 'cmd', ok: line.kind == 'ok', warn: line.kind == 'warn', info: line.kind == 'info', act: line.actionable }"
+			@click="run_line(line.kind, line.ref)">{{ line.text }}</div>
+	</div>
+
+	<div class="status">
+		<span class="st-key">commits</span> <span class="st-val">{{ commits_display }}</span>
+		<span class="st-sep">|</span>
+		<span class="st-key">rate</span> <span class="st-val">{{ per_sec_display }}/s</span>
+		<span class="st-sep">|</span>
+		<span class="st-key">click</span> <span class="st-val">+{{ per_click_display }}</span>
+		<span class="st-sep">|</span>
+		<span class="st-key">insight</span> <span class="st-amber">{{ insight }}</span>
+		<span class="st-sep">|</span>
+		<span class="st-amber">&times;{{ mult_display }}</span>
+	</div>
+
+	<div class="promptbar">
+		<span class="ps1">foundry $</span>
+		<input v-model="cmd" @keydown="submit" id="cmdline" autofocus class="cmdline">
+	</div>
+
+	<div class="palette">
+		<button class="token" @click="cmd_token('help')">help</button>
+		<button class="token" @click="cmd_token('buy')">buy</button>
+		<button class="token" @click="cmd_token('upgrades')">upgrades</button>
+		<button class="token" @click="cmd_token('ach')">ach</button>
+		<button class="token" @click="cmd_token('stats')">stats</button>
+		<button class="token" @click="cmd_token('prestige')">prestige</button>
+		<button class="token" @click="cmd_token('clear')">clear</button>
+	</div>
+</div>

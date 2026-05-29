@@ -124,6 +124,7 @@ Crafted demos live in `addons/gtml/examples/showcase/` — open any
 | Demo | What it shows |
 |---|---|
 | **inventory** | The reactive flagship — `state`, `{{ }}`, `v-for :key`, `:class`, `v-model`, `@click(item)`, with a real `demo.gd` game script |
+| **foundry** | A full idle game ("Commit Idle") — per-frame `state.set` tick, keyed `v-for` add/remove (upgrades), live `:class` affordability, achievements, focus-trap prestige modal |
 | **atlas** | Dashboard layout (flex-heavy) |
 | **atelier** | Editorial reader (typography + design tokens) |
 | **forge** | Settings panel (`:hover`/`:focus` transitions) |

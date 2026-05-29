@@ -68,6 +68,19 @@ func test_register_text_interpolation_updates_on_state_change() -> void:
 	assert_eq(label.text, "Hello, Bob!")
 
 
+func test_register_text_interpolation_works_on_button() -> void:
+	var s := _state({"cost": "1.20K"})
+	var r := GtmlBindingRegistry.new()
+	var button := Button.new()
+	add_child_autofree(button)
+	var spans: Array = GtmlBindingParser.find_interpolations("{{ cost }}")
+	GtmlBindingApplier.register_text_interpolation(button, spans, r, s)
+	assert_eq(button.text, "1.20K", "initial apply writes button text")
+	s.state_changed.connect(func(k, _n, _o): r.fire(k))
+	s.set("cost", "3.40K")
+	assert_eq(button.text, "3.40K", "button text updates on state change")
+
+
 # ─── Attribute binding ──────────────────────────────────────────
 
 func test_register_attr_binding_disabled_writes_bool() -> void:
